@@ -1,19 +1,28 @@
 import { useState } from 'react'
-
+import CodeEditor from '../components/CodeEditor'
 function App() {
   const [count, setCount] = useState(0)
 
   return (
     <>
     <header className='container'>
-      <h1>Autobill Interface Web</h1>
+      <nav>
+      <div className='branding'>
+        <img src="/logo.png" alt="" />
+        <h1>Autobill</h1>
+      </div>
+      </nav>
     </header>
-     <main className="grid">
+     <main>
       <section>
-        <textarea name="" id="" cols="30" rows="10"></textarea>
+        <CodeEditor />
       </section>
       <section>
-        2
+        <aside>
+          <span className='output'>
+            Output
+          </span>
+        </aside>
       </section>
     </main>
     </>

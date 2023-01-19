@@ -94,10 +94,11 @@ span.output{
 
 .lineNumber{
   font-size: 0.6rem;
-  padding: 0.1rem;
+  width: 2rem;
   padding-bottom: auto;
-  padding-left: 1.4rem;
   border-right: 0.25rem solid var(--bg-color);
+  display: flex;
+  justify-content: flex-end;
 }
 
 .codeLine{

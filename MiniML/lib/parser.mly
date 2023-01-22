@@ -5,16 +5,27 @@
 %token EOF
 %token <int>Lint
 %token <bool>Lbool
-
+%token <string>Lidentifier
 /* Parenthesis */
-%token LOpenPar LClosePar LSemiColon LComma
+%token LOpenPar LClosePar LSemiColon LDoubleSemiColon LComma
 
 
 %start <prog> prog
 %%
 
+/* TODO
+
+Decl Var
+Call FonctionNative
+
+Type Analysis ?
+
+
+STD LIB for operators
+Intepretor */
+
 prog:
-| p = separated_list(LSemiColon,expr); EOF { p }
+| p = separated_list(LDoubleSemiColon,expr); EOF { p }
 
 expr:
 | p_val = value; { 
@@ -23,6 +34,15 @@ expr:
     loc = Helpers.position $startpos(p_val) $endpos(p_val)
     }
   }
+
+| func_name = Lidentifier; LOpenPar ;args = nonempty_list(expr) LClosePar {
+  Func_Call
+      { func = func_name
+      ; args = args
+      ; loc = Helpers.position $startpos(func_name) $endpos(args)
+      }
+} 
+
 | LOpenPar ; first = expr ; LComma; rest = separated_nonempty_list(LComma,expr) ; LClosePar {
   Tuple{
     value = first :: rest; 

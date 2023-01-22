@@ -1,16 +1,30 @@
 open Helpers
 
-type value =
+type const =
   | Integer of int
   | Boolean of bool
 
 type expr =
-  | Value of
-      { value : value
+  | UseVar of
+      { name : string
+      ; loc : position
+      }
+  | DeclVar of
+      { name : string
+      ; expr : expr
+      ; loc : position
+      }
+  | Const of
+      { value : const
       ; loc : position
       }
   | Tuple of
       { value : expr list
+      ; loc : position
+      }
+  | Func_Call of
+      { func : string
+      ; args : expr list
       ; loc : position
       }
 
@@ -23,13 +37,26 @@ let fmt_value = function
 
 let rec fmt_expr acc e =
   (match e with
-  | Value v ->
+  | UseVar v -> Printf.sprintf "UseVar(%s,Pos = %s)" v.name (string_of_position v.loc)
+  | DeclVar v ->
+    Printf.sprintf
+      "DeclVar(%s,Pos = %s,Assign = %s)"
+      v.name
+      (string_of_position v.loc)
+      (fmt_expr acc v.expr)
+  | Const v ->
     Printf.sprintf "Value(%s,Pos = %s)" (fmt_value v.value) (string_of_position v.loc)
   | Tuple t ->
     Printf.sprintf
       "Tuple((%s),Pos = %s)"
       (print_expr_list t.value)
-      (string_of_position t.loc))
+      (string_of_position t.loc)
+  | Func_Call f ->
+    Printf.sprintf
+      "Func_Call(funcName = %s,NbArgs %d, Pos = %s)"
+      f.func
+      (List.length f.args)
+      (string_of_position f.loc))
   ^ acc
 
 and print_expr_list expr_ls =

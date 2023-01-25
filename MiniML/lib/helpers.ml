@@ -12,3 +12,15 @@ let string_of_position p =
   let endd = p.end_pos.pos_cnum - p.end_pos.pos_bol in
   Printf.sprintf "%s:%d:%d-%d" fname lnum st endd
 ;;
+
+(*For error messages*)
+let err msg pos =
+  Printf.eprintf
+    "\nError on line %d col %d: %s.\n"
+    pos.Lexing.pos_lnum
+    (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
+    msg;
+  exit 1
+;;
+
+let getlast ls = List.nth ls (List.length ls - 1)

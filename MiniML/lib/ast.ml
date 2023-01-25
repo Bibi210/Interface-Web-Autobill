@@ -1,66 +1,71 @@
-open Helpers
-
 type const =
   | Integer of int
   | Boolean of bool
 
-type expr =
-  | UseVar of
-      { name : string
-      ; loc : position
-      }
-  | DeclVar of
-      { name : string
-      ; expr : expr
-      ; loc : position
-      }
-  | Const of
-      { value : const
-      ; loc : position
-      }
-  | Tuple of
-      { value : expr list
-      ; loc : position
-      }
-  | Func_Call of
-      { func : string
-      ; args : expr list
-      ; loc : position
-      }
+module VerifiedTree = struct
+  type expr =
+    | Const of const
+    | Tuple of expr list
+    | Block of expr list
+    | Cons of
+        { hd : expr
+        ; tail : expr
+        }
+    | Nil
 
-type prog = expr list
+  type prog = expr
+end
 
-let fmt_value = function
+module Syntax = struct
+  type expr =
+    | Const of
+        { const : const
+        ; loc : Helpers.position
+        }
+    | Tuple of
+        { content : expr list
+        ; loc : Helpers.position
+        }
+    (*     | Binding of
+        { varname : string
+        ; content : expr
+        ; loc : Helpers.position
+        } *)
+    | Block of
+        { content : expr list
+        ; loc : Helpers.position
+        }
+    | Cons of
+        { hd : expr
+        ; tail : expr
+        ; loc : Helpers.position
+        }
+    | Nil of { loc : Helpers.position }
+
+  type prog = expr
+end
+
+let fmt_const = function
   | Integer i -> Printf.sprintf "Int(%d)" i
   | Boolean b -> Printf.sprintf "Bool(%s)" (string_of_bool b)
 ;;
 
-let rec fmt_expr acc e =
-  (match e with
-  | UseVar v -> Printf.sprintf "UseVar(%s,Pos = %s)" v.name (string_of_position v.loc)
-  | DeclVar v ->
+let rec fmt_expr = function
+  | VerifiedTree.Const const -> Printf.sprintf "%s" (fmt_const const)
+  | VerifiedTree.Tuple expr_ls ->
     Printf.sprintf
-      "DeclVar(%s,Pos = %s,Assign = %s)"
-      v.name
-      (string_of_position v.loc)
-      (fmt_expr acc v.expr)
-  | Const v ->
-    Printf.sprintf "Value(%s,Pos = %s)" (fmt_value v.value) (string_of_position v.loc)
-  | Tuple t ->
+      "Tuple(%s)"
+      (List.fold_left (fun acc expr -> acc ^ fmt_expr expr ^ ",") "" expr_ls)
+  | VerifiedTree.Block expr_ls ->
     Printf.sprintf
-      "Tuple((%s),Pos = %s)"
-      (print_expr_list t.value)
-      (string_of_position t.loc)
-  | Func_Call f ->
+      "Block(%s)"
+      (List.fold_left (fun acc expr -> acc ^ fmt_expr expr ^ ";") "" expr_ls)
+  | VerifiedTree.Cons hd_tail ->
     Printf.sprintf
-      "Func_Call(funcName = %s,NbArgs %d, Pos = %s)"
-      f.func
-      (List.length f.args)
-      (string_of_position f.loc))
-  ^ acc
-
-and print_expr_list expr_ls =
-  List.fold_right (fun ls acc -> " , " ^ fmt_expr acc ls) expr_ls ""
+      "Cons(hd = %s, tail = %s)"
+      (fmt_expr hd_tail.hd)
+      (fmt_expr hd_tail.tail)
+  | VerifiedTree.Nil -> Printf.sprintf "Nil"
 ;;
 
-let fmt_program prog = List.fold_right (fun ls acc -> "\n" ^ fmt_expr acc ls) prog ""
+let fmt_prog prog = fmt_expr prog

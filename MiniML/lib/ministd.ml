@@ -1,3 +1,3 @@
-(* module Env = Map.Make (String)
-open Ast
- *)
+module Env = Map.Make (String)
+
+let std = Env.empty

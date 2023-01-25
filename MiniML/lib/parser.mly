@@ -1,13 +1,23 @@
 %{
   open Ast
+  open Ast.Syntax
+  open Helpers
+
+  let loc_of_expr = function
+  | Syntax.Nil { loc; _ } -> loc
+  | Syntax.Cons { loc; _ } -> loc
+  | Syntax.Block { loc; _ } -> loc
+  | Syntax.Tuple { loc; _ } -> loc
+  | Syntax.Const { loc; _ } -> loc
+;;
 %}
 
 %token EOF
 %token <int>Lint
 %token <bool>Lbool
 %token <string>Lidentifier
-/* Parenthesis */
-%token LOpenPar LClosePar LSemiColon LDoubleSemiColon LComma
+
+%token LOpenPar LClosePar LSemiColon LDoubleSemiColon LComma LLeftBracket LRightBracket
 
 
 %start <prog> prog
@@ -25,31 +35,29 @@ STD LIB for operators
 Intepretor */
 
 prog:
-| p = separated_list(LDoubleSemiColon,expr); EOF { p }
+| p = expr; EOF { p }
 
 expr:
-| p_val = value; { 
-  Value {
-    value = p_val;
-    loc = Helpers.position $startpos(p_val) $endpos(p_val)
-    }
-  }
-
-| func_name = Lidentifier; LOpenPar ;args = nonempty_list(expr) LClosePar {
-  Func_Call
-      { func = func_name
-      ; args = args
-      ; loc = Helpers.position $startpos(func_name) $endpos(args)
-      }
-} 
-
+| e = value { Const {const = e ; loc = position $startpos(e) $endpos(e) }  }
+| LOpenPar ; expr = expr ; LClosePar {expr}
 | LOpenPar ; first = expr ; LComma; rest = separated_nonempty_list(LComma,expr) ; LClosePar {
   Tuple{
-    value = first :: rest; 
+    content = first :: rest; 
     loc = Helpers.position $startpos($1) $endpos($5)
   }
 }
-| LOpenPar ; expr = expr ; LClosePar {expr}
+| LOpenPar ; first = expr ; LSemiColon; rest = separated_nonempty_list(LSemiColon,expr) ; LClosePar {
+  Block{
+    content = first :: rest;
+    loc = Helpers.position $startpos(first) $endpos(rest)
+  }
+}
+
+| LLeftBracket; ls = separated_list(LComma,expr) ;LRightBracket{
+  List.fold_right (fun expr acc -> Cons{hd = expr; tail = acc ; loc = loc_of_expr expr} ) ls 
+    (Nil {loc = Helpers.position $startpos(ls) $endpos(ls)})
+}
+
 
 %inline value:
 |nb = Lint {Integer nb}

@@ -16,6 +16,8 @@ rule token = parse
 | ";;" {LDoubleSemiColon}
 | ';' {LSemiColon}
 | ',' {LComma}
+| '[' {LLeftBracket}
+| ']' {LRightBracket}
 | "true" as boolean          {Lbool (bool_of_string boolean) }
 | "false" as boolean          {Lbool (bool_of_string boolean) }
 | name as ident {Lidentifier ident}

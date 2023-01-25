@@ -1,14 +1,19 @@
 open MiniML
-open Lexing
+open Helpers
 
-(*For error messages*)
-let err msg pos =
-  Printf.eprintf
-    "Error on line %d col %d: %s.\n"
-    pos.pos_lnum
-    (pos.pos_cnum - pos.pos_bol)
-    msg;
-  exit 1
+let generate_ast fname =
+  (*Open the file to compile*)
+  let f = open_in fname in
+  (* Tokenize the file *)
+  let buf = Lexing.from_channel f in
+  try
+    let output = Parser.prog Lexer.token buf in
+    close_in f;
+    output
+  with
+  | Lexer.Error c ->
+    err (Printf.sprintf "unrecognized char '%s'" c) (Lexing.lexeme_start_p buf)
+  | Parser.Error -> err "syntax error" (Lexing.lexeme_start_p buf)
 ;;
 
 let () =
@@ -16,18 +21,9 @@ let () =
   then (
     Printf.eprintf "\nUsage: %s <file>\n" Sys.argv.(0);
     exit 1);
-  (*Open the file to compile*)
-  let f = open_in Sys.argv.(1) in
-  (* Tokenize the file *)
-  let buf = Lexing.from_channel f in
-  try
-    (*Generate AST with type informations*)
-    let parsed = Parser.prog Lexer.token buf in
-    close_in f;
-    print_endline ("\n" ^ Ast.fmt_program parsed)
-  with
-  | Lexer.Error c ->
-    err (Printf.sprintf "unrecognized char '%s'" c) (Lexing.lexeme_start_p buf)
-  | Parser.Error -> err "syntax error" (Lexing.lexeme_start_p buf)
+  let ast = generate_ast Sys.argv.(1) in
+  let info = Analysis.analyse_prog ast in
+  print_endline ("\nBefore : " ^ Ast.fmt_prog info.expr);
+  let result = Interpreter.eval_prog info.expr in
+  print_endline ("After : " ^ Ast.fmt_prog result)
 ;;
-(*Unrecognized Stuff*)

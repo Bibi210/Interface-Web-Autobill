@@ -1,8 +1,12 @@
 import { useState } from 'react'
-import CodeEditor from '../components/CodeEditor'
+import CodeMirror from '@uiw/react-codemirror';
+import { oneDark } from '@codemirror/theme-one-dark'
+import { StreamLanguage } from '@codemirror/language';
+import { oCaml }from '@codemirror/legacy-modes/mode/mllike'
+import  initial  from '../data/initialPrompt'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [code, setCode] = useState(initial)
 
   return (
     <>
@@ -16,7 +20,22 @@ function App() {
     </header>
      <main>
       <section>
-        <CodeEditor />
+        <CodeMirror
+          onChange={(val, _) => setCode(val)}
+          value={initial}
+          height="100%"
+          theme={oneDark}
+          extensions={[StreamLanguage.define(oCaml)]}
+          indentWithTab={true}
+          className='editor'
+        />
+        <footer>
+          <button
+            onClick={() => console.log(code)}>
+            <span>Run</span>
+            <span>⌘⏎</span>
+          </button>
+        </footer>
       </section>
       <section>
         <aside>

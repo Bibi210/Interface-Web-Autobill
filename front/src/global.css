@@ -1,6 +1,13 @@
 @font-face {
   font-family: 'Monaco';
-  src: url('../public/fonts/Monaco\ Regular.ttf') format('ttf');
+  src: url('/public/fonts/Monaco\ Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/public/fonts/Inter/Inter-Medium.ttf') format('truetype'),
+  url('/public/fonts/Inter/Inter-Regular.ttf') format('truetype'),
+  url('/public/fonts/Inter/Inter-SemiBold.ttf') format('truetype');
 }
 :root{
   --main-color : #39ace3;
@@ -11,9 +18,14 @@
 html, body, #root{
   height: 100vh;
 }
+
+#root{
+  display: flex;
+  flex-direction: column;
+}
 body{
   margin: 0;
-  font-family: 'Inter', sans-serif;  
+  font-family: 'Inter';  
   background-color: #1E1E1E;
   color: #fff;
 }
@@ -52,8 +64,8 @@ header img{
 
 main{
   width: 100%;
-  height: 100%;
   display: flex;
+  flex: 1 0 auto;
 }
 
 aside{
@@ -63,8 +75,36 @@ aside{
 main section:first-child{
   width: 60%;
   padding: 1.6rem 1.2rem;
+  position: relative;
 }
 
+footer{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding: 1.2rem 0rem;
+  border-top: 2px solid #414141;
+}
+footer button{
+  display: flex;
+  gap: 0.8rem;
+  background: transparent;
+  border: 1px solid var(--main-color);
+  color: var(--main-color);
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  padding: 0.8rem  1.3rem;
+  font-size: 16px;
+  border-radius: 10px;
+  margin-right: 2rem;
+  cursor: pointer;
+}
+footer button:hover{
+  background-color: #39ace309;
+}
 main section:nth-child(2){
   width: 40%;
   background: #272727;

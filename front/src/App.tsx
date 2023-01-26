@@ -4,9 +4,22 @@ import { oneDark } from "@codemirror/theme-one-dark"
 import { StreamLanguage } from "@codemirror/language"
 import { oCaml } from "@codemirror/legacy-modes/mode/mllike"
 import initial from "../data/initialPrompt"
-import "../ocaml/main.bc"
+import "../ocaml/main"
+
+interface TopLevelResult {
+  types : string
+  resultat: string
+}
 function App() {
   const [code, setCode] = useState(initial)
+  const [types, setTypes] = useState('')
+  const [print, setPrint] = useState('')
+  const evalCode = () => {
+    const codeToEvaluate = code + "\n ;;"
+    const evaluation = ml.eval(codeToEvaluate) as TopLevelResult
+    setTypes(evaluation.types)
+    setPrint(evaluation.resultat)
+  }
   return (
     <>
       <header className="container">
@@ -29,7 +42,7 @@ function App() {
             className="editor"
           />
           <footer>
-            <button onClick={() => console.log(myMathLib.add(3, 4))}>
+            <button onClick={() => evalCode()}>
               <span>Run</span>
               <span>⌘⏎</span>
             </button>
@@ -39,6 +52,20 @@ function App() {
           <aside>
             <span className="output">Output</span>
           </aside>
+          {
+            print ? 
+            <pre className="print">
+              {print}
+            </pre>
+            : ''
+          }
+          {
+            types ? 
+            <pre className="types" >
+              {types}
+            </pre>
+            : ''
+          }
         </section>
       </main>
     </>

@@ -2,5 +2,5 @@
  (public_name Binding)
  (name main)
  (modes js exe)
- (libraries Binding js_of_ocaml-toplevel ocaml-base-compiler)
+ (libraries Binding js_of_ocaml-toplevel)
  (preprocess (pps js_of_ocaml-ppx)))

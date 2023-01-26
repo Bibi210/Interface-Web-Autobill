@@ -35,7 +35,9 @@ header{
   background-color: #181618;
   display: flex;
   justify-content: center;
+  height: 12vh;
 }
+
 nav{
   max-width: 1440px;
   width: 100%;
@@ -66,6 +68,7 @@ main{
   width: 100%;
   display: flex;
   flex: 1 0 auto;
+  max-height: 88vh;
 }
 
 aside{
@@ -79,14 +82,15 @@ main section:first-child{
 }
 
 footer{
-  position: absolute;
-  bottom: 0;
+  position: sticky;
+  bottom: -1.6rem;
   left: 0;
   width: 100%;
   display: flex;
   justify-content: flex-end;
   padding: 1.2rem 0rem;
   border-top: 2px solid #414141;
+  background-color: var(--bg-color);
 }
 footer button{
   display: flex;
@@ -104,6 +108,9 @@ footer button{
 }
 footer button:hover{
   background-color: #39ace309;
+}
+section{
+  overflow-y: scroll;
 }
 main section:nth-child(2){
   width: 40%;
@@ -139,4 +146,15 @@ span.output{
 .cm-content *{
   font-family: 'Monaco', sans-serif !important;
   font-size: 16px;
+}
+pre.types, pre.print{
+  font-size: 1.1rem;
+  padding-left: 1.5rem;
+}
+
+.print{
+  color: cyan;
+}
+.types{
+  color: red;
 }

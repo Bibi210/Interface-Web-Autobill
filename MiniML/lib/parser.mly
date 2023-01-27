@@ -42,13 +42,13 @@ expr:
 | LOpenPar ; expr = expr ; LClosePar {expr}
 | LOpenPar ; first = expr ; LComma; rest = separated_nonempty_list(LComma,expr) ; LClosePar {
   Tuple{
-    content = first :: rest; 
+    content = Array.of_list (first :: rest); 
     loc = Helpers.position $startpos($1) $endpos($5)
   }
 }
 | LOpenPar ; first = expr ; LSemiColon; rest = separated_nonempty_list(LSemiColon,expr) ; LClosePar {
   Block{
-    content = first :: rest;
+    content = Array.of_list (first :: rest);
     loc = Helpers.position $startpos(first) $endpos(rest)
   }
 }

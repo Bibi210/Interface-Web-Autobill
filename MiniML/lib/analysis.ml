@@ -1,10 +1,11 @@
 open Ast
 open Helpers
 
+(* Ne pas finir le full typage *)
 type types =
   | Int_t
   | Bool_t
-  | Tuple of types list
+  | Tuple of types array
   | Generic
   | List of types
 
@@ -14,7 +15,7 @@ let rec fmt_types = function
   | Tuple types ->
     Printf.sprintf
       "Tuple of (%s)"
-      (List.fold_left (fun acc expr -> acc ^ fmt_types expr ^ " ") "" types)
+      (Array.fold_left (fun acc expr -> acc ^ fmt_types expr ^ " ") "" types)
   | Generic -> "Generic"
   | List elem_type -> Printf.sprintf "List of (%s)" (fmt_types elem_type)
 ;;
@@ -33,6 +34,22 @@ let rec info_list_split = function
     expr :: r_expr, etype :: r_etype
 ;;
 
+let info_array_split x =
+  if x = [||]
+  then [||], [||]
+  else (
+    let info = Array.get x 0 in
+    let n = Array.length x in
+    let a = Array.make n info.expr in
+    let b = Array.make n info.etype in
+    for i = 1 to n - 1 do
+      let infoi = Array.get x i in
+      Array.set a i infoi.expr;
+      Array.set b i infoi.etype
+    done;
+    a, b)
+;;
+
 let analyse_const a =
   match a with
   | Integer _ -> Int_t
@@ -44,11 +61,11 @@ let rec analyse_expr a =
   | Syntax.Const a ->
     info_constructor (VerifiedTree.Const a.const) (analyse_const a.const)
   | Syntax.Tuple t ->
-    let content, etype = info_list_split (List.map analyse_expr t.content) in
+    let content, etype = info_array_split (Array.map analyse_expr t.content) in
     info_constructor (VerifiedTree.Tuple content) (Tuple etype)
   | Syntax.Block b ->
-    let content, etype = info_list_split (List.map analyse_expr b.content) in
-    info_constructor (VerifiedTree.Block content) (Helpers.getlast etype)
+    let content, etype = info_array_split (Array.map analyse_expr b.content) in
+    info_constructor (VerifiedTree.Block content) (Helpers.array_getlast etype)
   | Syntax.Nil _ -> info_constructor VerifiedTree.Nil (List Generic)
   | Syntax.Cons e ->
     let hd_info = analyse_expr e.hd in

@@ -23,4 +23,5 @@ let err msg pos =
   exit 1
 ;;
 
-let getlast ls = List.nth ls (List.length ls - 1)
+let list_getlast ls = List.nth ls (List.length ls - 1)
+let array_getlast array = Array.get array (Array.length array - 1)

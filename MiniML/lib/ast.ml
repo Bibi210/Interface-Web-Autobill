@@ -2,11 +2,15 @@ type const =
   | Integer of int
   | Boolean of bool
 
+(* Flow de Control *)
+(* Binding *)
+(* Operateurs de Base *)
+
 module VerifiedTree = struct
   type expr =
     | Const of const
-    | Tuple of expr list
-    | Block of expr list
+    | Tuple of expr array
+    | Block of expr array
     | Cons of
         { hd : expr
         ; tail : expr
@@ -23,7 +27,7 @@ module Syntax = struct
         ; loc : Helpers.position
         }
     | Tuple of
-        { content : expr list
+        { content : expr array
         ; loc : Helpers.position
         }
     (*     | Binding of
@@ -32,11 +36,11 @@ module Syntax = struct
         ; loc : Helpers.position
         } *)
     | Block of
-        { content : expr list
+        { content : expr array
         ; loc : Helpers.position
         }
     | Cons of
-        { hd : expr
+        { hd : expr (* Use of OCAML List ?? *)
         ; tail : expr
         ; loc : Helpers.position
         }
@@ -55,11 +59,11 @@ let rec fmt_expr = function
   | VerifiedTree.Tuple expr_ls ->
     Printf.sprintf
       "Tuple(%s)"
-      (List.fold_left (fun acc expr -> acc ^ fmt_expr expr ^ ",") "" expr_ls)
+      (Array.fold_left (fun acc expr -> acc ^ fmt_expr expr ^ ",") "" expr_ls)
   | VerifiedTree.Block expr_ls ->
     Printf.sprintf
       "Block(%s)"
-      (List.fold_left (fun acc expr -> acc ^ fmt_expr expr ^ ";") "" expr_ls)
+      (Array.fold_left (fun acc expr -> acc ^ fmt_expr expr ^ ";") "" expr_ls)
   | VerifiedTree.Cons hd_tail ->
     Printf.sprintf
       "Cons(hd = %s, tail = %s)"
@@ -67,5 +71,3 @@ let rec fmt_expr = function
       (fmt_expr hd_tail.tail)
   | VerifiedTree.Nil -> Printf.sprintf "Nil"
 ;;
-
-let fmt_prog prog = fmt_expr prog

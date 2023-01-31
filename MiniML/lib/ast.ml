@@ -10,7 +10,7 @@ module VerifiedTree = struct
   type expr =
     | Const of const
     | Tuple of expr array
-    | Block of expr array
+    | Seq of expr array
     | Cons of
         { hd : expr
         ; tail : expr
@@ -30,12 +30,12 @@ module Syntax = struct
         { content : expr array
         ; loc : Helpers.position
         }
-    (*     | Binding of
+(*     | Binding of
         { varname : string
         ; content : expr
         ; loc : Helpers.position
-        } *)
-    | Block of
+        }  *)
+    | Seq of
         { content : expr array
         ; loc : Helpers.position
         }
@@ -60,7 +60,7 @@ let rec fmt_expr = function
     Printf.sprintf
       "Tuple(%s)"
       (Array.fold_left (fun acc expr -> acc ^ fmt_expr expr ^ ",") "" expr_ls)
-  | VerifiedTree.Block expr_ls ->
+  | Seq expr_ls ->
     Printf.sprintf
       "Block(%s)"
       (Array.fold_left (fun acc expr -> acc ^ fmt_expr expr ^ ";") "" expr_ls)

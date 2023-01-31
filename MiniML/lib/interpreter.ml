@@ -21,7 +21,7 @@ let rec eval_expr a =
   match a with
   | VerifiedTree.Const c -> Const c
   | VerifiedTree.Tuple t -> Tuple (Array.map eval_expr t)
-  | VerifiedTree.Block b -> Helpers.array_getlast (Array.map eval_expr b)
+  | VerifiedTree.Seq b -> Helpers.array_getlast (Array.map eval_expr b)
   | VerifiedTree.Nil -> List []
   | VerifiedTree.Cons { hd; tail } ->
     let tail =

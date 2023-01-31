@@ -6,7 +6,7 @@
   let loc_of_expr = function
   | Syntax.Nil { loc; _ } -> loc
   | Syntax.Cons { loc; _ } -> loc
-  | Syntax.Block { loc; _ } -> loc
+  | Syntax.Seq { loc; _ } -> loc
   | Syntax.Tuple { loc; _ } -> loc
   | Syntax.Const { loc; _ } -> loc
 ;;
@@ -47,7 +47,7 @@ expr:
   }
 }
 | LOpenPar ; first = expr ; LSemiColon; rest = separated_nonempty_list(LSemiColon,expr) ; LClosePar {
-  Block{
+  Seq{
     content = Array.of_list (first :: rest);
     loc = Helpers.position $startpos(first) $endpos(rest)
   }

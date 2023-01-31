@@ -63,9 +63,9 @@ let rec analyse_expr a =
   | Syntax.Tuple t ->
     let content, etype = info_array_split (Array.map analyse_expr t.content) in
     info_constructor (VerifiedTree.Tuple content) (Tuple etype)
-  | Syntax.Block b ->
+  | Syntax.Seq b ->
     let content, etype = info_array_split (Array.map analyse_expr b.content) in
-    info_constructor (VerifiedTree.Block content) (Helpers.array_getlast etype)
+    info_constructor (VerifiedTree.Seq content) (Helpers.array_getlast etype)
   | Syntax.Nil _ -> info_constructor VerifiedTree.Nil (List Generic)
   | Syntax.Cons e ->
     let hd_info = analyse_expr e.hd in

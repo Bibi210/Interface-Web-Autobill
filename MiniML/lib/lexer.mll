@@ -1,5 +1,6 @@
 {
   open Parser
+  open Ast
   exception Error of string
 }
 
@@ -8,6 +9,8 @@ let alphanum = ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let name = ['a'-'z' '_'] alphanum
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
+
+
 
 rule token = parse
 | num+ as n       { Lint (int_of_string n) }
@@ -23,7 +26,13 @@ rule token = parse
 | '=' {LEqual}
 | "true" as boolean          {Lbool (bool_of_string boolean) }
 | "false" as boolean          {Lbool (bool_of_string boolean) }
+| ':' {types lexbuf}
 | name as ident {Lidentifier ident}
 | white* { token lexbuf }
 | newline          { Lexing.new_line lexbuf; token lexbuf }
 | eof {EOF}
+
+
+and types = parse
+| "int" { LType Int_t }
+| "bool" { LType Bool_t }

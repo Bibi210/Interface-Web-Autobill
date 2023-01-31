@@ -1,26 +1,18 @@
 open Ast
+open Helpers
 module Env = Map.Make (String)
 
 type value =
   | Const of const
   | Tuple of value array
   | List of value list
-
-let rec fmt_value = function
-  | Const c -> Ast.fmt_const c
-  | List expr_ls ->
-    "[ " ^ List.fold_left (fun acc expr -> acc ^ fmt_value expr ^ " ") "" expr_ls ^ "]"
-  | Tuple expr_array ->
-    "[ "
-    ^ Array.fold_left (fun acc expr -> acc ^ fmt_value expr ^ " ") "" expr_array
-    ^ "]"
-;;
+  | Lambda of (value list -> value)
 
 let rec eval_expr env a =
   match a with
   | VerifiedTree.Const c -> Const c
   | VerifiedTree.Tuple t -> Tuple (Array.map (eval_expr env) t)
-  | VerifiedTree.Seq b -> Helpers.array_getlast (Array.map (eval_expr env) b)
+  | VerifiedTree.Seq b -> array_getlast (Array.map (eval_expr env) b)
   | VerifiedTree.Nil -> List []
   | VerifiedTree.Cons { hd; tail } ->
     let tail =

@@ -1,33 +1,6 @@
 open Ast
 open Helpers
 
-(* Ne pas finir le full typage *)
-type types =
-  | Unit
-  | Int_t
-  | Bool_t
-  | Tuple of types array
-  | WeakType
-  | List of types
-  | Func of types list * types (* Unused *)
-
-let rec fmt_types = function
-  | Unit -> "Unit"
-  | Int_t -> "Int"
-  | Bool_t -> "Bool"
-  | Tuple types ->
-    Printf.sprintf
-      "Tuple of (%s)"
-      (Array.fold_left (fun acc expr -> acc ^ fmt_types expr ^ " ") "" types)
-  | WeakType -> "WeakType"
-  | List elem_type -> Printf.sprintf "List of (%s)" (fmt_types elem_type)
-  | Func (args_type, return_type) ->
-    Printf.sprintf
-      "Function [%s] -> [%s]"
-      (List.fold_left (fun acc expr -> acc ^ fmt_types expr ^ " ") "" args_type)
-      (fmt_types return_type)
-;;
-
 type info =
   { expr : VerifiedTree.expr
   ; etype : types
@@ -60,6 +33,27 @@ let info_array_split x =
     a, b)
 ;;
 
+let match_identifier_type (ident : Ast.identifier) toCompare errLoc =
+  match ident.etype with
+  | None -> toCompare
+  | Some vtype ->
+    if vtype = toCompare
+    then vtype
+    else
+      err
+        (Printf.sprintf
+           " Var(%s) With Wrong Type Expected:%s Given:%s"
+           ident.var_name
+           (Format.fmt_types vtype)
+           (Format.fmt_types toCompare))
+        errLoc.start_pos
+;;
+
+let verify_identifier_type ident toCompare errLoc =
+  let _ = match_identifier_type ident toCompare errLoc in
+  ()
+;;
+
 let analyse_const a =
   match a with
   | Integer _ -> Int_t
@@ -75,7 +69,7 @@ let rec analyse_expr env a =
     info_constructor (VerifiedTree.Tuple content) (Tuple etype)
   | Syntax.Seq b ->
     let content, etype = info_array_split (Array.map (analyse_expr env) b.content) in
-    info_constructor (VerifiedTree.Seq content) (Helpers.array_getlast etype)
+    info_constructor (VerifiedTree.Seq content) (array_getlast etype)
   | Syntax.Nil _ -> info_constructor VerifiedTree.Nil (List WeakType)
   | Syntax.Cons e ->
     let hd_info = analyse_expr env e.hd in
@@ -90,21 +84,28 @@ let rec analyse_expr env a =
         err
           (Printf.sprintf
              "Invalid Type Expected:%s Given:%s"
-             (fmt_types x)
-             (fmt_types hd_info.etype))
+             (Format.fmt_types x)
+             (Format.fmt_types hd_info.etype))
           e.loc.start_pos
     | _ -> err "Invalid This Is Not A List" e.loc.start_pos)
   | Syntax.Var var ->
-    (match Env.find_opt var.var_name env with
-    | Some x -> info_constructor (VerifiedTree.Var { var_name = var.var_name }) x
+    (match Env.find_opt var.ident.var_name env with
+    | Some envType ->
+      info_constructor
+        (VerifiedTree.Var { var_name = var.ident.var_name })
+        (match_identifier_type var.ident envType var.loc)
     | None -> err "Unbound Variable" var.loc.start_pos)
   | Syntax.Binding new_var ->
     let init_info = analyse_expr env new_var.init in
-    let body_env = Env.add new_var.var_name init_info.etype env in
+    verify_identifier_type new_var.ident init_info.etype new_var.loc;
+    let body_env = Env.add new_var.ident.var_name init_info.etype env in
     let body_info = analyse_expr body_env new_var.content in
     info_constructor
       (VerifiedTree.Binding
-         { var_name = new_var.var_name; init = init_info.expr; content = body_info.expr })
+         { var_name = new_var.ident.var_name
+         ; init = init_info.expr
+         ; content = body_info.expr
+         })
       body_info.etype
 ;;
 

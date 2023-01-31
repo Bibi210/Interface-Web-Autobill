@@ -16,7 +16,7 @@ let string_of_position p =
 (*For error messages*)
 let err msg pos =
   Printf.eprintf
-    "\nError on line %d col %d: %s.\n"
+    "Error on line %d col %d: %s.\n"
     pos.Lexing.pos_lnum
     (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
     msg;

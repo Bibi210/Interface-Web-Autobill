@@ -23,8 +23,8 @@ let () =
     exit 1);
   let ast = generate_ast Sys.argv.(1) in
   let info = Analysis.analyse_prog ast in
-  print_endline ("Before : " ^ Ast.fmt_expr info.expr);
+  print_endline ("Before : " ^ Format.fmt_expr info.expr);
   let result = Interpreter.eval_prog info.expr in
-  print_endline ("After : " ^ Interpreter.fmt_value result)
+  print_endline ("After : " ^ Format.fmt_value result)
 ;;
 

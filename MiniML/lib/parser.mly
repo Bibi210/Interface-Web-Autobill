@@ -18,6 +18,8 @@
 %token <int>Lint
 %token <bool>Lbool
 %token <string>Lidentifier
+%token <Ast.types>LType
+
 
 %token LOpenPar LClosePar LSemiColon LDoubleSemiColon LComma LLeftBracket LRightBracket
 %token LLet LEqual LIn
@@ -40,36 +42,46 @@ prog:
 | p = expr; EOF { p }
 
 expr:
-| e = value { Const {const = e ; loc = position $startpos(e) $endpos(e) }  }
+| e = value_parse { Const {const = e ; loc = position $startpos(e) $endpos(e) }  }
 | LOpenPar ; expr = expr ; LClosePar {expr}
 | LOpenPar ; first = expr ; LComma; rest = separated_nonempty_list(LComma,expr) ; LClosePar {
   Tuple{
     content = Array.of_list (first :: rest); 
-    loc = Helpers.position $startpos($1) $endpos($5)
+    loc = position $startpos($1) $endpos($5)
   }
 }
 | LOpenPar ; first = expr ; LSemiColon; rest = separated_nonempty_list(LSemiColon,expr) ; LClosePar {
   Seq{
     content = Array.of_list (first :: rest);
-    loc = Helpers.position $startpos(first) $endpos(rest)
+    loc = position $startpos(first) $endpos(rest)
   }
 }
 
-| LLeftBracket; ls = separated_list(LComma,expr) ;LRightBracket{
-  List.fold_right (fun expr acc -> Cons{hd = expr; tail = acc ; loc = loc_of_expr expr} ) ls 
-    (Nil {loc = Helpers.position $startpos(ls) $endpos(ls)})
+| LLeftBracket; ls = separated_list(LComma,expr) ; LRightBracket {
+  
+  List.fold_right (fun expr acc -> Cons{hd = expr; tail = acc ; loc = loc_of_expr expr}) ls 
+  (Nil {loc = position $startpos(ls) $endpos(ls)})
 }
 
-| v_name = Lidentifier {Var {var_name = v_name;loc = Helpers.position $startpos(v_name) $endpos(v_name)}}
-| LLet;v_name = Lidentifier;LEqual;init = expr; LIn ; body = expr {
+| ident = var_parse {
+  Var { ident = ident
+      ; loc = position $startpos(ident) $endpos(ident)
+  }
+}
+| LLet;ident = var_parse;LEqual;init = expr; LIn ; body = expr {
   Binding
-        { var_name = v_name
+        { ident = ident
         ; init = init
         ; content = body
-        ; loc = Helpers.position $startpos(v_name) $endpos(v_name)
+        ; loc = position $startpos($3) $endpos($3)
         }
 }
 
-%inline value:
+%inline var_parse:
+| v_name = Lidentifier;vtype = option(LType){
+  {var_name = v_name;etype=vtype}
+}
+
+%inline value_parse:
 |nb = Lint {Integer nb}
 |bo = Lbool {Boolean bo}

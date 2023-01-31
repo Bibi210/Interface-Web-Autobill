@@ -1,1 +1,1 @@
-let a = 4 in 2
+let a:int = 4 in 2

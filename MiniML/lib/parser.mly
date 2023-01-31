@@ -9,6 +9,8 @@
   | Syntax.Seq { loc; _ } -> loc
   | Syntax.Tuple { loc; _ } -> loc
   | Syntax.Const { loc; _ } -> loc
+  | Syntax.Binding { loc; _ } -> loc
+  | Syntax.Var { loc; _ } -> loc
 ;;
 %}
 
@@ -18,7 +20,7 @@
 %token <string>Lidentifier
 
 %token LOpenPar LClosePar LSemiColon LDoubleSemiColon LComma LLeftBracket LRightBracket
-
+%token LLet LEqual LIn
 
 %start <prog> prog
 %%
@@ -58,6 +60,15 @@ expr:
     (Nil {loc = Helpers.position $startpos(ls) $endpos(ls)})
 }
 
+| v_name = Lidentifier {Var {var_name = v_name;loc = Helpers.position $startpos(v_name) $endpos(v_name)}}
+| LLet;v_name = Lidentifier;LEqual;init = expr; LIn ; body = expr {
+  Binding
+        { var_name = v_name
+        ; init = init
+        ; content = body
+        ; loc = Helpers.position $startpos(v_name) $endpos(v_name)
+        }
+}
 
 %inline value:
 |nb = Lint {Integer nb}

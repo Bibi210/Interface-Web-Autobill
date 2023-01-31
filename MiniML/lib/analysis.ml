@@ -3,27 +3,37 @@ open Helpers
 
 (* Ne pas finir le full typage *)
 type types =
+  | Unit
   | Int_t
   | Bool_t
   | Tuple of types array
-  | Generic
+  | WeakType
   | List of types
+  | Func of types list * types (* Unused *)
 
 let rec fmt_types = function
+  | Unit -> "Unit"
   | Int_t -> "Int"
   | Bool_t -> "Bool"
   | Tuple types ->
     Printf.sprintf
       "Tuple of (%s)"
       (Array.fold_left (fun acc expr -> acc ^ fmt_types expr ^ " ") "" types)
-  | Generic -> "Generic"
+  | WeakType -> "WeakType"
   | List elem_type -> Printf.sprintf "List of (%s)" (fmt_types elem_type)
+  | Func (args_type, return_type) ->
+    Printf.sprintf
+      "Function [%s] -> [%s]"
+      (List.fold_left (fun acc expr -> acc ^ fmt_types expr ^ " ") "" args_type)
+      (fmt_types return_type)
 ;;
 
 type info =
   { expr : VerifiedTree.expr
   ; etype : types
   }
+
+module Env = Map.Make (String)
 
 let info_constructor expr etype = { expr; etype }
 
@@ -56,23 +66,23 @@ let analyse_const a =
   | Boolean _ -> Bool_t
 ;;
 
-let rec analyse_expr a =
+let rec analyse_expr env a =
   match a with
   | Syntax.Const a ->
     info_constructor (VerifiedTree.Const a.const) (analyse_const a.const)
   | Syntax.Tuple t ->
-    let content, etype = info_array_split (Array.map analyse_expr t.content) in
+    let content, etype = info_array_split (Array.map (analyse_expr env) t.content) in
     info_constructor (VerifiedTree.Tuple content) (Tuple etype)
   | Syntax.Seq b ->
-    let content, etype = info_array_split (Array.map analyse_expr b.content) in
+    let content, etype = info_array_split (Array.map (analyse_expr env) b.content) in
     info_constructor (VerifiedTree.Seq content) (Helpers.array_getlast etype)
-  | Syntax.Nil _ -> info_constructor VerifiedTree.Nil (List Generic)
+  | Syntax.Nil _ -> info_constructor VerifiedTree.Nil (List WeakType)
   | Syntax.Cons e ->
-    let hd_info = analyse_expr e.hd in
-    let tail_info = analyse_expr e.tail in
+    let hd_info = analyse_expr env e.hd in
+    let tail_info = analyse_expr env e.tail in
     let output = VerifiedTree.Cons { hd = hd_info.expr; tail = tail_info.expr } in
     (match tail_info.etype with
-    | List Generic -> info_constructor output (List hd_info.etype)
+    | List WeakType -> info_constructor output (List hd_info.etype)
     | List x ->
       if hd_info.etype = x
       then info_constructor output x
@@ -84,6 +94,18 @@ let rec analyse_expr a =
              (fmt_types hd_info.etype))
           e.loc.start_pos
     | _ -> err "Invalid This Is Not A List" e.loc.start_pos)
+  | Syntax.Var var ->
+    (match Env.find_opt var.var_name env with
+    | Some x -> info_constructor (VerifiedTree.Var { var_name = var.var_name }) x
+    | None -> err "Unbound Variable" var.loc.start_pos)
+  | Syntax.Binding new_var ->
+    let init_info = analyse_expr env new_var.init in
+    let body_env = Env.add new_var.var_name init_info.etype env in
+    let body_info = analyse_expr body_env new_var.content in
+    info_constructor
+      (VerifiedTree.Binding
+         { var_name = new_var.var_name; init = init_info.expr; content = body_info.expr })
+      body_info.etype
 ;;
 
-let analyse_prog = analyse_expr
+let analyse_prog = analyse_expr Env.empty

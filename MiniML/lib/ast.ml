@@ -16,6 +16,12 @@ module VerifiedTree = struct
         ; tail : expr
         }
     | Nil
+    | Binding of
+        { var_name : string
+        ; init : expr
+        ; content : expr
+        }
+    | Var of { var_name : string }
 
   type prog = expr
 end
@@ -30,11 +36,16 @@ module Syntax = struct
         { content : expr array
         ; loc : Helpers.position
         }
-(*     | Binding of
-        { varname : string
+    | Binding of
+        { var_name : string
+        ; init : expr
         ; content : expr
         ; loc : Helpers.position
-        }  *)
+        }
+    | Var of
+        { var_name : string
+        ; loc : Helpers.position
+        }
     | Seq of
         { content : expr array
         ; loc : Helpers.position
@@ -62,7 +73,7 @@ let rec fmt_expr = function
       (Array.fold_left (fun acc expr -> acc ^ fmt_expr expr ^ ",") "" expr_ls)
   | Seq expr_ls ->
     Printf.sprintf
-      "Block(%s)"
+      "Seq(%s)"
       (Array.fold_left (fun acc expr -> acc ^ fmt_expr expr ^ ";") "" expr_ls)
   | VerifiedTree.Cons hd_tail ->
     Printf.sprintf
@@ -70,4 +81,7 @@ let rec fmt_expr = function
       (fmt_expr hd_tail.hd)
       (fmt_expr hd_tail.tail)
   | VerifiedTree.Nil -> Printf.sprintf "Nil"
+  | VerifiedTree.Binding { var_name; init; content } ->
+    Printf.sprintf "Binding(%s = %s in %s)" var_name (fmt_expr init) (fmt_expr content)
+  | VerifiedTree.Var { var_name } -> Printf.sprintf "Var(%s)" var_name
 ;;

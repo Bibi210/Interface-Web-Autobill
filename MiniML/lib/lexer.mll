@@ -1,7 +1,12 @@
 {
   open Parser
-  open Ast
+  open Ast 
   exception Error of string
+
+  let getToken = function
+  |"int" -> LType Int_t
+  |"bool" -> LType Bool_t
+  | a -> Lidentifier a
 }
 
 let num = ['0'-'9']*
@@ -22,17 +27,16 @@ rule token = parse
 | '[' {LLeftBracket}
 | ']' {LRightBracket}
 | "let" {LLet}
+| "fun" {LFun}
+| "->" {LSimpleArrow}
 | "in" {LIn}
 | '=' {LEqual}
 | "true" as boolean          {Lbool (bool_of_string boolean) }
 | "false" as boolean          {Lbool (bool_of_string boolean) }
-| ':' {types lexbuf}
-| name as ident {Lidentifier ident}
+| ':' {LColon}
+| name as ident {getToken ident}
 | white* { token lexbuf }
 | newline          { Lexing.new_line lexbuf; token lexbuf }
 | eof {EOF}
 
 
-and types = parse
-| "int" { LType Int_t }
-| "bool" { LType Bool_t }

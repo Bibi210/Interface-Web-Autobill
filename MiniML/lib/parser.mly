@@ -11,6 +11,7 @@
   | Syntax.Const { loc; _ } -> loc
   | Syntax.Binding { loc; _ } -> loc
   | Syntax.Var { loc; _ } -> loc
+  | Syntax.Lambda { loc; _ } -> loc
 ;;
 %}
 
@@ -21,8 +22,9 @@
 %token <Ast.types>LType
 
 
-%token LOpenPar LClosePar LSemiColon LDoubleSemiColon LComma LLeftBracket LRightBracket
-%token LLet LEqual LIn
+%token LOpenPar LClosePar LColon LSemiColon LDoubleSemiColon LComma LLeftBracket LRightBracket
+%token LLet LEqual LIn LFun LSimpleArrow
+
 
 %start <prog> prog
 %%
@@ -76,11 +78,35 @@ expr:
         ; loc = position $startpos($3) $endpos($3)
         }
 }
-
-%inline var_parse:
-| v_name = Lidentifier;vtype = option(LType){
-  {var_name = v_name;etype=vtype}
+| LFun;args = list(var_parse);LSimpleArrow;body = expr {
+   Lambda
+        { args = args
+        ; body = body 
+        ; loc = position $startpos($1) $endpos($1)
+        }
 }
+
+
+ var_parse:
+| v_name = Lidentifier;LColon;vtype = type_parse{
+  {name = v_name;type_t=Some vtype}
+}
+| v_name = Lidentifier{
+  {name = v_name;type_t=None}
+}
+| LOpenPar ; ident = var_parse ; LClosePar {ident}
+
+
+
+type_parse:
+|t = LType {t}
+/*! | args_type = list(LType);LSimpleArrow;returntype = LType{
+  Lambda (args_type,returntype)
+}
+  Blocking at parsing
+ */
+
+
 
 %inline value_parse:
 |nb = Lint {Integer nb}

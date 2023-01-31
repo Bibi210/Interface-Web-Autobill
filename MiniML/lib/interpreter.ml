@@ -26,6 +26,16 @@ let rec eval_expr env a =
     let init_value = eval_expr env new_var.init in
     let body_env = Env.add new_var.var_name init_value env in
     eval_expr body_env new_var.content
+  | VerifiedTree.Lambda lambda ->
+    Lambda
+      (fun value_ls ->
+        eval_expr
+          (List.fold_left2
+             (fun acc arg_name arg_value -> Env.add arg_name arg_value acc)
+             env (* * Fixed Closure *)
+             lambda.args
+             value_ls)
+          lambda.body)
 ;;
 
 let eval_prog = eval_expr Env.empty

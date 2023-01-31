@@ -1,1 +1,1 @@
-let a:int = 4 in 2
+let a = (fun a:int -> a) in (a,3)

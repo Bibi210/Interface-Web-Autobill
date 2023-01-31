@@ -9,8 +9,8 @@ type types =
   | Lambda of types list * types
 
 type identifier =
-  { var_name : string
-  ; etype : types option
+  { name : string
+  ; type_t : types option
   }
 
 type const =
@@ -33,6 +33,10 @@ module VerifiedTree = struct
         ; content : expr
         }
     | Var of { var_name : string }
+    | Lambda of
+        { args : string list
+        ; body : expr
+        }
 
   type prog = expr
 end
@@ -67,6 +71,11 @@ module Syntax = struct
         ; loc : Helpers.position
         }
     | Nil of { loc : Helpers.position }
+    | Lambda of
+        { args : identifier list
+        ; body : expr
+        ; loc : Helpers.position
+        }
 
   type prog = expr
 end

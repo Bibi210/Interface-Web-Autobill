@@ -94,20 +94,17 @@ expr:
 | v_name = Lidentifier{
   {name = v_name;type_t=None}
 }
-| LOpenPar ; ident = var_parse ; LClosePar {ident}
 
 
 
 type_parse:
 |t = LType {t}
-/*! | args_type = list(LType);LSimpleArrow;returntype = LType{
+|LOpenPar ; args_type = list(LType);LSimpleArrow;returntype = LType ; LClosePar{
   Lambda (args_type,returntype)
 }
-  Blocking at parsing
- */
-
 
 
 %inline value_parse:
 |nb = Lint {Integer nb}
 |bo = Lbool {Boolean bo}
+

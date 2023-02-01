@@ -9,6 +9,7 @@ import "../ocaml/main"
 interface TopLevelResult {
   types : string
   resultat: string
+  erreurs: string
 }
 function App() {
   const [code, setCode] = useState(initial)
@@ -18,7 +19,7 @@ function App() {
     const codeToEvaluate = code + "\n ;;"
     const evaluation = ml.eval(codeToEvaluate) as TopLevelResult
     setTypes(evaluation.types)
-    setPrint(evaluation.resultat)
+    setPrint(evaluation.resultat == "" ? evaluation.erreurs : evaluation.resultat)
   }
   return (
     <>
@@ -40,6 +41,9 @@ function App() {
             extensions={[StreamLanguage.define(oCaml)]}
             indentWithTab={true}
             className="editor"
+            basicSetup={{
+              syntaxHighlighting: true
+            }}
           />
           <footer>
             <button onClick={() => evalCode()}>

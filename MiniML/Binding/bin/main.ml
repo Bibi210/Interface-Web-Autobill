@@ -1,15 +1,7 @@
 open Js_of_ocaml
 open Js_of_ocaml_toplevel
 
-let isNotSet = ref false
-let res = ref " "
-let redirect (out : string) = 
-  res := out;
-  isNotSet := false
-
 let execute code =
-  isNotSet := true;
-  Sys_js.set_channel_flusher stdout redirect;
   JsooTop.initialize ();
   let code = Js.to_string code in
   let buffer = Buffer.create 100 in
@@ -21,10 +13,14 @@ let _ =
   Js.export "ml"
     (object%js
        method eval code = 
+        let stdout_buff = Buffer.create 100 in
+        let stderr_buff = Buffer.create 100 in
+        Sys_js.set_channel_flusher stdout (Buffer.add_string stdout_buff);
+        Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
         let typeOutput = (execute code) in
-        while(!isNotSet) do () done;
         object%js
           val types = typeOutput
-          val resultat = Js.string(!res)
+          val resultat = Js.string (Buffer.contents stdout_buff)
+          val erreurs = Js.string (Buffer.contents stderr_buff)
         end
      end)

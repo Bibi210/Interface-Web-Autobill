@@ -25,8 +25,8 @@ rule token = parse
 | ";;" {LDoubleSemiColon}
 | ';' {LSemiColon}
 | ',' {LComma}
-| '[' {LLeftBracket}
-| ']' {LRightBracket}
+| '[' {LLeftAngleBracket}
+| ']' {LRightAngleBracket}
 | "let" {LLet}
 | "fun" {LFun}
 | "->" {LSimpleArrow}

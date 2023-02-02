@@ -22,7 +22,8 @@
 %token <Ast.types>LType
 
 
-%token LOpenPar LClosePar LColon LSemiColon LDoubleSemiColon LComma LLeftBracket LRightBracket
+%token LOpenPar LClosePar LLeftAngleBracket LRightAngleBracket 
+%token LColon LSemiColon LDoubleSemiColon LComma
 %token LLet LEqual LIn LFun LSimpleArrow
 
 
@@ -59,7 +60,7 @@ expr:
   }
 }
 
-| LLeftBracket; ls = separated_list(LComma,expr) ; LRightBracket {
+| LLeftAngleBracket; ls = separated_list(LComma,expr) ; LRightAngleBracket {
   
   List.fold_right (fun expr acc -> Cons{hd = expr; tail = acc ; loc = loc_of_expr expr}) ls 
   (Nil {loc = position $startpos(ls) $endpos(ls)})
@@ -101,7 +102,13 @@ type_parse:
 |t = LType {t}
 |LOpenPar ; args_type = list(LType);LSimpleArrow;returntype = LType ; LClosePar{
   Lambda (args_type,returntype)
-}/* List and Tuple */
+}
+|LOpenPar; tuple_type = list(LType) ;LClosePar{
+  Tuple  (Array.of_list tuple_type)
+}
+|LLeftAngleBracket; ls_of = LType ;LRightAngleBracket{
+  List  ls_of
+}
 
 
 %inline value_parse:

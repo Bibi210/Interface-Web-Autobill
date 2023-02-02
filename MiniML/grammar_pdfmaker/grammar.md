@@ -73,7 +73,7 @@ date: 2 fevrier, 2023
                 | (Types -> Type) # Lambda_Type
                 | ( -> Type) # Lambda_Type
                 | ( Type_Ls ) # Tuple_Type
-                | [ Type_Ls ] # List_Type
+                | [ Type ] # List_Type
                 | [ ] # EmptyList_Type ?
 
     Types   :=  | Type

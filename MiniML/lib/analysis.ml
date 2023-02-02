@@ -7,7 +7,7 @@ type info =
   ; analysed_type : types
   }
 
-let info_constructor expr analysed_type = { expr; analysed_type }
+let make_info expr analysed_type = { expr; analysed_type }
 
 let rec info_list_split = function
   | [] -> [], []
@@ -59,30 +59,29 @@ let analyse_const a =
   | Boolean _ -> Bool_t
 ;;
 
-let rec analyse_expr env a =
-  match a with
-  | Syntax.Const a ->
-    info_constructor (VerifiedTree.Const a.const) (analyse_const a.const)
+let rec analyse_expr env toanalyse =
+  match toanalyse with
+  | Syntax.Const a -> make_info (VerifiedTree.Const a.const) (analyse_const a.const)
   | Syntax.Tuple t ->
     let content, analysed_type =
       info_array_split (Array.map (analyse_expr env) t.content)
     in
-    info_constructor (VerifiedTree.Tuple content) (Tuple analysed_type)
+    make_info (VerifiedTree.Tuple content) (Tuple analysed_type)
   | Syntax.Seq b ->
     let content, analysed_type =
       info_array_split (Array.map (analyse_expr env) b.content)
     in
-    info_constructor (VerifiedTree.Seq content) (array_getlast analysed_type)
-  | Syntax.Nil _ -> info_constructor VerifiedTree.Nil (List WeakType)
+    make_info (VerifiedTree.Seq content) (array_getlast analysed_type)
+  | Syntax.Nil _ -> make_info VerifiedTree.Nil (List WeakType)
   | Syntax.Cons e ->
     let hd_info = analyse_expr env e.hd in
     let tail_info = analyse_expr env e.tail in
     let output = VerifiedTree.Cons { hd = hd_info.expr; tail = tail_info.expr } in
     (match tail_info.analysed_type with
-    | List WeakType -> info_constructor output (List hd_info.analysed_type)
+    | List WeakType -> make_info output (List hd_info.analysed_type)
     | List x ->
       if hd_info.analysed_type = x
-      then info_constructor output x
+      then make_info output x
       else
         err
           (Printf.sprintf
@@ -93,17 +92,17 @@ let rec analyse_expr env a =
     | _ -> err "Invalid This Is Not A List" e.loc.start_pos)
   | Syntax.Var var ->
     (match Env.find_opt var.ident.name env with
-    | Some envType ->
-      info_constructor
+    | Some assigned_type ->
+      make_info
         (VerifiedTree.Var { var_name = var.ident.name })
-        (match_identifier_type var.ident envType var.loc)
+        (match_identifier_type var.ident assigned_type var.loc)
     | None -> err "Unbound Variable" var.loc.start_pos)
   | Syntax.Binding new_var ->
     let init_info = analyse_expr env new_var.init in
     verify_identifier_type new_var.ident init_info.analysed_type new_var.loc;
     let body_env = Env.add new_var.ident.name init_info.analysed_type env in
     let body_info = analyse_expr body_env new_var.content in
-    info_constructor
+    make_info
       (VerifiedTree.Binding
          { var_name = new_var.ident.name
          ; init = init_info.expr
@@ -127,7 +126,7 @@ let rec analyse_expr env a =
     let args_names, args_types =
       List.split (List.map (fun elem -> elem.name, Option.get elem.type_t) lambda.args)
     in
-    info_constructor
+    make_info
       (VerifiedTree.Lambda { args = args_names; body = body_info.expr })
       (Lambda (args_types, body_info.analysed_type))
 ;;

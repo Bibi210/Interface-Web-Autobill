@@ -2,10 +2,10 @@
 type types =
   | Int_t
   | Bool_t
-  | Tuple of types array
-  | WeakType
-  | List of types
-  | Lambda of types list * types
+  | Tuple_t of types array
+  | Weak_t
+  | List_t of types
+  | Lambda_t of types list * types
 
 type identifier =
   { name : string
@@ -35,6 +35,10 @@ module VerifiedTree = struct
     | Lambda of
         { args : string list
         ; body : expr
+        }
+    | Call of
+        { func : expr
+        ; args : expr list
         }
 
   type prog = expr
@@ -75,6 +79,12 @@ module Syntax = struct
         ; body : expr
         ; loc : Helpers.position
         }
+    | Call of
+        { func : expr
+        ; args : expr list
+        ; loc : Helpers.position
+        }
+
   type prog = expr
 end
 

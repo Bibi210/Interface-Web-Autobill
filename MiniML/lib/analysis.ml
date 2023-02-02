@@ -66,20 +66,20 @@ let rec analyse_expr env toanalyse =
     let content, analysed_type =
       info_array_split (Array.map (analyse_expr env) t.content)
     in
-    make_info (VerifiedTree.Tuple content) (Tuple analysed_type)
+    make_info (VerifiedTree.Tuple content) (Tuple_t analysed_type)
   | Syntax.Seq b ->
     let content, analysed_type =
       info_array_split (Array.map (analyse_expr env) b.content)
     in
     make_info (VerifiedTree.Seq content) (array_getlast analysed_type)
-  | Syntax.Nil _ -> make_info VerifiedTree.Nil (List WeakType)
+  | Syntax.Nil _ -> make_info VerifiedTree.Nil (List_t Weak_t)
   | Syntax.Cons e ->
     let hd_info = analyse_expr env e.hd in
     let tail_info = analyse_expr env e.tail in
     let output = VerifiedTree.Cons { hd = hd_info.expr; tail = tail_info.expr } in
     (match tail_info.analysed_type with
-    | List WeakType -> make_info output (List hd_info.analysed_type)
-    | List x ->
+    | List_t Weak_t -> make_info output (List_t hd_info.analysed_type)
+    | List_t x ->
       if hd_info.analysed_type = x
       then make_info output x
       else
@@ -128,7 +128,25 @@ let rec analyse_expr env toanalyse =
     in
     make_info
       (VerifiedTree.Lambda { args = args_names; body = body_info.expr })
-      (Lambda (args_types, body_info.analysed_type))
+      (Lambda_t (args_types, body_info.analysed_type))
+  | Syntax.Call funcall ->
+    let func_info = analyse_expr env funcall.func in
+    let args_expr, _args_types =
+      info_list_split (List.map (analyse_expr env) funcall.args)
+    in
+    (match func_info.analysed_type with
+    | Lambda_t (_args_types, return_type) ->
+      (* TODO Type This *)
+      (* TODO Manage Partial Applications *)
+      make_info
+        (VerifiedTree.Call { func = func_info.expr; args = args_expr })
+        return_type
+    | _ ->
+      err
+        (Printf.sprintf
+           "Call with wrong type Expected:Lambda Given:%s"
+           (Format.fmt_types func_info.analysed_type))
+        funcall.loc.start_pos)
 ;;
 
 let analyse_prog = analyse_expr Env.empty

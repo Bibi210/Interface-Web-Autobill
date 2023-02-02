@@ -1,0 +1,82 @@
+
+** Conflict (shift/reduce) in state 55.
+** Token involved: LOpenPar
+** This state is reached from prog after reading:
+
+LLet var_parse LEqual expr LIn expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+prog 
+expr EOF 
+(?)
+
+** In state 55, looking ahead at LOpenPar, reducing production
+** expr -> LLet var_parse LEqual expr LIn expr
+** is permitted because of the following sub-derivation:
+
+expr LOpenPar list(expr) LClosePar // lookahead token appears
+LLet var_parse LEqual expr LIn expr . 
+
+** In state 55, looking ahead at LOpenPar, shifting is permitted
+** because of the following sub-derivation:
+
+LLet var_parse LEqual expr LIn expr 
+                               expr . LOpenPar list(expr) LClosePar 
+
+** Conflict (shift/reduce) in state 35.
+** Token involved: LClosePar
+** This state is reached from prog after reading:
+
+expr LOpenPar expr LOpenPar expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+prog 
+expr EOF 
+expr LOpenPar list(expr) LClosePar 
+              (?)
+
+** In state 35, looking ahead at LClosePar, shifting is permitted
+** because of the following sub-derivation:
+
+expr list(expr) 
+     expr list(expr) 
+     LOpenPar expr . LClosePar 
+
+** In state 35, looking ahead at LClosePar, reducing production
+** list(expr) ->
+** is permitted because of the following sub-derivation:
+
+expr list(expr) 
+expr LOpenPar list(expr) LClosePar // lookahead token appears
+              expr list(expr) // lookahead token is inherited
+                   . 
+
+** Conflict (shift/reduce) in state 29.
+** Token involved: LOpenPar
+** This state is reached from prog after reading:
+
+LFun list(var_parse) LSimpleArrow expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+prog 
+expr EOF 
+(?)
+
+** In state 29, looking ahead at LOpenPar, reducing production
+** expr -> LFun list(var_parse) LSimpleArrow expr
+** is permitted because of the following sub-derivation:
+
+expr LOpenPar list(expr) LClosePar // lookahead token appears
+LFun list(var_parse) LSimpleArrow expr . 
+
+** In state 29, looking ahead at LOpenPar, shifting is permitted
+** because of the following sub-derivation:
+
+LFun list(var_parse) LSimpleArrow expr 
+                                  expr . LOpenPar list(expr) LClosePar 

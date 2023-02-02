@@ -36,6 +36,12 @@ let rec eval_expr env a =
              lambda.args
              value_ls)
           lambda.body)
+  | VerifiedTree.Call funcall ->
+    let lambda = eval_expr env funcall.func in
+    let args = List.map (eval_expr env) funcall.args in
+    (match lambda with
+    | Lambda func -> func args
+    | _ -> raise (Invalid_argument "Call with no lambda"))
 ;;
 
 let eval_prog = eval_expr Env.empty

@@ -97,12 +97,14 @@ date: 2 fevrier, 2023
                 | fun Variables -> Expr # Lambda
                 | let Variables = Expr in Expr # LambdaBinding (Sugar)
                 | if Expr then Expr else Expr # Condition
-                | Variables # Call
+                | Expr (Exprs_Arg) # Call
                 | match Expr with Match_Case
 
     Match_Case := | Expr -> Expr 
                   | Match_Case '|' Match_Case
 
+    Exprs_Arg := | Expr
+                 | Expr Exprs_Arg
     Exprs_Ls  := | Expr
                  | Expr , Exprs_Ls
     Exprs_Seq := | Expr ; Exprs_Seq

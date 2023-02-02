@@ -1,2 +1,2 @@
 
-let tuple_builder = (fun a:int b:bool -> (a,b)) in (tuple_builder,42)
+let tuple_builder = (fun a:int b:int -> (a,b)) in tuple_builder (32 21)

@@ -15,7 +15,7 @@ type env_value =
 let add =
   ( "_%add"
   , Function
-      { f_type = Ast.Lambda ([ Ast.Int_t; Ast.Int_t ], Ast.Int_t)
+      { f_type = Ast.Lambda_t ([ Ast.Int_t; Ast.Int_t ], Ast.Int_t)
       ; f_body =
           Native
             (function

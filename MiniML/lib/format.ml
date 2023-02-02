@@ -1,22 +1,12 @@
 open Ast
 open Interpreter
 
-let array_sprintf array fmt_func separator =
-  let acc = ref "" in
-  for i = 0 to Array.length array - 2 do
-    acc := !acc ^ fmt_func (Array.get array i) ^ separator
-  done;
-  !acc ^ fmt_func (Helpers.array_getlast array)
+let list_sprintf list fmt_func separator =
+  String.concat separator (List.map fmt_func list)
 ;;
 
-let list_sprintf array fmt_func separator =
-  let rec fold_left accu l =
-    match l with
-    | [] -> accu
-    | [ elem ] -> accu ^ fmt_func elem
-    | elem :: l -> fold_left (accu ^ fmt_func elem ^ separator) l
-  in
-  fold_left "" array
+let array_sprintf array fmt_func separator =
+  list_sprintf (List.of_seq (Array.to_seq array)) fmt_func separator
 ;;
 
 let fmt_const = function
@@ -27,10 +17,10 @@ let fmt_const = function
 let rec fmt_types = function
   | Int_t -> "Int"
   | Bool_t -> "Bool"
-  | Tuple types -> Printf.sprintf "Tuple of (%s)" (array_sprintf types fmt_types " ")
-  | WeakType -> "WeakType"
-  | List elem_type -> Printf.sprintf "List of (%s)" (fmt_types elem_type)
-  | Lambda (args_type, return_type) ->
+  | Tuple_t types -> Printf.sprintf "Tuple of (%s)" (array_sprintf types fmt_types " ")
+  | Weak_t -> "WeakType"
+  | List_t elem_type -> Printf.sprintf "List of (%s)" (fmt_types elem_type)
+  | Lambda_t (args_type, return_type) ->
     Printf.sprintf
       "Function [%s] -> %s"
       (list_sprintf args_type fmt_types " ")
@@ -56,13 +46,12 @@ let rec fmt_expr = function
       "Lambda %s -> (%s)"
       (list_sprintf lambda.args (fun a -> a) " ")
       (fmt_expr lambda.body)
-;;
-
-(*   | VerifiedTree.Call func_call ->
+  | VerifiedTree.Call funcall ->
     Printf.sprintf
-      "Call(%s on [%s])"
-      (fmt_expr func_call.func)
-      (array_sprintf func_call.args fmt_expr ",") *)
+      "Apply %s with (%s)"
+      (fmt_expr funcall.func)
+      (list_sprintf funcall.args fmt_expr " ")
+;;
 
 let rec fmt_value = function
   | Const c -> fmt_const c

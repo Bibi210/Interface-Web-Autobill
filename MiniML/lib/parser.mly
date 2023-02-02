@@ -12,6 +12,7 @@
   | Syntax.Binding { loc; _ } -> loc
   | Syntax.Var { loc; _ } -> loc
   | Syntax.Lambda { loc; _ } -> loc
+  | Syntax.Call { loc; _ } -> loc
 ;;
 %}
 
@@ -61,7 +62,6 @@ expr:
 }
 
 | LLeftAngleBracket; ls = separated_list(LComma,expr) ; LRightAngleBracket {
-  
   List.fold_right (fun expr acc -> Cons{hd = expr; tail = acc ; loc = loc_of_expr expr}) ls 
   (Nil {loc = position $startpos(ls) $endpos(ls)})
 }
@@ -86,6 +86,13 @@ expr:
         ; loc = position $startpos($1) $endpos($1)
         }
 }
+| func = expr ; LOpenPar; args = list(expr) ; LClosePar {
+  Call 
+    { func = func
+    ; args = args
+    ; loc = position $startpos(func) $endpos(args)
+    }
+}
 
 
  var_parse:
@@ -101,13 +108,13 @@ expr:
 type_parse:
 |t = LType {t}
 |LOpenPar ; args_type = list(LType);LSimpleArrow;returntype = LType ; LClosePar{
-  Lambda (args_type,returntype)
+  Lambda_t (args_type,returntype)
 }
 |LOpenPar; tuple_type = list(LType) ;LClosePar{
-  Tuple  (Array.of_list tuple_type)
+  Tuple_t  (Array.of_list tuple_type)
 }
 |LLeftAngleBracket; ls_of = LType ;LRightAngleBracket{
-  List  ls_of
+  List_t  ls_of
 }
 
 

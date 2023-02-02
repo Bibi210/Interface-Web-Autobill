@@ -17,12 +17,17 @@ date: 2 fevrier, 2023
 # Change Log
 
 - 2 fevrier, 2023 Première Version
+- 2 fevrier, 2023 Première Correction
+  - Ajout de Unit
+  - Ajout des patterns
+  - Rename Value -> Litteral
+  - Retrait Operators/Type de Base
+  - Retrait Sucre Syntaxique pour le moment
 
 # Notes
 
 ## Todo
-- Fix Match_Case
-- Fix NewContructor_Case
+- Crée du Sucre Syntaxique. # Plus Tard
 
 # Tokens
 
@@ -32,17 +37,9 @@ date: 2 fevrier, 2023
 
     { } [ ] ( ) ; : , * -> | = 
 
-## Operators
-
-    + * - / & |
-
 ## Mots-Clefs
 
     let rec fun in match with type of if then else
-
-## Types
-
-    int bool
 
 ## Valeurs_Atomiques
 
@@ -53,7 +50,7 @@ date: 2 fevrier, 2023
     alphanum := ['a'-'z' 'A'-'Z' '0'-'9' '_']*
     basic_ident := ['a'-'z' '_'] alphanum
     constructeur_ident := ['A'-'Z'] alphanum
-
+\pagebreak
 # Grammaire
 
     Prog := | Def
@@ -63,18 +60,17 @@ date: 2 fevrier, 2023
 ## Variables
 
     Variable := | basic_ident
-                | Variable : Type
+                | basic_ident : Type
     Variables:= | Variable
                 | Variable Variables
 ## Types
 
-    Type    :=  | int
-                | bool
-                | (Types -> Type) # Lambda_Type
-                | ( -> Type) # Lambda_Type
+    Type    :=  | basic_ident
+                | ( ) # Unit
+                | [ ] # EmptyList_Type
                 | ( Type_Ls ) # Tuple_Type
                 | [ Type ] # List_Type
-                | [ ] # EmptyList_Type ?
+                | ( Types -> Type ) # Lambda_Type
 
     Types   :=  | Type
                 | Type Types
@@ -82,26 +78,35 @@ date: 2 fevrier, 2023
                 | Type , Type_Ls
 ## Expressions
 
-    Value   :=  | nombre
-                | boolean
+    Litteral   :=  | nombre
+                   | boolean
 
     Expr    :=  | ( Expr )
-                | Value
+                | Litteral
                 | Variable
                 | constructeur_ident Expr # Custom Expr
-                | ( Expr , Exprs_Ls ) # Tuple
-                | [ Exprs_Ls ] # List
+                | ( ) # Unit
                 | [ ] # EmptyList
+                | ( Exprs_Ls ) # Tuple
+                | [ Exprs_Ls ] # List
                 | ( Exprs_Seq ) # Sequence
                 | let Variable = Expr in Expr # Binding
                 | fun Variables -> Expr # Lambda
-                | let Variables = Expr in Expr # LambdaBinding (Sugar)
                 | if Expr then Expr else Expr # Condition
                 | Expr (Exprs_Arg) # Call
                 | match Expr with Match_Case
 
-    Match_Case := | Expr -> Expr 
-                  | Match_Case '|' Match_Case
+
+    Match_Case  :=  | Patt -> Expr
+                    | Match_Case '|' Match_Case 
+
+    Patt :=     | Litteral
+                | constructor_ident '(' Basic_Ident_LS ')'
+                | ( )
+                | ( Basic_Ident_LS )
+
+    Basic_Ident_LS :=   | basic_ident
+                        | basic_ident , Basic_Ident_LS
 
     Exprs_Arg := | Expr
                  | Expr Exprs_Arg
@@ -112,7 +117,6 @@ date: 2 fevrier, 2023
 ## Definitions
 
     Def     :=   | let Variable = Expr
-                 | let Variables = Expr (Sugar)
                  | type = ident NewContructor_Case # Type Declaration
 
     NewContructor_Case :=   | constructeur_ident of Type

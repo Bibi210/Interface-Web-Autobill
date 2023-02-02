@@ -96,8 +96,8 @@ expr:
 
 
  var_parse:
-| v = var_parse;LColon;vtype = type_parse{
-  {v with type_t = Some vtype}
+| v_name = Lidentifier;LColon;vtype = type_parse{
+  {name = v_name; type_t = Some vtype}
 }
 | v_name = Lidentifier{
   {name = v_name;type_t = None}

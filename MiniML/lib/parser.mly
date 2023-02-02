@@ -88,11 +88,11 @@ expr:
 
 
  var_parse:
-| v_name = Lidentifier;LColon;vtype = type_parse{
-  {name = v_name;type_t=Some vtype}
+| v = var_parse;LColon;vtype = type_parse{
+  {v with type_t = Some vtype}
 }
 | v_name = Lidentifier{
-  {name = v_name;type_t=None}
+  {name = v_name;type_t = None}
 }
 
 
@@ -101,7 +101,7 @@ type_parse:
 |t = LType {t}
 |LOpenPar ; args_type = list(LType);LSimpleArrow;returntype = LType ; LClosePar{
   Lambda (args_type,returntype)
-}
+}/* List and Tuple */
 
 
 %inline value_parse:

@@ -9,7 +9,8 @@
   | a -> Lidentifier a
 }
 
-let num = ['0'-'9']*
+let num = ('-')?['0'-'9']*
+let bool = ("true"|"false")
 let alphanum = ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let name = ['a'-'z' '_'] alphanum
 let white = [' ' '\t']+
@@ -31,9 +32,8 @@ rule token = parse
 | "->" {LSimpleArrow}
 | "in" {LIn}
 | '=' {LEqual}
-| "true" as boolean          {Lbool (bool_of_string boolean) }
-| "false" as boolean          {Lbool (bool_of_string boolean) }
 | ':' {LColon}
+| bool as boolean          {Lbool (bool_of_string boolean) }
 | name as ident {getToken ident}
 | white* { token lexbuf }
 | newline          { Lexing.new_line lexbuf; token lexbuf }

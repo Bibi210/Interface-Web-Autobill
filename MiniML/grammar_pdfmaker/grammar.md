@@ -10,7 +10,7 @@ subtitle:
 author: Brahima,Yukai,Zaid
 date: 2 fevrier, 2023
 ---
- <!-- pandoc --lua-filter ./grammar_pdfmaker/color-text.lua  -N --variable "geometry=margin=1.2in" --variable mainfont="Palatino" --variable sansfont="Helvetica" --variable monofont="Menlo" --variable fontsize=12pt --variable version=2.0 ./grammar_pdfmaker/grammar.md  --pdf-engine=xelatex --toc -o grammar.pdf  -->
+ <!-- pandoc --lua-filter ./grammar_pdfmaker/color-text.lua  -N --variable "geometry=margin=1.2in" --variable mainfont="Palatino" --variable sansfont="Helvetica" --variable monofont="Menlo" --variable fontsize=12pt --variable version=2.0 ./grammar_pdfmaker/grammar.md  --pdf-engine=xelatex --toc -o MiniMLSpec.pdf -->
 \newpage
 
 
@@ -113,7 +113,7 @@ date: 2 fevrier, 2023
 
     Def     :=   | let Variable = Expr
                  | let Variables = Expr (Sugar)
-                 | type = NewContructor_Case # Type Declaration
+                 | type = ident NewContructor_Case # Type Declaration
 
     NewContructor_Case :=   | constructeur_ident of Type
                             | NewContructor '|' NewContructor_Case

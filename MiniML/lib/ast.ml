@@ -1,6 +1,5 @@
 (* Ne pas finir le full typage *)
 type types =
-  | Unit
   | Int_t
   | Bool_t
   | Tuple of types array
@@ -76,7 +75,6 @@ module Syntax = struct
         ; body : expr
         ; loc : Helpers.position
         }
-
   type prog = expr
 end
 

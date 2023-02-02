@@ -25,7 +25,6 @@ let fmt_const = function
 ;;
 
 let rec fmt_types = function
-  | Unit -> "Unit"
   | Int_t -> "Int"
   | Bool_t -> "Bool"
   | Tuple types -> Printf.sprintf "Tuple of (%s)" (array_sprintf types fmt_types " ")

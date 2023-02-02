@@ -1,8 +1,17 @@
-type etype =
-  | TypeInt
-  | TypeBool
-  | TypeLambda of etype list * etype
+type etype = (* ! Unsure About this *)
+  | TypeAtomic of string
+  | TypeLambda of
+      { args_types : etype list
+      ; return_type : etype
+      }
   | TypeConstructor of etype list
+
+type patt =
+  | LitteralPattern
+  | ConstructorPattern of
+      { name : string
+      ; variable : string list
+      }
 
 type expr =
   { etype : etype
@@ -39,8 +48,7 @@ and pre_expr =
       }
 
 and match_case =
-  { (* Unsure about this *)
-    case : expr
+  { pattern : patt
   ; consequence : expr
   }
 

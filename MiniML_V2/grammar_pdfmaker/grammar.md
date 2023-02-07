@@ -23,15 +23,22 @@ date: 2 fevrier, 2023
   - Rename Value -> Litteral
   - Retrait Operators/Type de Base
   - Retrait Sucre Syntaxique pour le moment
+  
+- 7 fevrier, 2023 Deuxième Correction
+  - Simplification (des _LS)
+  - Ajout des constructeurs infixes 
+  - Fix des Match Patterns
+  - Fix Definition Globales
+  - Reintroduction du Parsing Operators/Type de Base
+  - Types Polymorphiques ?
 
 # Notes
 
 ## Todo
 - Crée du Sucre Syntaxique. # Plus Tard
+- Parsing des types definis par l'utilisateur
 
-# Tokens
-
-## Symbols
+# Lexing Tokens
 
 ## Separators
 
@@ -39,7 +46,16 @@ date: 2 fevrier, 2023
 
 ## Mots-Clefs
 
-    let rec fun in match with type of if then else
+    let rec fun in match with type of if then else 
+
+## Types
+
+    int bool unit
+
+## Operators
+
+    + - % / & | ~ :: && || *
+
 
 ## Valeurs_Atomiques
 
@@ -47,9 +63,16 @@ date: 2 fevrier, 2023
     boolean := ("true"|"false")
 
 ## Identificateur
+
     alphanum := ['a'-'z' 'A'-'Z' '0'-'9' '_']*
     basic_ident := ['a'-'z' '_'] alphanum
+    polytype  := [’`t’][0..9]*
+
+### Constructeurs
+
     constructeur_ident := ['A'-'Z'] alphanum
+    constructeur_infixes := ["::" ',']
+
 \pagebreak
 # Grammaire
 
@@ -57,67 +80,75 @@ date: 2 fevrier, 2023
             | Expr
             | Prog ;; Prog
 
-## Variables
-
-    Variable := | basic_ident
-                | basic_ident : Type
-    Variables:= | Variable
-                | Variable Variables
 ## Types
 
-    Type    :=  | basic_ident
-                | ( ) # Unit
-                | [ ] # EmptyList_Type
-                | ( Type_Ls ) # Tuple_Type
-                | [ Type ] # List_Type
-                | ( Types -> Type ) # Lambda_Type
+    Type    :=  | polytype # Type Polymorph ?
+                | int
+                | bool
+                | unit
+                | (Type)
+                | Type list
+                | Type * Type # Tuple_Type
+                | Type -> Type  # Lambda_Type
 
-    Types   :=  | Type
-                | Type Types
-    Type_Ls :=  | Type
-                | Type , Type_Ls
 ## Expressions
 
-    Litteral   :=  | nombre
-                   | boolean
+    Litteral  :=    | nombre
+                    | boolean
+                    | ( ) # Unit
+                    | [ ] # EmptyList
+
+    Variable :=     | basic_ident
+                    | basic_ident : Type
+
+    VarArgs :=    | Variable VarArgs
+
+    UnaryOperator :=    | ~
+                        | -
+
+    BinaryOperator :=   | &
+                        | &&
+                        | ||
+                        | +
+                        | -
+                        | /
+                        | %
+                        | *
+                        
+    # Operator are translated to simple calls to STDLib
 
     Expr    :=  | ( Expr )
                 | Litteral
                 | Variable
-                | constructeur_ident Expr # Custom Expr
-                | ( ) # Unit
-                | [ ] # EmptyList
-                | ( Exprs_Ls ) # Tuple
-                | [ Exprs_Ls ] # List
-                | ( Exprs_Seq ) # Sequence
-                | let Variable = Expr in Expr # Binding
-                | fun Variables -> Expr # Lambda
-                | if Expr then Expr else Expr # Condition
-                | Expr (Exprs_Arg) # Call
+                | UnaryOperator Expr
+                | Expr BinaryOperator Expr
+                | constructeur_ident Expr # Built Expr
+                | Expr constructeur_infixes Expr 
+                | Expr ; Expr # Sequence
+                | [ Expr ] # List
+                | let VarArgs = Expr in Expr # Binding
+                | fun VarArgs -> Expr # Lambda
+                | Expr Expr # Call
                 | match Expr with Match_Case
 
 
-    Match_Case  :=  | Patt -> Expr
-                    | Match_Case '|' Match_Case 
+## Filtrage et Motifs
 
-    Patt :=     | Litteral
-                | constructor_ident '(' Basic_Ident_LS ')'
-                | ( )
-                | ( Basic_Ident_LS )
+    Match_Case  :=  | Pattern -> Expr
+                    | Pattern -> Expr '|' Match_Case 
 
-    Basic_Ident_LS :=   | basic_ident
-                        | basic_ident , Basic_Ident_LS
+    Pattern :=      | Litteral
+                    | constructeur_ident 
+                    | constructeur_ident Pattern
+                    | Pattern constructeur_infixes Pattern
+                    | ( Pattern )
 
-    Exprs_Arg := | Expr
-                 | Expr Exprs_Arg
-    Exprs_Ls  := | Expr
-                 | Expr , Exprs_Ls
-    Exprs_Seq := | Expr ; Exprs_Seq
 
 ## Definitions
 
-    Def     :=   | let Variable = Expr
+    Def     :=   | let VarArgs = Expr
                  | type = ident NewContructor_Case # Type Declaration
 
     NewContructor_Case :=   | constructeur_ident of Type
-                            | NewContructor '|' NewContructor_Case
+                            | constructor_ident
+                            | NewContructor_Case '|' NewContructor_Case

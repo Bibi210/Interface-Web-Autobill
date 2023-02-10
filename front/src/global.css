@@ -77,13 +77,14 @@ aside{
 
 main section:first-child{
   width: 60%;
-  padding: 1.6rem 1.2rem;
+  height: 100%;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 footer{
-  position: sticky;
-  bottom: -1.6rem;
   left: 0;
   width: 100%;
   display: flex;
@@ -147,6 +148,9 @@ span.output{
   font-family: 'Monaco', sans-serif !important;
   font-size: 16px;
 }
+pre #text{
+  max-width: 100%;
+}
 pre.types, pre.print{
   font-size: 1.1rem;
   padding-left: 1.5rem;
@@ -157,4 +161,27 @@ pre.types, pre.print{
 }
 .types{
   color: red;
+}
+
+select{
+  background: transparent;
+  color: var(--main-color);
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  padding: 0.8rem  1.3rem;
+  font-size: 16px;
+  margin-right: 2rem;
+  border-radius: 10px;
+  border: 1px solid var(--main-color);
+  outline: none;
+  appearance: none;
+  position: relative;
+}
+
+select::before{
+  content: ">";
+  position: absolute;
+  font-size: 12px;
+  top: 0;
+  z-index: 1000;
 }

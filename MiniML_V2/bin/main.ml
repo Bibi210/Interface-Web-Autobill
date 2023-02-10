@@ -22,15 +22,5 @@ let () =
     Printf.eprintf "\nUsage: %s <file>\n" Sys.argv.(0);
     exit 1);
   let ast = generate_ast Sys.argv.(1) in
-  let info = Analysis.analyse_prog ast in
-  print_endline ("Before : " ^ Format.fmt_expr info.expr);
-  let result = Interpreter.eval_prog info.expr in
-  print_endline ("After : " ^ Format.fmt_value result)
+  print_endline ("Before Interpretation : " ^ Format.fmt_prog ast)
 ;;
-
-(*! Not Working on Analysis *)
-(* TODO Self Defining Record*)
-(* TODO Call *)
-(* TODO Match using Autobill *)
-(* TODO Grammar using APS0 *)
-(* TODO Translation to Autobill AST (Reunion Future) *)

@@ -4,19 +4,19 @@
   exception Error of string
 
   let getToken = function
-  |"int" -> LType Int_t
-  |"bool" -> LType Bool_t
-  | a -> Lidentifier a
+  |"int" -> LType TypeInt
+  |"bool" -> LType TypeBool
+  |"unit" -> LType TypeUnit
+  | a -> LBasicIdentifier a
 }
 
 let num = ('-')?['0'-'9']*
 let bool = ("true"|"false")
 let alphanum = ['a'-'z' 'A'-'Z' '0'-'9' '_']*
-let name = ['a'-'z' '_'] alphanum
+let basic_ident = ['a'-'z' '_'] alphanum
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
-
-
+let vartype = ['`']['t']['0'-'9']*
 
 rule token = parse
 | num+ as n       { Lint (int_of_string n) }
@@ -33,8 +33,10 @@ rule token = parse
 | "in" {LIn}
 | '=' {LEqual}
 | ':' {LColon}
+| '*' {LMult}
 | bool as boolean          {Lbool (bool_of_string boolean) }
-| name as ident {getToken ident}
+| vartype as usertype {LType  (TypeCustom usertype)}
+| basic_ident as ident {getToken ident}
 | white* { token lexbuf }
 | newline          { Lexing.new_line lexbuf; token lexbuf }
 | eof {EOF}

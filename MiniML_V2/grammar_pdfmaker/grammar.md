@@ -46,7 +46,7 @@ date: 2 fevrier, 2023
 
 ## Mots-Clefs
 
-    let rec fun in match with type of if then else 
+    let fun in match with type of
 
 ## Types
 
@@ -66,7 +66,7 @@ date: 2 fevrier, 2023
 
     alphanum := ['a'-'z' 'A'-'Z' '0'-'9' '_']*
     basic_ident := ['a'-'z' '_'] alphanum
-    polytype  := [’`t’][0..9]*
+    vartype  := [’`t’][0..9]*
 
 ### Constructeurs
 
@@ -82,14 +82,13 @@ date: 2 fevrier, 2023
 
 ## Types
 
-    Type    :=  | polytype # Type Polymorph ?
+    Type    :=  | vartype
                 | int
                 | bool
                 | unit
                 | (Type)
-                | Type list
                 | Type * Type # Tuple_Type
-                | Type -> Type  # Lambda_Type
+                | ( Type list -> Type )  # Lambda_Type
 
 ## Expressions
 
@@ -123,6 +122,7 @@ date: 2 fevrier, 2023
                 | UnaryOperator Expr
                 | Expr BinaryOperator Expr
                 | constructeur_ident Expr # Built Expr
+                | constructeur_ident Built Expr
                 | Expr constructeur_infixes Expr 
                 | Expr ; Expr # Sequence
                 | [ Expr ] # List
@@ -138,6 +138,8 @@ date: 2 fevrier, 2023
                     | Pattern -> Expr '|' Match_Case 
 
     Pattern :=      | Litteral
+                    | basic_ident
+                    | _
                     | constructeur_ident 
                     | constructeur_ident Pattern
                     | Pattern constructeur_infixes Pattern

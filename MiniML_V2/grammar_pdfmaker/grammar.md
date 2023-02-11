@@ -79,6 +79,9 @@ date: 2 fevrier, 2023
 
 \pagebreak
 # Grammaire
+    # For Type Inference
+    Variable :=     | basic_ident
+                    | basic_ident : Type
 
     Prog := | Def
             | Expr
@@ -87,8 +90,9 @@ date: 2 fevrier, 2023
 ## Definitions
 
     Def :=  | let Variable = Expr
-            | type basic_ident =  NewContructor_Case # Type Def
-            | type vartype basic_ident =  NewContructor_Case #ParametedType
+            | let basic_ident Variable list = Expr
+            | let rec basic_ident Variable Variable list = Expr
+            | type vartype list basic_ident =  NewContructor_Case  #TypeDef
 
     NewContructor_Case :=   | constructor_ident
                             | constructeur_ident of Type
@@ -100,23 +104,20 @@ date: 2 fevrier, 2023
                     | boolean
                     | ( ) # Unit
 
-    Variable :=     | basic_ident
-                    | basic_ident : Type
-
     Expr    :=  | ( Expr )
                 | Litteral
                 | Variable
                 | UnaryOperator Expr
                 | Expr BinaryOperator Expr
-                | Expr ; Expr # Sequence
                 | Expr Expr # Call
+                | Expr ; Expr # Sequence
                 | let Variable = Expr in Expr # Binding
                 | fun Variable list -> Expr # Lambda
                 | Expr constructeur_infixes Expr 
                 | constructeur_ident Expr # Built Expr
                 | constructeur_ident # Avoid Nil ()
-                | let Variable Variable list = Expr in Expr # func
-                | let rec Variable Variable list = Expr in Expr # Recfunc
+                | let basic_ident Variable list = Expr in Expr # func
+                | let rec basic_ident Variable Variable list = Expr in Expr
                 | match Expr with Match_Case
 
     UnaryOperator :=    | ~

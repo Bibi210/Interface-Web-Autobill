@@ -22,5 +22,5 @@ let () =
     Printf.eprintf "\nUsage: %s <file>\n" Sys.argv.(0);
     exit 1);
   let ast = generate_ast Sys.argv.(1) in
-  print_endline ("Before Interpretation : " ^ Format.fmt_prog ast)
+  print_endline ("Before Interpretation : \n" ^ Format.fmt_prog ast)
 ;;

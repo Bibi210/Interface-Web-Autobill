@@ -36,6 +36,7 @@ and pre_def =
       ; parameters : vartype list
       ; constructors : newconstructor_case list
       }
+
 and newconstructor_case =
   { constructor_ident : string
   ; c_of : etype
@@ -55,14 +56,14 @@ and expr =
 
 and pre_expr =
   | Litteral of litteral
-  | Variable of variable
+  | Variable of string
   | Call of
       { func : expr
       ; arg : expr
       }
   | Sequence of expr list
   | Binding of
-      { basic_ident : string
+      { var : variable
       ; init : expr
       ; content : expr
       }
@@ -79,6 +80,11 @@ and pre_expr =
       ; to_group : expr
       }
   | FunctionRec of
+      { basic_ident : string
+      ; args : variable list
+      ; body : expr
+      }
+  | Function of
       { basic_ident : string
       ; args : variable list
       ; body : expr
@@ -116,7 +122,4 @@ and etype =
       ; return_type : etype
       }
   | TypeVar of vartype
-  | TypeConstructor of
-      { parameters : etype list
-      ; constructor_ident : string
-      }
+  | TypeConstructor of etype list

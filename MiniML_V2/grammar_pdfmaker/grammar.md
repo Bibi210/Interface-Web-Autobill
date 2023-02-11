@@ -90,11 +90,11 @@ date: 2 fevrier, 2023
 ## Definitions
 
     Def :=  | let Variable = Expr
-            | let basic_ident Variable list = Expr
+            | let basic_ident Variable Variable list = Expr
             | let rec basic_ident Variable Variable list = Expr
             | type vartype list basic_ident =  NewContructor_Case  #TypeDef
 
-    NewContructor_Case :=   | constructor_ident
+    NewContructor_Case :=   | constructeur_ident
                             | constructeur_ident of Type
                             | NewContructor_Case '|' NewContructor_Case
 
@@ -116,7 +116,7 @@ date: 2 fevrier, 2023
                 | Expr constructeur_infixes Expr 
                 | constructeur_ident Expr # Built Expr
                 | constructeur_ident # Avoid Nil ()
-                | let basic_ident Variable list = Expr in Expr # func
+                | let basic_ident Variable Variable list = Expr in Expr
                 | let rec basic_ident Variable Variable list = Expr in Expr
                 | match Expr with Match_Case
 
@@ -155,4 +155,5 @@ date: 2 fevrier, 2023
                 | Type * Type # Tuple_Type
                 | Type -> Type  # Lambda_Type
                 | vartype # 'a
+                | basic_ident # defined type
                 | Type List  # Parametred Type (EXEMPLE : int list option)

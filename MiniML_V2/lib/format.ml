@@ -8,103 +8,103 @@ let array_sprintf array fmt_func separator =
   list_sprintf (List.of_seq (Array.to_seq array)) fmt_func separator
 ;;
 
-let fmt_const = function
+let rec fmt_variable x =
+  Printf.sprintf "(VarName = %s ; Type = %s)" x.basic_ident (fmt_type x.expected_type)
+
+and fmt_prog p = list_sprintf p fmt_prog_node " ;;\n"
+
+and fmt_prog_node = function
+  | Def def -> Printf.sprintf "Def(%s)" (fmt_def def)
+  | Expr expr -> Printf.sprintf "Expr(%s)" (fmt_expr expr)
+
+and fmt_def d =
+  match d.dnode with
+  | VariableDef { var; init } ->
+    Printf.sprintf "%s = %s" (fmt_variable var) (fmt_expr init)
+  | FunctionDef { basic_ident; args; body } ->
+    Printf.sprintf "Func %s [%s] -> %s" basic_ident (fmt_variable_ls args) (fmt_expr body)
+  | FunctionRecDef { basic_ident; args; body } ->
+    Printf.sprintf
+      "RecFunc %s [%s] -> %s"
+      basic_ident
+      (fmt_variable_ls args)
+      (fmt_expr body)
+  | TypeDef { basic_ident; parameters; constructors } ->
+    Printf.sprintf
+      "NewType %s Parameters=[%s] Constructors(\n | %s)"
+      basic_ident
+      (String.concat " " parameters)
+      (fmt_newconstructor_case_ls constructors)
+
+and fmt_newconstructor_case case =
+  Printf.sprintf "ConstructorCase(%s of %s)\n" case.constructor_ident (fmt_type case.c_of)
+
+and fmt_litteral = function
   | Integer i -> Printf.sprintf "Int(%d)" i
   | Boolean b -> Printf.sprintf "Bool(%s)" (string_of_bool b)
   | Unit -> "Unit"
-;;
 
-let rec fmt_pattern = function
-  | LitteralPattern c -> fmt_const c
-  | VarPattern str -> str
-  | WildcardPattern -> "_"
-  | ConstructorPattern construct ->
+and fmt_expr exp =
+  match exp.enode with
+  | Litteral litteral -> fmt_litteral litteral
+  | Variable variable -> Printf.sprintf "Variable %s is %s" variable (fmt_type exp.etype)
+  | Call { func; arg } ->
+    Printf.sprintf "Apply(\n%s with\n (%s))" (fmt_expr func) (fmt_expr arg)
+  | Sequence expr_ls -> Printf.sprintf "Seq(%s)" (list_sprintf expr_ls fmt_expr ";")
+  | Binding { var; init; content } ->
     Printf.sprintf
-      "%s(%s)"
-      construct.constructor_name
-      (list_sprintf construct.content fmt_pattern ",")
-;;
+      "Binding(%s = (%s) in (%s))"
+      (fmt_variable var)
+      (fmt_expr init)
+      (fmt_expr content)
+  | Lambda { arg; body } ->
+    Printf.sprintf "Lambda %s -> (%s)" (fmt_variable arg) (fmt_expr body)
+  | Tuple { first; second } ->
+    Printf.sprintf "Tuple(%s,%s)" (fmt_expr first) (fmt_expr second)
+  | Construct { constructor_name; to_group } ->
+    Printf.sprintf "%s(%s)" constructor_name (fmt_expr to_group)
+  | FunctionRec { basic_ident; args; body } ->
+    Printf.sprintf
+      "RecFunc %s( [%s] -> (%s))"
+      basic_ident
+      (fmt_variable_ls args)
+      (fmt_expr body)
+  | Function { basic_ident; args; body } ->
+    Printf.sprintf
+      "Func %s( [%s] -> (%s))"
+      basic_ident
+      (fmt_variable_ls args)
+      (fmt_expr body)
+  | Match { to_match; cases } ->
+    Printf.sprintf "Match (%s) with (%s)" (fmt_expr to_match) (fmt_match_case_ls cases)
 
-let rec fmt_type = function
+and fmt_match_case case =
+  Printf.sprintf
+    "MatchCase (%s -> %s) "
+    (fmt_pattern case.pattern)
+    (fmt_expr case.consequence)
+
+and fmt_pattern = function
+  | LitteralPattern litteral -> fmt_litteral litteral
+  | VarPattern string -> string
+  | WildcardPattern -> "_"
+  | ConstructorPattern { constructor_ident : string; content : pattern list } ->
+    Printf.sprintf "%s(%s)" constructor_ident (fmt_pattern_ls content)
+
+and fmt_type = function
   | TypeInt -> "Int_t"
   | TypeBool -> "Bool_t"
   | TypeUnit -> "Unit_t"
   | TypeTuple { first; second } ->
     Printf.sprintf "Tuple_t of (%s, %s)" (fmt_type first) (fmt_type second)
-  | TypeLambda { args_types; return_type } ->
-    Printf.sprintf
-      "Function [%s] -> %s"
-      (list_sprintf args_types fmt_type " ")
-      (fmt_type return_type)
-  | TypeCustom name -> Printf.sprintf "User_%s_t" name
-;;
+  | TypeLambda { arg; return_type } ->
+    Printf.sprintf "Function_t [%s] -> (%s)" (fmt_type arg) (fmt_type return_type)
+  | TypeVar vartype -> Printf.sprintf "%s_t" vartype
+  | TypeConstructor construct ->
+    Printf.sprintf "(ParametredType %s)" (fmt_type_ls construct)
 
-let rec fmt_expr e =
-  Printf.sprintf
-    "Expr(Node:%s Type:%s Pos:%s)"
-    (match e.node with
-    | Litteral a -> fmt_const a
-    | Tuple tpl -> Printf.sprintf "Tuple(%s,%s)" (fmt_expr tpl.first) (fmt_expr tpl.second)
-    | Binding bind ->
-      Printf.sprintf
-        "Binding(%s = %s in %s)"
-        bind.ident
-        (fmt_expr bind.init)
-        (fmt_expr bind.content)
-    | Variable var -> Printf.sprintf "Var(%s)" var
-    | Sequence content -> Printf.sprintf "Seq(%s)" (list_sprintf content fmt_expr ";")
-    | Lambda func ->
-      Printf.sprintf
-        "Lambda %s -> (%s)"
-        (list_sprintf func.args (fun a -> a) " ")
-        (fmt_expr func.body)
-    | Call funcall ->
-      Printf.sprintf
-        "Apply %s with (%s)"
-        (fmt_expr funcall.func)
-        (list_sprintf funcall.args fmt_expr " ")
-    | Construct construct ->
-      Printf.sprintf
-        "%s(%s)"
-        construct.constructor_name
-        (list_sprintf construct.to_group fmt_expr ";")
-    | Match m ->
-      Printf.sprintf
-        "Match(%s,Cases(%s))"
-        (fmt_expr m.to_match)
-        (list_sprintf m.cases fmt_case "\n"))
-    (match e.etype with
-    | None -> "ToInfer"
-    | Some t -> fmt_type t)
-    (Helpers.string_of_position e.loc)
-
-and fmt_case case =
-  Printf.sprintf
-    "| Case(Pattern = %s , Consequence = %s)"
-    (fmt_pattern case.pattern)
-    (fmt_expr case.consequence)
-;;
-
-let fmt_def_constructor new_constructor =
-  Printf.sprintf
-    "%s of (%s)"
-    new_constructor.name
-    (list_sprintf new_constructor.etype fmt_type " *")
-;;
-
-let fmt_def = function
-  | TypeDef new_type ->
-    Printf.sprintf
-      "TypeDef(%s = (%s))"
-      new_type.name
-      (list_sprintf new_type.constructors fmt_def_constructor "\n")
-  | VariableDef new_var ->
-    Printf.sprintf "VariableDef(%s = %s)" new_var.ident (fmt_expr new_var.init)
-;;
-
-let fmt_prog_node = function
-  | Def x -> fmt_def x
-  | Expr e -> fmt_expr e
-;;
-
-let fmt_prog p = list_sprintf p fmt_prog_node " ;;"
+and fmt_match_case_ls ls = list_sprintf ls fmt_match_case " | "
+and fmt_variable_ls x = list_sprintf x fmt_variable " "
+and fmt_newconstructor_case_ls ls = list_sprintf ls fmt_newconstructor_case " | "
+and fmt_pattern_ls ls = list_sprintf ls fmt_pattern " "
+and fmt_type_ls x = list_sprintf x fmt_type " "

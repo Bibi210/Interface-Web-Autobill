@@ -30,14 +30,18 @@ date: 2 fevrier, 2023
   - Fix des Match Patterns
   - Fix Definition Globales
   - Reintroduction du Parsing Operators/Type de Base
-  - Types Polymorphiques ?
+-  11 fevrier, 2023 Post Reunion
+   -  Ajout et compréhension des vartypes
+   -  Ajout du keyword rec
+   -  Ajout des types parametrer 
 
 # Notes
 
 ## Todo
 - Crée du Sucre Syntaxique. # Plus Tard
-- Parsing des types definis par l'utilisateur
 
+
+\pagebreak
 # Lexing Tokens
 
 ## Separators
@@ -46,7 +50,7 @@ date: 2 fevrier, 2023
 
 ## Mots-Clefs
 
-    let fun in match with type of
+    let fun in match with type of rec
 
 ## Types
 
@@ -59,7 +63,7 @@ date: 2 fevrier, 2023
 
 ## Valeurs_Atomiques
 
-    nombre := ('-')?['0'-'9']*
+    integer := ('-')?['0'-'9']*
     boolean := ("true"|"false")
 
 ## Identificateur
@@ -80,27 +84,40 @@ date: 2 fevrier, 2023
             | Expr
             | Prog ;; Prog
 
-## Types
+## Definitions
 
-    Type    :=  | vartype
-                | int
-                | bool
-                | unit
-                | (Type)
-                | Type * Type # Tuple_Type
-                | ( Type list -> Type )  # Lambda_Type
+    Def :=  | let Variable = Expr
+            | type basic_ident =  NewContructor_Case # Type Def
+            | type vartype basic_ident =  NewContructor_Case #ParametedType
+
+    NewContructor_Case :=   | constructor_ident
+                            | constructeur_ident of Type
+                            | NewContructor_Case '|' NewContructor_Case
 
 ## Expressions
 
-    Litteral  :=    | nombre
+    Litteral  :=    | integer
                     | boolean
                     | ( ) # Unit
-                    | [ ] # EmptyList
 
     Variable :=     | basic_ident
                     | basic_ident : Type
 
-    VarArgs :=    | Variable VarArgs
+    Expr    :=  | ( Expr )
+                | Litteral
+                | Variable
+                | UnaryOperator Expr
+                | Expr BinaryOperator Expr
+                | Expr ; Expr # Sequence
+                | Expr Expr # Call
+                | let Variable = Expr in Expr # Binding
+                | fun Variable list -> Expr # Lambda
+                | Expr constructeur_infixes Expr 
+                | constructeur_ident Expr # Built Expr
+                | constructeur_ident # Avoid Nil ()
+                | let Variable Variable list = Expr in Expr # func
+                | let rec Variable Variable list = Expr in Expr # Recfunc
+                | match Expr with Match_Case
 
     UnaryOperator :=    | ~
                         | -
@@ -112,45 +129,29 @@ date: 2 fevrier, 2023
                         | -
                         | /
                         | %
-                        | *
-                        
-    # Operator are translated to simple calls to STDLib
-
-    Expr    :=  | ( Expr )
-                | Litteral
-                | Variable
-                | UnaryOperator Expr
-                | Expr BinaryOperator Expr
-                | constructeur_ident Expr # Built Expr
-                | constructeur_ident Built Expr
-                | Expr constructeur_infixes Expr 
-                | Expr ; Expr # Sequence
-                | [ Expr ] # List
-                | let VarArgs = Expr in Expr # Binding
-                | fun VarArgs -> Expr # Lambda
-                | Expr Expr # Call
-                | match Expr with Match_Case
-
+                        | *     
 
 ## Filtrage et Motifs
 
     Match_Case  :=  | Pattern -> Expr
                     | Pattern -> Expr '|' Match_Case 
 
-    Pattern :=      | Litteral
+    Pattern :=      | ( Pattern )
+                    | Litteral
                     | basic_ident
                     | _
                     | constructeur_ident 
                     | constructeur_ident Pattern
                     | Pattern constructeur_infixes Pattern
-                    | ( Pattern )
 
 
-## Definitions
+## Types
 
-    Def     :=   | let VarArgs = Expr
-                 | type = ident NewContructor_Case # Type Declaration
-
-    NewContructor_Case :=   | constructeur_ident of Type
-                            | constructor_ident
-                            | NewContructor_Case '|' NewContructor_Case
+    Type    :=  | (Type)
+                | int
+                | bool
+                | unit
+                | Type * Type # Tuple_Type
+                | Type -> Type  # Lambda_Type
+                | vartype # 'a
+                | Type List  # Parametred Type (EXEMPLE : int list option)

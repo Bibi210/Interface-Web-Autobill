@@ -1,6 +1,0 @@
-(executable
- (public_name MiniML)
- (name main)
- (modes js native)
- (libraries MiniML))
-

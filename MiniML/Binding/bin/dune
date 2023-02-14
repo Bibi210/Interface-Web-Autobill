@@ -2,5 +2,5 @@
  (public_name Binding)
  (name main)
  (modes js exe)
- (libraries Binding js_of_ocaml-toplevel)
+ (libraries js_of_ocaml js_of_ocaml-toplevel autobill)
  (preprocess (pps js_of_ocaml-ppx)))

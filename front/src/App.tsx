@@ -46,8 +46,8 @@ function App() {
   }
   const evalCode = () => {
     const codeToEvaluate = code + "\n ;;"
-    const evaluation = ml.eval(codeToEvaluate) as TopLevelResult
-    setTypes(evaluation.types)
+    const evaluation = ml.parse(codeToEvaluate) as TopLevelResult
+    // setTypes(evaluation.types)
     setPrint(evaluation.resultat == "" ? evaluation.erreurs : evaluation.resultat)
   }
   return (

@@ -1,5 +1,6 @@
 open Js_of_ocaml
 open Js_of_ocaml_toplevel
+open Autobill
 
 let execute code =
   JsooTop.initialize ();
@@ -12,7 +13,15 @@ let execute code =
 let _ =
   Js.export "ml"
     (object%js
-       method eval code = 
+      method parse code =
+        let cst = Lcbpv_intf.parse code in
+        let res = Lcbpv_intf.string_of_cst cst in 
+        object%js
+          val types = Js.string ""
+          val resultat = Js.string res
+          val erreurs = Js.string ""
+        end
+      method eval code = 
         let stdout_buff = Buffer.create 100 in
         let stderr_buff = Buffer.create 100 in
         Sys_js.set_channel_flusher stdout (Buffer.add_string stdout_buff);

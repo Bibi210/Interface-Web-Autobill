@@ -1,4 +1,5 @@
 (lang dune 3.6)
+(using menhir 2.0)
 
 (name Binding)
 
@@ -11,6 +12,7 @@
 
 (maintainers "Maintainer Name")
 
+
 (license LICENSE)
 
 (documentation https://url/to/documentation)
@@ -19,7 +21,7 @@
  (name Binding)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune)
+ (depends ocaml dune menhir)
  (tags
   (topics "to describe" your project)))
 

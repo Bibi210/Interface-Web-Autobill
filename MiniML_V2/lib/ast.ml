@@ -1,3 +1,5 @@
+(* TODO Sementique de traduction *)
+
 type vartype = string
 
 type etype =
@@ -29,7 +31,7 @@ and def =
   }
 
 and pre_def =
-  | VariableDef of
+  | VariableDef of  (* TODO *)
       { var : variable
       ; init : expr
       }
@@ -38,7 +40,7 @@ and pre_def =
       ; args : variable list
       ; body : expr
       }
-  | TypeDef of
+  | TypeDef of  (* TODO *)
       { basic_ident : string
       ; parameters : vartype list
       ; constructors : newconstructor_case list
@@ -73,8 +75,8 @@ and callable =
   | BitAnd
 
 and pre_expr =
-  | Litteral of litteral
-  | Variable of variable
+  | Litteral of litteral  (* TODO *)
+  | Variable of variable  (* TODO *)
   | Call of
       { func : callable
       ; args : expr list
@@ -89,8 +91,8 @@ and pre_expr =
       { args : variable list
       ; body : expr
       }
-  | Tuple of expr list
-  | Construct of
+  | Tuple of expr list  (* TODO *)
+  | Construct of (* TODO *)
       { constructor_ident : string
       ; to_group : expr
       }

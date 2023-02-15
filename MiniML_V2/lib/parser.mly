@@ -195,10 +195,13 @@ expr:
   ; eloc = pos
   }
 }
-| LLet; var = variable; args = nonempty_list(variable);  LEqual; func_body = expr; LIn ;content = expr{
+| LLet; basic_ident = LBasicIdent; args = nonempty_list(variable);  LEqual; func_body = expr; LIn ;content = expr{
     { etype =  None
     ; enode = Binding {
-            var 
+            var = {
+              basic_ident
+            ; expected_type  = None
+            } 
             ; init = 
               { eloc = position $startpos($1) $endpos(func_body)
               ; enode = Lambda{args;body = func_body}   
@@ -208,6 +211,27 @@ expr:
     ; eloc = position $startpos($1) $endpos(content)
   }
 }
+| LLet ; LRec; basic_ident = LBasicIdent; args = nonempty_list(variable);  LEqual; func_body = expr; LIn ;content = expr{
+    { etype =  None
+    ; enode = Binding {
+            var = {
+              basic_ident
+            ; expected_type  = None
+            } 
+            ; init = 
+              { eloc = position $startpos($1) $endpos(func_body)
+              ; enode = FunctionRec
+                  { basic_ident
+                  ; args
+                  ; body = func_body
+                  } 
+              ; etype = None
+              }
+            ; content}
+    ; eloc = position $startpos($1) $endpos(content)
+  }
+}
+
 
 
 

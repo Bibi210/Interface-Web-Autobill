@@ -15,4 +15,4 @@ Cons(a,Nil)
 ;;
 let rec add a b = (a + b)
 ;;
-let add a b = (a + b) in (add a b)
+let rec add a b = (a + b) in (add a b)

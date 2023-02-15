@@ -19,7 +19,7 @@
 %token LColon LSemiColon LDoubleSemiColon
 %token LTupleInfixe LConsInfixe 
 %token LSimpleArrow
-%token LLet LFun LIn  LType LRec LOf 
+%token LLet LFun LIn LType LRec LOf LMatch LWith LUnderScore
 
 %token LMult LOr LEqual LAnd LAdd LDiv LModulo LSub
 
@@ -103,27 +103,18 @@ newconstructor_case:
 }
 
 %inline litteral:
-| nb = Lint {
-  { etype = None
-  ; enode = Litteral (Integer nb)
-  ; eloc = position $startpos(nb) $endpos(nb)
-  }
-}
-| b = Lbool {
-  { etype = None
-  ; enode = Litteral (Boolean b)
-  ; eloc = position $startpos(b) $endpos(b)
-  }
-}
-| LOpenPar;LClosePar {
-  { etype = None
-  ; enode = Litteral (Unit)
-  ; eloc = position $startpos($1) $endpos($2)
-  }
-}
+| nb = Lint { Integer nb }
+| b = Lbool { Boolean b}
+| LOpenPar;LClosePar {Unit}
+
 expr:
 | LOpenPar; e = expr ; LClosePar {e}
-| const = litteral {const}
+| const = litteral {
+  { etype = None
+  ; enode = Litteral const
+  ; eloc = position $startpos(const) $endpos(const)
+  }
+}
 | var = variable {
   { etype = None
   ; enode = Variable var
@@ -182,7 +173,7 @@ expr:
   }
 } */
 
-|  constructor_ident =  LConstructorIdent ; to_group = expr {
+| LOpenPar; constructor_ident =  LConstructorIdent ; to_group = expr ;LClosePar {
   { etype =  None
   ; enode = Construct { constructor_ident ; to_group }
   ; eloc = position $startpos(constructor_ident) $endpos(to_group)
@@ -231,8 +222,42 @@ expr:
     ; eloc = position $startpos($1) $endpos(content)
   }
 }
+| LOpenPar;LMatch ; e = expr ;LWith ;option(LOr) ; cases = separated_nonempty_list(LOr,match_case);LClosePar{
+   { etype =  None
+    ; enode =  Match{ to_match = e ; cases}
+    ; eloc = position $startpos($1) $endpos(cases)
+  }
+} 
+
+match_case :
+| pattern = pattern ;LSimpleArrow; consequence = expr{
+    { pattern
+  ; consequence
+  ; cloc = position $startpos(pattern) $endpos(consequence)
+  }
+}
 
 
+pattern :
+| LOpenPar ; p = pattern ; LClosePar {p}
+| l = litteral  {LitteralPattern l}
+| ident = LBasicIdent {VarPattern ident }
+| LUnderScore {WildcardPattern}
+| constructor_ident = LConstructorIdent {
+  ConstructorPattern
+      { constructor_ident
+      ; content = LitteralPattern Unit
+      }
+}
+| constructor_ident = LConstructorIdent;  p = pattern {
+  ConstructorPattern
+      { constructor_ident
+      ; content = p
+      }
+}
+| LOpenPar ; hd = pattern ; LTupleInfixe; tail = separated_nonempty_list(LTupleInfixe,pattern);LClosePar  {
+  TuplePattern (hd::tail)
+}
 
 
 %inline unaryoperator:

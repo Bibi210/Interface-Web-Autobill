@@ -45,6 +45,9 @@ rule token = parse
 | '/' {LDiv} 
 | '%' {LModulo} 
 | '-' {LSub} 
+| "match" {LMatch}
+| "with" {LWith}
+| '_' {LUnderScore}
 | bool as boolean          {Lbool (bool_of_string boolean) }
 | vartype as usertype {LVarType usertype}
 | basic_ident as ident {getToken ident}

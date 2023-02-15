@@ -95,7 +95,7 @@ and fmt_pattern = function
   | VarPattern string -> string
   | WildcardPattern -> "_"
   | TuplePattern pattern_ls ->
-    Printf.sprintf "ConstructTuple(%s)" (fmt_pattern_ls pattern_ls)
+    Printf.sprintf "TuplePattern(%s)" (fmt_pattern_ls pattern_ls)
   | ConstructorPattern { constructor_ident; content } ->
     Printf.sprintf "%s(%s)" constructor_ident (fmt_pattern content)
 

@@ -1,17 +1,13 @@
 %{
   open Ast
   open Helpers
-
-  let generate_vartype =
-  let generatedCounter = ref 0 in
-  fun () ->
-    incr generatedCounter;
-    TypeVar ("Unkown" ^ Int.to_string !generatedCounter)
-;;
-
+  let unit_expr pos = 
+   { etype =  None
+    ; enode = Litteral Unit
+    ; eloc = pos
+  }
 ;;
 %}
-
 %token EOF
 %token <int>Lint
 %token <bool>Lbool
@@ -19,17 +15,13 @@
 %token <Ast.etype>LParseType
 
 
-%token LOpenPar LClosePar LLeftAngleBracket LRightAngleBracket 
-%token LColon LSemiColon LDoubleSemiColon LComma 
+%token LOpenPar LClosePar 
+%token LColon LSemiColon LDoubleSemiColon
+%token LTupleInfixe LConsInfixe 
 %token LSimpleArrow
 %token LLet LFun LIn  LType LRec LOf 
 
-%token LMult LOr LEqual LAnd LAdd LDiv LModulo LSub LTilde
-
-%left LOr 
-%left LAnd 
-%left LAdd LSub
-%left LMult LDiv LModulo 
+%token LMult LOr LEqual LAnd LAdd LDiv LModulo LSub
 
 %start <prog> prog
 %%
@@ -38,18 +30,19 @@
 %inline variable:
 |var = LBasicIdent {
   { basic_ident = var;
-    expected_type = generate_vartype ()
+    expected_type = None
   }
 }
 |var = LBasicIdent ; LColon ; etype = etype{
   { basic_ident = var;
-    expected_type = etype 
+    expected_type = Some etype 
   }
 }
 
 prog:
-| result = separated_nonempty_list(LDoubleSemiColon,prog_node) ; EOF {result}
-
+| result = separated_nonempty_list(LDoubleSemiColon,prog_node) ; EOF{
+  result
+}
 
 
 prog_node:
@@ -66,10 +59,14 @@ def:
     }
   }
 }
-| LLet; basic_ident = LBasicIdent; args = nonempty_list(variable);  LEqual; body = expr{
+| LLet; var = variable; args = nonempty_list(variable);  LEqual; body = expr{
   { dloc = position $startpos($1) $endpos(body);
-    dnode = FunctionDef{
-      basic_ident; args;body
+    dnode = VariableDef{
+              var
+              ; init = { eloc = position $startpos($1) $endpos(body)
+                        ; enode = Lambda{args;body}   
+                        ; etype = None
+                      }
     }   
   }
 }
@@ -107,56 +104,142 @@ newconstructor_case:
 
 %inline litteral:
 | nb = Lint {
-  { etype = TypeInt
+  { etype = None
   ; enode = Litteral (Integer nb)
   ; eloc = position $startpos(nb) $endpos(nb)
   }
 }
 | b = Lbool {
-  { etype = TypeBool
+  { etype = None
   ; enode = Litteral (Boolean b)
   ; eloc = position $startpos(b) $endpos(b)
   }
 }
-| LOpenPar; LClosePar {
-  { etype = TypeUnit
+| LOpenPar;LClosePar {
+  { etype = None
   ; enode = Litteral (Unit)
   ; eloc = position $startpos($1) $endpos($2)
   }
 }
-/* TODO FIX Apply + Unary + Binary
-   */
 expr:
 | LOpenPar; e = expr ; LClosePar {e}
 | const = litteral {const}
 | var = variable {
-  { etype = var.expected_type 
-  ; enode = Variable var.basic_ident
+  { etype = None
+  ; enode = Variable var
   ; eloc = position $startpos(var) $endpos(var)
   }
 }
-/* | app = unaryoperator {app} 
-  | app = binaryoperator {app}  */
-| func = expr ; arg = expr {
-  { etype =  generate_vartype ()
-  ; enode = Call {func;arg}
+| LOpenPar;func = unaryoperator ; arg = expr; LClosePar{
+  {  etype = None
+  ; enode = Call {func;args = [arg]}
   ; eloc = position $startpos(func) $endpos(arg)
   }
 }
+| LOpenPar ; arg1 = expr ; func = binaryoperator ; arg2 = expr;LClosePar {
+  {  etype = None
+  ; enode = Call {func;args = [arg1;arg2]}
+  ; eloc = position $startpos(arg1) $endpos(arg2)
+  }
+}
+| LOpenPar ; func = expr ; args = nonempty_list(expr) ; LClosePar {
+  { etype = None
+  ; enode = Call {func = ApplyExpr func;args}
+  ; eloc = position $startpos(func) $endpos(args)
+  }
+}
+| LOpenPar ; hd = expr ; LSemiColon; tail = separated_nonempty_list(LSemiColon,expr);LClosePar {
+  { etype =  None
+  ; enode = Sequence (hd::tail)
+  ; eloc = position $startpos(hd) $endpos(tail)
+  }
+}
+| LLet ; var = variable; LEqual; init = expr ; LIn ; content = expr{
+  { etype =  None
+  ; enode = Binding {var;init;content}
+  ; eloc = position $startpos($1) $endpos(content)
+  }
+}
+ | LFun;args = list(variable);LSimpleArrow;body = expr {
+  { etype = None
+  ; enode = Lambda
+        { args = args
+        ; body = body 
+        } 
+  ; eloc = position $startpos($1) $endpos(body)
+  }
+} 
+| LOpenPar ; hd = expr ; LTupleInfixe; tail = separated_nonempty_list(LTupleInfixe,expr);LClosePar  {
+  { etype =  None
+  ; enode = Tuple (hd::tail)
+  ; eloc = position $startpos(hd) $endpos(tail)
+  }
+}
+/* | LOpenPar ; hd = expr ; LConsInfixe; tail = separated_nonempty_list(LConsInfixe,expr);LClosePar  {
+  { etype =  None
+  ; enode = Construct (hd::tail)
+  ; eloc = position $startpos(hd) $endpos(tail)
+  }
+} */
+
+|  constructor_ident =  LConstructorIdent ; to_group = expr {
+  { etype =  None
+  ; enode = Construct { constructor_ident ; to_group }
+  ; eloc = position $startpos(constructor_ident) $endpos(to_group)
+  }
+}
+| constructor_ident =  LConstructorIdent {
+  let pos = position $startpos(constructor_ident) $endpos(constructor_ident) in
+  { etype =  None
+  ; enode = Construct { constructor_ident ; to_group = unit_expr pos }
+  ; eloc = pos
+  }
+}
+| LLet; var = variable; args = nonempty_list(variable);  LEqual; func_body = expr; LIn ;content = expr{
+    { etype =  None
+    ; enode = Binding {
+            var 
+            ; init = 
+              { eloc = position $startpos($1) $endpos(func_body)
+              ; enode = Lambda{args;body = func_body}   
+              ; etype = None
+              }
+            ; content}
+    ; eloc = position $startpos($1) $endpos(content)
+  }
+}
+
+
+
+%inline unaryoperator:
+|LSub { Sub }
+
+%inline binaryoperator:
+|LSub { Sub }
+|LDiv { Div }
+|LModulo { Modulo }
+|LAdd { Add }
+|LAnd{ BitAnd }
+|LAnd;LAnd { And }
+
+|LOr;LOr {Or}
+
+
 
 
 etype:
 | t = LParseType {t} 
 | LOpenPar; t = etype ; LClosePar {t}
-| a = etype ; LMult; b = etype{
-    TypeTuple {first = a; second = b}
+| LOpenPar ; hd = etype ; LMult; tail = separated_nonempty_list(LMult,etype);LClosePar{
+    TypeTuple (hd::tail)
 }
-| LOpenPar;arg = etype;LSimpleArrow;return_type = etype;LClosePar {
-  TypeLambda {arg;return_type}
+| LOpenPar;args = nonempty_list(etype)
+  ;LSimpleArrow;return_type = etype;LClosePar {
+  TypeLambda {args;return_type}
 }
 | t = LVarType {TypeVar t}
 | t = LBasicIdent {TypeVar t} 
-| LOpenPar;t1 = etype; t2 = etype ;LClosePar{TypeConstructor [t1;t2]}
+| LOpenPar;t1 = etype; t2 = etype ; LClosePar{TypeConstructor [t1;t2]}
 
 
 

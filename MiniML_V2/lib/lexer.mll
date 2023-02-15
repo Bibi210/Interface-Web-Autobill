@@ -28,9 +28,7 @@ rule token = parse
 | ')' {LClosePar}
 | ";;" {LDoubleSemiColon}
 | ';' {LSemiColon}
-| ',' {LComma}
-| '[' {LLeftAngleBracket}
-| ']' {LRightAngleBracket}
+| ',' {LTupleInfixe}
 | "let" {LLet}
 | "rec" {LRec}
 | "fun" {LFun}
@@ -47,7 +45,6 @@ rule token = parse
 | '/' {LDiv} 
 | '%' {LModulo} 
 | '-' {LSub} 
-| '~' {LTilde}
 | bool as boolean          {Lbool (bool_of_string boolean) }
 | vartype as usertype {LVarType usertype}
 | basic_ident as ident {getToken ident}

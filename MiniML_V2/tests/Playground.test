@@ -1,9 +1,0 @@
-false
-;;
-let a = true
-;;
-let rec f x:int = a:int
-;;
-type 'a list = 
-| Cons of 'a * ('a list)
-| Nil

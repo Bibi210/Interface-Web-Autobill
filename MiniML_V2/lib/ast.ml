@@ -1,8 +1,20 @@
 type vartype = string
 
+type etype =
+  | TypeInt
+  | TypeBool
+  | TypeUnit
+  | TypeTuple of etype list
+  | TypeLambda of
+      { args : etype list
+      ; return_type : etype
+      }
+  | TypeVar of vartype
+  | TypeConstructor of etype list
+
 type variable =
   { basic_ident : string
-  ; expected_type : etype
+  ; expected_type : etype option
   }
 
 and prog = prog_node list
@@ -20,11 +32,6 @@ and pre_def =
   | VariableDef of
       { var : variable
       ; init : expr
-      }
-  | FunctionDef of
-      { basic_ident : string
-      ; args : variable list
-      ; body : expr
       }
   | FunctionRecDef of
       { basic_ident : string
@@ -49,17 +56,28 @@ and litteral =
   | Unit
 
 and expr =
-  { etype : etype
+  { etype : etype option
   ; enode : pre_expr
   ; eloc : Helpers.position
   }
 
+and callable =
+  | ApplyExpr of expr
+  | Add
+  | Sub
+  | Mult
+  | Or
+  | And
+  | Div
+  | Modulo
+  | BitAnd
+
 and pre_expr =
   | Litteral of litteral
-  | Variable of string
+  | Variable of variable
   | Call of
-      { func : expr
-      ; arg : expr
+      { func : callable
+      ; args : expr list
       }
   | Sequence of expr list
   | Binding of
@@ -68,23 +86,15 @@ and pre_expr =
       ; content : expr
       }
   | Lambda of
-      { arg : variable
+      { args : variable list
       ; body : expr
       }
-  | Tuple of
-      { first : expr
-      ; second : expr
-      }
+  | Tuple of expr list
   | Construct of
-      { constructor_name : string
+      { constructor_ident : string
       ; to_group : expr
       }
   | FunctionRec of
-      { basic_ident : string
-      ; args : variable list
-      ; body : expr
-      }
-  | Function of
       { basic_ident : string
       ; args : variable list
       ; body : expr
@@ -103,23 +113,9 @@ and match_case =
 and pattern =
   | LitteralPattern of litteral
   | VarPattern of string
-  | WildcardPattern
+  | WildcardPattern (* Ok *)
+  | TuplePattern of pattern list (* Pas Profond *)
   | ConstructorPattern of
       { constructor_ident : string
-      ; content : pattern list
+      ; content : pattern (* Pas Profond *)
       }
-
-and etype =
-  | TypeInt
-  | TypeBool
-  | TypeUnit
-  | TypeTuple of
-      { first : etype
-      ; second : etype
-      }
-  | TypeLambda of
-      { arg : etype
-      ; return_type : etype
-      }
-  | TypeVar of vartype
-  | TypeConstructor of etype list

@@ -9,6 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@codemirror/theme-one-dark": "^6.1.0",
+    "@uiw/codemirror-extensions-langs": "^4.19.7",
+    "@uiw/codemirror-theme-atomone": "^4.19.7",
+    "@uiw/react-codemirror": "^4.19.7",
+    "codemirror": "^6.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

@@ -1,35 +1,31 @@
 open Js_of_ocaml
-open Js_of_ocaml_toplevel
 open Autobill
+open Lexing
+open Cst_intf
+open Intern_intf
+open Sort_intf
+open Reduction_intf
+open TypeInfer_intf
 
-let execute code =
-  JsooTop.initialize ();
-  let code = Js.to_string code in
-  let buffer = Buffer.create 100 in
-  let formatter = Format.formatter_of_buffer buffer in
-  JsooTop.execute true formatter code;
-  Js.string (Buffer.contents buffer)
+
+
+let string_of_full_ast ?debug:(debug=false) prog =
+  PrettyPrinter.PP.pp_program ~debug Format.str_formatter prog;
+  Format.flush_str_formatter ()
+
 
 let _ =
   Js.export "ml"
     (object%js
       method parse code =
-        let cst = Lcbpv_intf.parse code in
-        let res = Lcbpv_intf.string_of_cst cst in 
-        object%js
-          val types = Js.string ""
-          val resultat = Js.string res
-          val erreurs = Js.string ""
-        end
-      method eval code = 
         let stdout_buff = Buffer.create 100 in
-        let stderr_buff = Buffer.create 100 in
         Sys_js.set_channel_flusher stdout (Buffer.add_string stdout_buff);
-        Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
-        let typeOutput = (execute code) in
+        let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in 
+        let prog, env = internalize (Lcbpv_intf.convert_to_machine_code (Lcbpv_intf.parse lexbuf)) in
+        let prog = polarity_inference ~trace:false env prog in 
+        let prelude, prog, post_con = type_infer ~trace:false prog in
+        let res = string_of_full_ast (prelude, prog) in 
         object%js
-          val types = typeOutput
-          val resultat = Js.string (Buffer.contents stdout_buff)
-          val erreurs = Js.string (Buffer.contents stderr_buff)
+          val resultat = Js.string res
         end
      end)

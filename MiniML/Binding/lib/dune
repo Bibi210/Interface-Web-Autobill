@@ -1,2 +1,23 @@
 (library
- (name Binding))
+ (name autobill)
+ (libraries str))
+
+(subdir
+ Cst
+ (menhir
+  (modules parser)))
+
+(subdir
+ Cst
+ (ocamllex lexer))
+
+(subdir
+ lcbpv
+ (menhir
+  (modules lcbpv_parser)))
+
+(subdir
+ lcbpv
+ (ocamllex lcbpv_lexer))
+
+(include_subdirs unqualified)

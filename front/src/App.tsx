@@ -4,7 +4,6 @@ import { oneDark } from "@codemirror/theme-one-dark"
 import { StreamLanguage } from "@codemirror/language"
 import { lcbpv } from "../language/mllike"
 
-import initial from "../data/initialPrompt"
 import billPrompts from "../data/billPrompt"
 import "../ocaml/main"
 import { EditorView } from "codemirror"
@@ -16,7 +15,7 @@ interface TopLevelResult {
 }
 function App() {
   const selectNode = useRef<HTMLSelectElement>(null)
-  const [code, setCode] = useState(initial)
+  const [code, setCode] = useState(billPrompts.lists)
 
   const [types, setTypes] = useState('')
   const [print, setPrint] = useState('')
@@ -37,18 +36,14 @@ function App() {
   });
   function handleSelect(){
     let val = selectNode.current?.value
-    if(val!="Ocaml"){
-      val = val as string
-      setCode(billPrompts[val])
-    } else{
-      setCode(initial)
-    }
+    setCode(billPrompts[val])
   }
   const evalCode = () => {
-    const codeToEvaluate = code + "\n ;;"
-    const evaluation = ml.parse(codeToEvaluate) as TopLevelResult
+    const evaluation = ml.parse(code) as TopLevelResult
+    console.log(evaluation)
+    setPrint(evaluation.resultat)
     // setTypes(evaluation.types)
-    setPrint(evaluation.resultat == "" ? evaluation.erreurs : evaluation.resultat)
+    // setPrint(evaluation.resultat == "" ? evaluation.erreurs : evaluation.resultat)
   }
   return (
     <>
@@ -65,7 +60,6 @@ function App() {
           <div ref={editor} />
           <footer>
             <select ref={selectNode} onChange={(e) => handleSelect()} name="" id="">
-              <option value="Ocaml" defaultChecked>Exemple Ocaml</option>
               {
                 Object.keys(billPrompts).map((elem,i) => (
                   <option key={i} value={elem}>{elem}</option>

@@ -29,6 +29,7 @@ rule token = parse
 | ";;" {LDoubleSemiColon}
 | ';' {LSemiColon}
 | ',' {LTupleInfixe}
+| "::" {LConsInfixe}
 | "let" {LLet}
 | "rec" {LRec}
 | "fun" {LFun}

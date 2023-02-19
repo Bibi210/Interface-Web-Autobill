@@ -5,7 +5,11 @@
    { etype =  None
     ; enode = Litteral Unit
     ; eloc = pos
+
   }
+  ;;
+
+
 ;;
 %}
 %token EOF
@@ -166,12 +170,10 @@ expr:
   ; eloc = position $startpos(hd) $endpos(tail)
   }
 }
-/* | LOpenPar ; hd = expr ; LConsInfixe; tail = separated_nonempty_list(LConsInfixe,expr);LClosePar  {
-  { etype =  None
-  ; enode = Construct (hd::tail)
-  ; eloc = position $startpos(hd) $endpos(tail)
-  }
-} */
+
+/*  | LOpenPar ; hd = expr ; LConsInfixe; tail = separated_nonempty_list(LConsInfixe,expr);LClosePar  {
+
+}  */
 
 | LOpenPar; constructor_ident =  LConstructorIdent ; to_group = expr ;LClosePar {
   { etype =  None
@@ -179,7 +181,7 @@ expr:
   ; eloc = position $startpos(constructor_ident) $endpos(to_group)
   }
 }
-| constructor_ident =  LConstructorIdent {
+| LOpenPar;constructor_ident =  LConstructorIdent;LClosePar  {
   let pos = position $startpos(constructor_ident) $endpos(constructor_ident) in
   { etype =  None
   ; enode = Construct { constructor_ident ; to_group = unit_expr pos }
@@ -257,6 +259,13 @@ pattern :
 }
 | LOpenPar ; hd = pattern ; LTupleInfixe; tail = separated_nonempty_list(LTupleInfixe,pattern);LClosePar  {
   TuplePattern (hd::tail)
+}
+| LOpenPar ; hd = pattern ; LConsInfixe; tail = separated_nonempty_list(LConsInfixe,pattern);LClosePar  {
+    List.fold_left
+    (fun acc elem ->
+      ConstructorPattern
+        { constructor_ident = "Cons"; content = TuplePattern [ elem; acc ] })
+    (ConstructorPattern { constructor_ident = "Nil"; content = LitteralPattern Unit }) (hd::tail)
 }
 
 

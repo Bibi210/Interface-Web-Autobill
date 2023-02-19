@@ -31,8 +31,9 @@ and def =
   }
 
 and pre_def =
-  | VariableDef of  (* TODO *)
-      { var : variable
+  | VariableDef of
+      { (* TODO *)
+        var : variable
       ; init : expr
       }
   | FunctionRecDef of
@@ -40,8 +41,9 @@ and pre_def =
       ; args : variable list
       ; body : expr
       }
-  | TypeDef of  (* TODO *)
-      { basic_ident : string
+  | TypeDef of
+      { (* TODO *)
+        basic_ident : string
       ; parameters : vartype list
       ; constructors : newconstructor_case list
       }
@@ -75,8 +77,8 @@ and callable =
   | BitAnd
 
 and pre_expr =
-  | Litteral of litteral  (* TODO *)
-  | Variable of variable  (* TODO *)
+  | Litteral of litteral (* TODO *)
+  | Variable of variable (* TODO *)
   | Call of
       { func : callable
       ; args : expr list
@@ -91,9 +93,10 @@ and pre_expr =
       { args : variable list
       ; body : expr
       }
-  | Tuple of expr list  (* TODO *)
-  | Construct of (* TODO *)
-      { constructor_ident : string
+  | Tuple of expr list (* TODO *)
+  | Construct of
+      { (* TODO *)
+        constructor_ident : string
       ; to_group : expr
       }
   | FunctionRec of

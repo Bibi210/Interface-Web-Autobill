@@ -11,11 +11,12 @@ type 'a list =
 ;;
 fun a:int -> a
 ;;
-(Cons(a,Nil))
+(Cons(a,(Nil)))
 ;;
 let rec add a b = (a + b)
 ;;
 (match x with 
   | 4 -> 4
+  | (hd::tail) -> true
   | _ -> true
   | (a,b,c) -> a)

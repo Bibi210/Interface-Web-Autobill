@@ -13,18 +13,18 @@ L'objectif de ce projet est de fournir une interface Web pour faciliter l'instal
    - Affichage Resultats (A definir)
 
 ## Notes Progression
-**Présoutenance avant vacances AVRIL**\
+**Présoutenance avant vacances AVRIL**
 - [ ] Partie ML
-    - // ****\
+    - // ****
 - [ ] Partie Web
     - // ****
 
-- **[Discord Link](https://discord.gg/wRNjJjBSQ9)**
-- **[GitLab Link](https://github.com/Bibi210/Interface-Web-Autobill)**
+- [Discord Link](https://discord.gg/wRNjJjBSQ9)
+- [GitLab Link](https://github.com/Bibi210/Interface-Web-Autobill)
 
 ## Partie Mini-ML (Ocaml)
 **Objectif Text to AST**\
-Petit front-end d'un language fonctionnel (Ocaml-Like ou Lisp)\
+Petit front-end d'un language fonctionnel (Ocaml-Like ou Lisp)
 **Technos : Menhir/(Ocamllex?)**
 
 ### Fonctionnalités

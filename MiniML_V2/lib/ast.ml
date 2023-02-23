@@ -77,8 +77,8 @@ and callable =
   | BitAnd
 
 and pre_expr =
-  | Litteral of litteral (* TODO *)
-  | Variable of variable (* TODO *)
+  | Litteral of litteral
+  | Variable of variable
   | Call of
       { func : callable
       ; args : expr list
@@ -93,10 +93,9 @@ and pre_expr =
       { args : variable list
       ; body : expr
       }
-  | Tuple of expr list (* TODO *)
+  | Tuple of expr list
   | Construct of
-      { (* TODO *)
-        constructor_ident : string
+      { constructor_ident : string
       ; to_group : expr
       }
   | FunctionRec of

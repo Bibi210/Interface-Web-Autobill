@@ -157,3 +157,5 @@ date: 2 fevrier, 2023
                 | vartype # 'a
                 | basic_ident # defined type
                 | Type List  # Parametred Type (EXEMPLE : int list option)
+
+# Traduction

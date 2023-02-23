@@ -38,7 +38,7 @@ true false
 && || ! == !=
 ```
 On a un if/then/else:
-```
+```****
 if 1>0 then 45 else 422 
 ```
 

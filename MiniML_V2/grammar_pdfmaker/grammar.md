@@ -159,3 +159,66 @@ date: 2 fevrier, 2023
                 | Type List  # Parametred Type (EXEMPLE : int list option)
 
 # Traduction
+
+## Programmes
+    (PROG) si  ⊢ pi -> ω
+        alors  ⊢ [pi] -> Prog(ω)
+
+## Suites de commandes
+    (DEFS) si d ∈ DEF, si ⊢ d -> ω et si ⊢ pi -> ω' 
+        alors  ⊢ (Def(d), pi) -> (ω, ω')
+    (BLOCK) si b ∈ BLOCK, si ⊢ b -> ω et si ⊢ pi -> ω'
+        alors  ⊢ (Expr(b), pi) -> (Do(ω), ω')
+
+## Définitions 
+    (VALDEF) si ⊢ v -> v',si  ⊢ e -> e' et si ⊢ pi -> ω'
+        alors  ⊢ (VariableDef(d), pi) -> (ω, ω')
+    (FUNREC)
+    (TYPDEF) si td ∈ CONSTR, si ⊢ td -> ω et si ⊢ pi -> ω'
+        alors  ⊢ (TypeDef(n, [t1,...,tn], td), pi) 
+                -> (Typ_Def(n, [t1,...,tn], ω), ω')
+## Constructeurs
+    (SYNON) si 
+    (DATYP)
+    (COMPUT)
+*To be done*
+
+## Litteraux et Expressions
+    (INT) si i ∈ NUM 
+        alors ⊢ Integer(i) -> Expr_Int(i)
+    (TRUE) si ⊢ b -> true 
+        alors ⊢ Boolean(b) -> Expr_Constructor(True,[])
+    (FALSE) si ⊢ b -> false
+        alors ⊢ Boolean(b) -> Expr_Constructor(False,[])
+    (TUPLE) si ⊢ e1 -> e_1, ..., si ⊢ eN -> e_N
+        alors ⊢ Tuple([e1,...,eN]) 
+                -> Expr_Constructor(Tuple, [e_1,...,e_N])
+    (CONSTR) si ⊢ e -> e' 
+        alors ⊢ Construct((c,e)) 
+                -> Expr_Constructor(Cons_Named c, [e'])
+    (BIND) si ⊢ i -> i' et si ⊢ c -> c' 
+        alors ⊢ Binding((v,i,c)) 
+            -> Expr_Block(Blk([Ins_Let (v, i')], c'))
+    (MATCH) si ⊢ m -> m', si m1 ∈ CASE,..., si mN ∈ CASE,
+            si ⊢ m1 -> m_1, ... et si ⊢ mN -> m_N 
+        alors ⊢ Match((m,[m1,...,mN])) 
+            -> Expr_Match(m', [m_1,...,m_N])
+
+## Motifs et Filtrage
+    (LITPAT1) si l = Integer(l') et ⊢ e -> e'
+        alors ⊢ Case(LitteralPattern(l), e) -> 
+            -> MatchPat(Int_litt l', [], e')
+    (LITPAT2) si l = Boolean(_), si ⊢ l -> l' et ⊢ e -> e'
+        alors ⊢ Case(LitteralPattern(l), e) 
+            -> MatchPat(l', [], e')
+    (LITPAT3) si l = Unit et ⊢ e -> e'
+        alors ⊢ Case(LitteralPattern(l), e)
+            -> MatchPat(Unit, [], e')
+    (TUPAT) si p1 ∈ CASE,..., si pN ∈ CASE,
+            si ⊢ p1 -> p_1, ..., si ⊢ pN -> p_N et ⊢ e -> e'
+        alors ⊢ Case(TuplePattern([p1,...,pN]), e)
+            -> MatchPat(Tuple, [p_1,...,p_N], e')
+    (CONSPAT)  si c ∈ CASE, si ⊢ c -> c' et ⊢ e -> e'
+        alors ⊢ Case(ConstructorPattern((n,c)), e)
+            -> MatchPat(Cons_Named(n), c', e')
+    

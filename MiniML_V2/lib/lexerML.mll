@@ -1,6 +1,6 @@
 {
-  open Parser
-  open Ast 
+  open ParserML
+  open AstML
   exception Error of string
 
   let getToken = function
@@ -54,6 +54,10 @@ rule token = parse
 | constructeur_ident as cident {LConstructorIdent cident}
 | white* { token lexbuf }
 | newline          { Lexing.new_line lexbuf; token lexbuf }
+| "(*" {multi_line_comment lexbuf}
 | eof {EOF}
 
-
+and multi_line_comment = parse
+| eof  { raise (Error "Never Ending Comment") }
+| "*)" { token lexbuf }
+| _    { multi_line_comment lexbuf }

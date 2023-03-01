@@ -1,4 +1,4 @@
-open Ast
+open AstML
 
 let list_sprintf list fmt_func separator =
   String.concat separator (List.map fmt_func list)
@@ -33,7 +33,10 @@ and fmt_def d =
       (fmt_newconstructor_case_ls constructors)
 
 and fmt_newconstructor_case case =
-  Printf.sprintf "ConstructorCase(%s of %s)\n" case.constructor_ident (fmt_type case.c_of)
+  Printf.sprintf
+    "ConstructorCase(%s of %s)\n"
+    case.constructor_ident
+    (fmt_type_ls case.c_of)
 
 and fmt_litteral = function
   | Integer i -> Printf.sprintf "Int(%d)" i
@@ -68,7 +71,7 @@ and fmt_expr exp =
     Printf.sprintf "Lambda %s\n -> (%s)" (fmt_variable_ls args) (fmt_expr body)
   | Tuple expr_ls -> Printf.sprintf "\nTuple(\n  %s )" (fmt_expr_ls expr_ls)
   | Construct { constructor_ident; to_group } ->
-    Printf.sprintf "%s(%s)" constructor_ident (fmt_expr to_group)
+    Printf.sprintf "%s(%s)" constructor_ident (fmt_expr_ls to_group)
   | FunctionRec { var; args; body } ->
     Printf.sprintf
       "RecFunc %s( [%s] -> (%s))"
@@ -91,7 +94,7 @@ and fmt_pattern = function
   | TuplePattern pattern_ls ->
     Printf.sprintf "TuplePattern(%s)" (fmt_pattern_ls pattern_ls)
   | ConstructorPattern { constructor_ident; content } ->
-    Printf.sprintf "%s(%s)" constructor_ident (fmt_pattern content)
+    Printf.sprintf "%s(%s)" constructor_ident (fmt_pattern_ls content)
 
 and fmt_type_opt = function
   | None -> "None"
@@ -107,9 +110,12 @@ and fmt_type t =
     Printf.sprintf "Function_t [%s] -> (%s)" (fmt_type_ls args) (fmt_type return_type)
   | TypeVar vartype -> Printf.sprintf "%s_t" vartype
   | TypeConstructor construct ->
-    Printf.sprintf "(ParametredType %s)" (fmt_type_ls construct)
+    Printf.sprintf
+      "(ParametredType %s with %s)"
+      (fmt_type construct.to_build)
+      (fmt_type_ls construct.parameters)
 
-and fmt_match_case_ls ls = list_sprintf ls fmt_match_case " | "
+and fmt_match_case_ls ls = list_sprintf ls fmt_match_case "\n | "
 and fmt_variable_ls x = list_sprintf x fmt_variable " , "
 and fmt_newconstructor_case_ls ls = list_sprintf ls fmt_newconstructor_case " | "
 and fmt_pattern_ls ls = list_sprintf ls fmt_pattern " , "

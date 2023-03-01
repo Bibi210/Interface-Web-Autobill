@@ -1,13 +1,22 @@
-let a = true ;;
-let rec f x = (x + 2)
-;;
-type 'a list = 
-| Cons of ('a * ('a list))
-| Nil
-;;
-(4;5;true)
+let a = true;;
+let x = (1,2,3) ;;
+(match x with 
+(*   | (hd::tail) -> true *)
+  | (a,b,c) -> a
+  | _ -> true
+  )
 ;;
 (1,2,4,5)
+;;
+42
+(* ;;
+type 'a list = 
+| Cons of 'a *  ('a list)
+| Nil *)
+(* let rec f x = (x + 2)
+;;
+(4;5;true)
+
 ;;
 fun a -> a
 ;;
@@ -15,8 +24,5 @@ fun a -> a
 ;;
 let rec add a b = (a + b)
 ;;
-(match x with 
-  | 4 -> 4
-  | (hd::tail) -> true
-  | _ -> true
-  | (a,b,c) -> a)
+
+ *)

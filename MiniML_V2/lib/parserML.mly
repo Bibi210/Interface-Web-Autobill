@@ -1,6 +1,6 @@
 %{
-  open Ast
-  open Helpers
+  open AstML
+  open HelpersML
 
     let unit_expr pos = 
     { enode = Litteral Unit
@@ -13,7 +13,7 @@
 %token <int>Lint
 %token <bool>Lbool
 %token <string>LBasicIdent LConstructorIdent LVarType
-%token <Ast.pre_etype>LParseType
+%token <AstML.pre_etype>LParseType
 
 
 %token LOpenPar LClosePar 
@@ -88,15 +88,15 @@ newconstructor_case:
 | constructor_ident = LConstructorIdent{
   { constructor_ident
   ; c_of = 
-      { etype = TypeUnit
+      [{ etype = TypeUnit
       ; tloc = position $startpos(constructor_ident) $endpos(constructor_ident)
-      }
+      }]
   ; loc = position $startpos(constructor_ident) $endpos(constructor_ident)
   }
 }
-| constructor_ident = LConstructorIdent; LOf ; etype = etype{
+| constructor_ident = LConstructorIdent; LOf ; etype_ls = separated_nonempty_list(LMult,etype){
   { constructor_ident
-  ; c_of = etype
+  ; c_of = etype_ls
   ; loc = position $startpos(constructor_ident) $endpos(constructor_ident)
   }
 }
@@ -161,16 +161,16 @@ expr:
 
 }  */
 
-| LOpenPar; constructor_ident =  LConstructorIdent ; to_group = expr ;LClosePar {
+| constructor_ident =  LConstructorIdent; LOpenPar ; hd = expr ; LTupleInfixe; tail = separated_nonempty_list(LTupleInfixe,expr);LClosePar {
   { 
-    enode = Construct { constructor_ident ; to_group }
-  ; eloc = position $startpos(constructor_ident) $endpos(to_group)
+    enode = Construct { constructor_ident ; to_group = hd::tail }
+  ; eloc = position $startpos(hd) $endpos(tail)
   }
 }
 | LOpenPar;constructor_ident =  LConstructorIdent;LClosePar  {
   let pos = position $startpos(constructor_ident) $endpos(constructor_ident) in
   {
-    enode = Construct { constructor_ident ; to_group = unit_expr pos }
+    enode = Construct { constructor_ident ; to_group = [unit_expr pos] }
   ; eloc = pos
   }
 }
@@ -223,24 +223,25 @@ pattern :
 | constructor_ident = LConstructorIdent {
   ConstructorPattern
       { constructor_ident
-      ; content = LitteralPattern Unit
+      ; content = [LitteralPattern Unit]
       }
 }
-| constructor_ident = LConstructorIdent;  p = pattern {
+| constructor_ident = LConstructorIdent; LOpenPar ; hd = pattern ; LTupleInfixe; tail = separated_nonempty_list(LTupleInfixe,pattern);LClosePar {
   ConstructorPattern
       { constructor_ident
-      ; content = p
+      ; content = hd::tail
       }
 }
 | LOpenPar ; hd = pattern ; LTupleInfixe; tail = separated_nonempty_list(LTupleInfixe,pattern);LClosePar  {
   TuplePattern (hd::tail)
 }
 | LOpenPar ; hd = pattern ; LConsInfixe; tail = separated_nonempty_list(LConsInfixe,pattern);LClosePar  {
-    List.fold_left
-    (fun acc elem ->
+    let last,rem = list_getlast_rem tail in
+    List.fold_right
+    (fun elem acc ->
       ConstructorPattern
-        { constructor_ident = "Cons"; content = TuplePattern [ elem; acc ] })
-    (ConstructorPattern { constructor_ident = "Nil"; content = LitteralPattern Unit }) (hd::tail)
+        { constructor_ident = "Cons"; content = [ elem; acc ] })
+    (hd::rem) last
 }
 
 
@@ -288,12 +289,12 @@ etype:
   ; tloc = position $startpos(t) $endpos(t)
   }
 } 
-| LOpenPar;t1 = etype; t2 = etype ; LClosePar{
-  { etype = TypeConstructor [t1;t2]
-  ; tloc = position $startpos(t1) $endpos(t2)
+| LOpenPar; hd = etype ;tail = nonempty_list(etype);  LClosePar{
+  let last,rem = list_getlast_rem (hd::tail) in
+  { etype = TypeConstructor {to_build = last; parameters = rem}
+  ; tloc = position $startpos(hd) $endpos(tail)
   }
   }
-
 
 
 

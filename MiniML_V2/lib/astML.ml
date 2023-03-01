@@ -10,16 +10,19 @@ type pre_etype =
       ; return_type : etype
       }
   | TypeVar of vartype
-  | TypeConstructor of etype list
+  | TypeConstructor of
+      { to_build : etype
+      ; parameters : etype list
+      }
 
 and etype =
   { etype : pre_etype
-  ; tloc : Helpers.position
+  ; tloc : HelpersML.position
   }
 
 type variable =
   { basic_ident : string
-  ; vloc : Helpers.position
+  ; vloc : HelpersML.position
   }
 
 and prog = prog_node list
@@ -30,7 +33,7 @@ and prog_node =
 
 and def =
   { dnode : pre_def
-  ; dloc : Helpers.position
+  ; dloc : HelpersML.position
   }
 
 and pre_def =
@@ -51,8 +54,8 @@ and pre_def =
 
 and newconstructor_case =
   { constructor_ident : string
-  ; c_of : etype
-  ; loc : Helpers.position
+  ; c_of : etype list
+  ; loc : HelpersML.position
   }
 
 and litteral =
@@ -62,7 +65,7 @@ and litteral =
 
 and expr =
   { enode : pre_expr
-  ; eloc : Helpers.position
+  ; eloc : HelpersML.position
   }
 
 and callable =
@@ -96,7 +99,7 @@ and pre_expr =
   | Tuple of expr list
   | Construct of
       { constructor_ident : string
-      ; to_group : expr
+      ; to_group : expr list
       }
   | FunctionRec of
       { var : variable
@@ -111,8 +114,8 @@ and pre_expr =
 and match_case =
   { pattern : pattern
   ; consequence : expr
-  ; conseq_loc : Helpers.position
-  ; pattern_loc : Helpers.position
+  ; conseq_loc : HelpersML.position
+  ; pattern_loc : HelpersML.position
   }
 
 and pattern =
@@ -122,5 +125,5 @@ and pattern =
   | TuplePattern of pattern list (* Pas Profond *)
   | ConstructorPattern of
       { constructor_ident : string
-      ; content : pattern (* Pas Profond *)
+      ; content : pattern list (* Pas Profond *)
       }

@@ -1,9 +1,9 @@
 (library
  (name MiniML)
- (libraries str))
+ (libraries str autobill))
 
 (menhir
- (modules parser))
+ (modules parserML))
 
 (ocamllex
- (modules lexer))
+ (modules lexerML))

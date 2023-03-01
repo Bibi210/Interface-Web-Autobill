@@ -10,6 +10,8 @@ let dummy_pos =
   { start_pos = Lexing.dummy_pos; end_pos = Lexing.dummy_pos; is_dummy = true }
 ;;
 
+List.fold_right
+
 let string_of_position p =
   let fname = p.start_pos.pos_fname in
   let lnum = p.start_pos.pos_lnum in
@@ -28,12 +30,24 @@ let err msg pos =
   exit 1
 ;;
 
-let list_getlast ls = List.nth ls (List.length ls - 1)
+let rec list_getlast_rem = function
+  | [] -> raise Not_found
+  | [ hd ] -> hd, []
+  | hd :: tl ->
+    let hd', tl' = list_getlast_rem tl in
+    hd', hd :: tl'
+;;
+
+let list_getlast ls =
+  let last, _ = list_getlast_rem ls in
+  last
+;;
+
 let array_getlast array = Array.get array (Array.length array - 1)
 
 let generate_name =
   let node_counter = ref 0 in
   fun () ->
     incr node_counter;
-    "%.Translate_TempVar" ^ Int.to_string !node_counter
+    "%.MLTempVar" ^ Int.to_string !node_counter
 ;;

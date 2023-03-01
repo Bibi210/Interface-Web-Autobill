@@ -3,14 +3,14 @@ open Autobill
 open Intern_intf
 open Sort_intf
 open TypeInfer_intf
-
+open MiniML
 
 let string_of_full_ast ?debug:(debug=false) prog =
   PrettyPrinter.PP.pp_program ~debug Format.str_formatter prog;
   Format.flush_str_formatter ()
 
 let generate_ast code =
-  MiniML.Parser.prog MiniML.Lexer.token code
+  ParserML.prog LexerML.token code
 
 let _ =
   Js.export "ml"
@@ -18,7 +18,7 @@ let _ =
       method ast code = 
         let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in 
         object%js
-          val resultat = Js.string (MiniML.Format.fmt_prog (generate_ast lexbuf))
+          val resultat = Js.string (FormatML.fmt_prog (generate_ast lexbuf))
         end 
       method parse code =
         let stdout_buff = Buffer.create 100 in

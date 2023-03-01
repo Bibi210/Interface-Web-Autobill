@@ -17,7 +17,7 @@ function App() {
   const selectNode = useRef(null)
   const [code, setCode] = useState(billPrompts.lists)
 
-  const [types, setTypes] = useState('')
+  const [types, setTypes] = useState('lists')
   const [print, setPrint] = useState('')
   const editor = useRef(null);
   const { state, setState, view } = useCodeMirror({
@@ -37,13 +37,16 @@ function App() {
   function handleSelect(){
     let val = selectNode.current?.value
     setCode(billPrompts[val])
+    setTypes(val)
   }
   const evalCode = () => {
-    const evaluation = ml.parse(code)
-    console.log(evaluation)
+    let evaluation
+    if(types==='lists'){
+      evaluation = ml.parse(code)
+    } else{
+      evaluation = ml.ast(code)
+    }
     setPrint(evaluation.resultat)
-    // setTypes(evaluation.types)
-    // setPrint(evaluation.resultat == "" ? evaluation.erreurs : evaluation.resultat)
   }
   return (
     <>
@@ -83,13 +86,7 @@ function App() {
             </pre>
             : ''
           }
-          {
-            types ? 
-            <pre className="types" >
-              {types}
-            </pre>
-            : ''
-          }
+
         </section>
       </main>
     </>

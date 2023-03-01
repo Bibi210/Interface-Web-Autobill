@@ -1,26 +1,34 @@
-open MiniML
-open Helpers
+open Js_of_ocaml
+open Autobill
+open Intern_intf
+open Sort_intf
+open TypeInfer_intf
 
-let generate_ast fname =
-  (*Open the file to compile*)
-  let f = open_in fname in
-  (* Tokenize the file *)
-  let buf = Lexing.from_channel f in
-  try
-    let output = Parser.prog Lexer.token buf in
-    close_in f;
-    output
-  with
-  | Lexer.Error c ->
-    err (Printf.sprintf "unrecognized char '%s'" c) (Lexing.lexeme_start_p buf)
-  | Parser.Error -> err "syntax error" (Lexing.lexeme_start_p buf)
-;;
 
-let () =
-  if Array.length Sys.argv != 2
-  then (
-    Printf.eprintf "\nUsage: %s <file>\n" Sys.argv.(0);
-    exit 1);
-  let ast = generate_ast Sys.argv.(1) in
-  print_endline ("Before Interpretation : \n" ^ Format.fmt_prog ast)
-;;
+let string_of_full_ast ?debug:(debug=false) prog =
+  PrettyPrinter.PP.pp_program ~debug Format.str_formatter prog;
+  Format.flush_str_formatter ()
+
+let generate_ast code =
+  MiniML.Parser.prog MiniML.Lexer.token code
+
+let _ =
+  Js.export "ml"
+    (object%js
+      method ast code = 
+        let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in 
+        object%js
+          val resultat = Js.string (MiniML.Format.fmt_prog (generate_ast lexbuf))
+        end 
+      method parse code =
+        let stdout_buff = Buffer.create 100 in
+        Sys_js.set_channel_flusher stdout (Buffer.add_string stdout_buff);
+        let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in 
+        let prog, env = internalize (Lcbpv_intf.convert_to_machine_code (Lcbpv_intf.parse lexbuf)) in
+        let prog = polarity_inference ~trace:false env prog in 
+        let prelude, prog, _ = type_infer ~trace:false prog in
+        let res = string_of_full_ast (prelude, prog) in 
+        object%js
+          val resultat = Js.string res
+        end
+     end)

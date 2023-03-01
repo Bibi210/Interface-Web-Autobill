@@ -1,20 +1,20 @@
 import { useRef, useState } from "react"
-import CodeMirror, { useCodeMirror } from "@uiw/react-codemirror"
+import { useCodeMirror } from "@uiw/react-codemirror"
 import { oneDark } from "@codemirror/theme-one-dark"
 import { StreamLanguage } from "@codemirror/language"
 import { lcbpv } from "../language/mllike"
 
 import billPrompts from "../data/billPrompt"
-import "../ocaml/main"
+import "../../MiniML_V2/_build/default/bin/main.bc.js"
 import { EditorView } from "codemirror"
 
-interface TopLevelResult {
+/* interface TopLevelResult {
   types : string
   resultat: string
   erreurs: string
-}
+} */
 function App() {
-  const selectNode = useRef<HTMLSelectElement>(null)
+  const selectNode = useRef(null)
   const [code, setCode] = useState(billPrompts.lists)
 
   const [types, setTypes] = useState('')
@@ -39,7 +39,7 @@ function App() {
     setCode(billPrompts[val])
   }
   const evalCode = () => {
-    const evaluation = ml.parse(code) as TopLevelResult
+    const evaluation = ml.parse(code)
     console.log(evaluation)
     setPrint(evaluation.resultat)
     // setTypes(evaluation.types)

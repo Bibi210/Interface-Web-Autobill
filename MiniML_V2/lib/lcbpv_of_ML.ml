@@ -46,19 +46,15 @@ let rec trans_expr e =
              ]
            , trans_expr bind.content
            , e_loc ))
-    | Match mat -> Expr_Match (trans_expr mat.to_match, trans_match_case_ls mat.cases)
-    (* How to translate calls *)
-    | _ -> failwith "UnImplemented")
+    | Match mat ->
+      Expr_Match (trans_expr mat.to_match, trans_match_case_ls mat.cases)
+      (* How to translate calls *)
+      (* TODO *)
+    | Call _ -> failwith "How ?"
+    | Sequence _ -> failwith "How?"
+    | Lambda _ -> failwith "How?"
+    | FunctionRec _ -> failwith "How?")
   , e_loc )
-
-and trans_calls pos =
-  (* TODO *)
-  let fakeVarA = Expr_Var (HelpersML.generate_name (), pos), pos
-  and fakeVarB = Expr_Var (HelpersML.generate_name (), pos), pos in
-  let calc = Expr_Bin_Prim (Add, fakeVarA, fakeVarB), pos in
-  function
-  | Add -> Expr_Closure (Exp, calc), pos
-  | _ -> failwith ""
 
 and trans_match_case case =
   let conseq = trans_expr case.consequence in
@@ -86,12 +82,11 @@ let rec trans_type t =
     | TypeInt -> Typ_Int
     | TypeBool -> Typ_Bool
     | TypeUnit -> Typ_Unit
-    | TypeTuple x ->
-      Typ_App ((Typ_Tuple, trans_loc t.tloc), trans_type_ls x) (*! To check ?  *)
+    | TypeTuple x -> Typ_App ((Typ_Tuple, trans_loc t.tloc), trans_type_ls x)
     | TypeVar vartype -> Typ_Var vartype
-    | TypeConstructor x ->
-      Typ_App (trans_type x.to_build, trans_type_ls x.parameters) (*! To check ?  *)
+    | TypeConstructor x -> Typ_App (trans_type x.to_build, trans_type_ls x.parameters)
     | TypeLambda _ -> failwith "How ?")
+    (* TODO *)
   , trans_loc t.tloc )
 
 and trans_type_ls ls = List.map trans_type ls
@@ -115,7 +110,7 @@ let trans_def def =
          , loc ))
   | VariableDef newglb ->
     NewGlobal (Ins_Let (trans_var newglb.var, trans_expr newglb.init), loc)
-  | _ -> failwith ""
+  | FunctionRecDef _ -> failwith "How ?" (* TODO *)
 ;;
 
 let trans_prog_node (glbvarls, program_items, last_expr) node =

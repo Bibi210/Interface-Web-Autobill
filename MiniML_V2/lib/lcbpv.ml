@@ -1,3 +1,5 @@
+open Helpers
+
 type sort =
   | Pos
   | Neg
@@ -10,7 +12,7 @@ type qualifier =
   | Lin
   | Aff
 
-type typ =
+type pre_typ =
   | Typ_Var of type_variable
   | Typ_App of typ * typ list
   | Typ_Int
@@ -26,7 +28,9 @@ type typ =
   | Typ_Closure of qualifier
   | Typ_Thunk
 
-type variable = string
+and typ = pre_typ * position
+
+type variable = string * position
 type constructor_name = string
 
 type constructor =
@@ -40,12 +44,14 @@ type constructor =
 
 type method_name = string
 
-type methodd =
+type pre_methodd =
   | Method_Named of method_name
   | Call
   | Proj of int * int
 
-type value =
+and methodd = pre_methodd * position
+
+type pre_value =
   | Val_Var of variable
   | Val_Int of int
   | Val_Constructor of constructor * value list
@@ -53,7 +59,9 @@ type value =
   | Val_Thunk of expression
   | Val_Get of get_pattern list
 
-and expression =
+and value = pre_value * position
+
+and pre_expression =
   | Expr_Var of variable
   | Expr_Int of int
   | Expr_Constructor of constructor * expression list
@@ -67,6 +75,8 @@ and expression =
   | Expr_Bin_Prim of prim_bin_op * expression * expression
   | Expr_Mon_Prim of prim_mon_op * expression
   | Expr_If of expression * expression * expression
+
+and expression = pre_expression * position
 
 and prim_mon_op =
   | Opp
@@ -84,23 +94,30 @@ and prim_bin_op =
   | Int_Leq
   | Int_Lt
 
-and block = Blk of instruction list * expression
+and block = Blk of instruction list * expression * position
 
-and instruction =
+and pre_instruction =
   | Ins_Let of variable * expression
   | Ins_Force of variable * expression
   | Ins_Open of variable * qualifier * expression
 
-and get_pattern = GetPat of methodd * variable list * expression
-and match_pattern = MatchPat of constructor * variable list * expression
+and instruction = pre_instruction * position
+and get_pattern = GetPatTag of methodd * variable list * expression * position
+
+and match_pattern =
+  | MatchPatTag of constructor * variable list * expression * position
+  | MatchPatVar of variable * expression * position
 
 type program = Prog of program_item list
 
 and program_item =
-  | Typ_Decl of variable * sort list * sort
-  | Value_Decl of variable * typ
+  | Typ_Decl of variable * sort list * sort * position
+  | Value_Decl of variable * typ * position
   | Typ_Def of
-      type_constructor_name * (type_variable * sort) list * type_definition_content
+      type_constructor_name
+      * (type_variable * sort) list
+      * type_definition_content
+      * position
   | Do of block
 
 and type_definition_content =

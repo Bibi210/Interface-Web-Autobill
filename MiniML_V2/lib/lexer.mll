@@ -38,7 +38,6 @@ rule token = parse
 | "of" {LOf}
 | "type" {LType}
 | '=' {LEqual}
-| ':' {LColon}
 | '*' {LMult}
 | '|' {LOr}
 | '&' {LAnd}

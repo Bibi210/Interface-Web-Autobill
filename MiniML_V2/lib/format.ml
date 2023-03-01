@@ -8,9 +8,7 @@ let array_sprintf array fmt_func separator =
   list_sprintf (List.of_seq (Array.to_seq array)) fmt_func separator
 ;;
 
-let rec fmt_variable x =
-  Printf.sprintf "(VarName = %s ; Type = %s)" x.basic_ident (fmt_type_opt x.expected_type)
-
+let rec fmt_variable x = Printf.sprintf "(VarName = %s)" x.basic_ident
 and fmt_prog p = list_sprintf p fmt_prog_node " ;;\n"
 
 and fmt_prog_node = function
@@ -21,10 +19,10 @@ and fmt_def d =
   match d.dnode with
   | VariableDef { var; init } ->
     Printf.sprintf "%s = %s" (fmt_variable var) (fmt_expr init)
-  | FunctionRecDef { basic_ident; args; body } ->
+  | FunctionRecDef { var; args; body } ->
     Printf.sprintf
       "RecFunc %s [%s] -> %s"
-      basic_ident
+      var.basic_ident
       (fmt_variable_ls args)
       (fmt_expr body)
   | TypeDef { basic_ident; parameters; constructors } ->
@@ -56,14 +54,10 @@ and fmt_callable = function
 and fmt_expr exp =
   match exp.enode with
   | Litteral litteral -> fmt_litteral litteral
-  | Variable variable ->
-    Printf.sprintf "Variable %s" (fmt_variable variable)
+  | Variable variable -> Printf.sprintf "Variable %s" (fmt_variable variable)
   | Call { func; args } ->
     Printf.sprintf "Apply(%s with %s)" (fmt_callable func) (fmt_expr_ls args)
-  | Sequence expr_ls ->
-    Printf.sprintf
-      "\nSequence(\n  %s)"
-      (fmt_expr_ls expr_ls)
+  | Sequence expr_ls -> Printf.sprintf "\nSequence(\n  %s)" (fmt_expr_ls expr_ls)
   | Binding { var; init; content } ->
     Printf.sprintf
       "Binding(%s = (%s) in\n (%s))"
@@ -75,10 +69,10 @@ and fmt_expr exp =
   | Tuple expr_ls -> Printf.sprintf "\nTuple(\n  %s )" (fmt_expr_ls expr_ls)
   | Construct { constructor_ident; to_group } ->
     Printf.sprintf "%s(%s)" constructor_ident (fmt_expr to_group)
-  | FunctionRec { basic_ident; args; body } ->
+  | FunctionRec { var; args; body } ->
     Printf.sprintf
       "RecFunc %s( [%s] -> (%s))"
-      basic_ident
+      var.basic_ident
       (fmt_variable_ls args)
       (fmt_expr body)
   | Match { to_match; cases } ->
@@ -103,7 +97,8 @@ and fmt_type_opt = function
   | None -> "None"
   | Some x -> fmt_type x
 
-and fmt_type = function
+and fmt_type t =
+  match t.etype with
   | TypeInt -> "Int_t"
   | TypeBool -> "Bool_t"
   | TypeUnit -> "Unit_t"

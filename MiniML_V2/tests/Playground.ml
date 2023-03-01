@@ -9,7 +9,7 @@ type 'a list =
 ;;
 (1,2,4,5)
 ;;
-fun a:int -> a
+fun a -> a
 ;;
 (Cons(a,(Nil)))
 ;;

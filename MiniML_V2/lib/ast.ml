@@ -1,8 +1,6 @@
-(* TODO Sementique de traduction *)
-
 type vartype = string
 
-type etype =
+type pre_etype =
   | TypeInt
   | TypeBool
   | TypeUnit
@@ -14,9 +12,14 @@ type etype =
   | TypeVar of vartype
   | TypeConstructor of etype list
 
+and etype =
+  { etype : pre_etype
+  ; tloc : Helpers.position
+  }
+
 type variable =
   { basic_ident : string
-  ; expected_type : etype option
+  ; vloc : Helpers.position
   }
 
 and prog = prog_node list
@@ -32,18 +35,16 @@ and def =
 
 and pre_def =
   | VariableDef of
-      { (* TODO *)
-        var : variable
+      { var : variable
       ; init : expr
       }
   | FunctionRecDef of
-      { basic_ident : string
+      { var : variable
       ; args : variable list
       ; body : expr
       }
   | TypeDef of
-      { (* TODO *)
-        basic_ident : string
+      { basic_ident : string
       ; parameters : vartype list
       ; constructors : newconstructor_case list
       }
@@ -60,8 +61,7 @@ and litteral =
   | Unit
 
 and expr =
-  { etype : etype option
-  ; enode : pre_expr
+  { enode : pre_expr
   ; eloc : Helpers.position
   }
 
@@ -99,7 +99,7 @@ and pre_expr =
       ; to_group : expr
       }
   | FunctionRec of
-      { basic_ident : string
+      { var : variable
       ; args : variable list
       ; body : expr
       }
@@ -111,7 +111,8 @@ and pre_expr =
 and match_case =
   { pattern : pattern
   ; consequence : expr
-  ; cloc : Helpers.position
+  ; conseq_loc : Helpers.position
+  ; pattern_loc : Helpers.position
   }
 
 and pattern =

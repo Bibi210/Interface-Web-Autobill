@@ -168,8 +168,6 @@ date: 2 fevrier, 2023
         alors  ꜔ (Expr(b), pi) -> (Do(ω), ω')
 
 
-
-
 ## Définitions 
     (VALDEF) si ꜔ v -> v',si  ꜔ e -> e' et si ꜔ pi -> ω'
         alors  ꜔ (VariableDef(d), pi) -> (ω, ω')
@@ -177,6 +175,7 @@ date: 2 fevrier, 2023
     (TYPDEF) si td ∈ CONSTR, si ꜔ td -> ω et si ꜔ pi -> ω'
         alors  ꜔ (TypeDef(n, [t1,...,tn], td), pi) 
                 -> (Typ_Def(n, [t1,...,tn], ω), ω')
+
 ## Constructeurs
     (SYNON) si 
     (DATYP)
@@ -207,18 +206,24 @@ date: 2 fevrier, 2023
 ## Motifs et Filtrage
     (LITPAT1) si l = Integer(l') et ꜔ e -> e'
         alors ꜔ Case(LitteralPattern(l), e) -> 
-            -> MatchPat(Int_litt l', [], e')
+            -> MatchPatTag(Int_litt l', [], e')
     (LITPAT2) si l = Boolean(_), si ꜔ l -> l' et ꜔ e -> e'
         alors ꜔ Case(LitteralPattern(l), e) 
-            -> MatchPat(l', [], e')
+            -> MatchPatTag(l', [], e')
     (LITPAT3) si l = Unit et ꜔ e -> e'
         alors ꜔ Case(LitteralPattern(l), e)
-            -> MatchPat(Unit, [], e')
+            -> MatchPatTag(Unit, [], e')
     (TUPAT) si p1 ∈ CASE,..., si pN ∈ CASE,
             si ꜔ p1 -> p_1, ..., si ꜔ pN -> p_N et ꜔ e -> e'
         alors ꜔ Case(TuplePattern([p1,...,pN]), e)
-            -> MatchPat(Tuple, [p_1,...,p_N], e')
+            -> MatchPatTag(Tuple, [p_1,...,p_N], e')
     (CONSPAT)  si c ∈ CASE, si ꜔ c -> c' et ꜔ e -> e'
         alors ꜔ Case(ConstructorPattern((n,c)), e)
-            -> MatchPat(Cons_Named(n), c', e')
+            -> MatchPatTag(Cons_Named(n), c', e')
+    (VARPAT) si ꜔ e -> e'
+        alors ꜔ Case(VarPattern(x), e, l)
+            -> MatchPatVar((x, l), e', l))
+    (WILDPAT) si ꜔ e -> e' 
+        alors ꜔ Case(WildcardPattern(), e, l)
+            -> MatchPatVar((n, l), e', l)
     

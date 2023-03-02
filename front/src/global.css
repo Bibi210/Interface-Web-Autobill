@@ -151,7 +151,9 @@ span.output{
 pre #text{
   max-width: 100%;
 }
-pre.types, pre.print{
+span.types, pre.print{
+  
+  font-family: 'Monaco', sans-serif !important;
   font-size: 1.1rem;
   padding-left: 1.5rem;
 }
@@ -184,4 +186,12 @@ select::before{
   font-size: 12px;
   top: 0;
   z-index: 1000;
+}
+
+.mode{
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 700;
 }

@@ -15,38 +15,54 @@ import { EditorView } from "codemirror"
 } */
 function App() {
   const selectNode = useRef(null)
+  const modeNode = useRef(null)
   const [code, setCode] = useState(billPrompts.lists)
 
-  const [types, setTypes] = useState('lists')
-  const [print, setPrint] = useState('')
-  const editor = useRef(null);
+  const [mode, setMode] = useState("LCBPV -> Equation")
+  const [types, setTypes] = useState("")
+  const [print, setPrint] = useState("")
+  const editor = useRef(null)
   const { state, setState, view } = useCodeMirror({
     container: editor.current,
     value: code,
     onChange: (val, _) => setCode(val),
     height: "100%",
-    maxWidth:"60vw",
+    maxWidth: "60vw",
     theme: oneDark,
-    extensions:[StreamLanguage.define(lcbpv), EditorView.lineWrapping],
+    extensions: [StreamLanguage.define(lcbpv), EditorView.lineWrapping],
     indentWithTab: true,
     className: "editor",
-    basicSetup:{
+    basicSetup: {
       syntaxHighlighting: true,
-    }
-  });
-  function handleSelect(){
+    },
+  })
+  function handleSelect() {
     let val = selectNode.current?.value
     setCode(billPrompts[val])
-    setTypes(val)
   }
   const evalCode = () => {
-    let evaluation
-    if(types==='lists'){
-      evaluation = ml.parse(code)
-    } else{
-      evaluation = ml.ast(code)
+    try {
+      let evaluation
+      switch (mode) {
+        case "LCBPV -> Equation":
+          evaluation = ml.parse(code)
+          break
+        case "MiniML -> MiniML_AST":
+          evaluation = ml.ast(code)
+          break
+        case "MiniML -> LCBPV_AST":
+          evaluation = ml.translate(code)
+          break
+        case "MiniML -> Equation":
+          evaluation = ml.interprete(code)
+          break
+      }
+      console.log(evaluation)
+      setPrint(evaluation.resultat !== "" ? evaluation.resultat : "")
+      setTypes(evaluation.erreur !== "" ? evaluation.erreur : "")
+    } catch (error) {
+      setTypes(error[2].c)
     }
-    setPrint(evaluation.resultat)
   }
   return (
     <>
@@ -62,13 +78,43 @@ function App() {
         <section>
           <div ref={editor} />
           <footer>
-            <select ref={selectNode} onChange={(e) => handleSelect()} name="" id="">
-              {
-                Object.keys(billPrompts).map((elem,i) => (
-                  <option key={i} value={elem}>{elem}</option>
-                ))
-              }
-            </select>
+            <div className="mode">
+              <span>Mode</span>
+              <select
+                ref={modeNode}
+                name=""
+                id=""
+                onChange={(e) => setMode(modeNode.current?.value)}
+              >
+                <option value={"LCBPV -> Equation"}>
+                  {"LCPBV -> Equation"}
+                </option>
+                <option value={"MiniML -> MiniML_AST"}>
+                  {"MiniML -> MiniML_AST"}
+                </option>
+                <option value={"MiniML -> LCBPV_AST"}>
+                  {"MiniML -> LCBPV_AST"}
+                </option>
+                <option value={"MiniML -> Equation"}>
+                  {"MiniML -> Equation"}
+                </option>
+              </select>
+            </div>
+            <div className="mode">
+              <span>Programme</span>
+              <select
+                ref={selectNode}
+                onChange={(e) => handleSelect()}
+                name=""
+                id=""
+              >
+                {Object.keys(billPrompts).map((elem, i) => (
+                  <option key={i} value={elem}>
+                    {elem}
+                  </option>
+                ))}
+              </select>
+            </div>
             <button onClick={() => evalCode()}>
               <span>Run</span>
               <span>⌘⏎</span>
@@ -79,14 +125,8 @@ function App() {
           <aside>
             <span className="output">Output</span>
           </aside>
-          {
-            print ? 
-            <pre className="print">
-              {print}
-            </pre>
-            : ''
-          }
-
+          {print ? <pre className="print">{print}</pre> : ""}
+          {types ? <span className="types">{types}</span> : ""}
         </section>
       </main>
     </>

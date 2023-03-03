@@ -1,6 +1,7 @@
 %{
   open AstML
   open HelpersML
+  open Autobill.Misc
 
     let unit_expr pos = 
     { enode = Litteral Unit
@@ -223,7 +224,7 @@ pattern :
 | constructor_ident = LConstructorIdent {
   ConstructorPattern
       { constructor_ident
-      ; content = [LitteralPattern Unit]
+      ; content = []
       }
 }
 | constructor_ident = LConstructorIdent; LOpenPar ; hd = pattern ; LTupleInfixe; tail = separated_nonempty_list(LTupleInfixe,pattern);LClosePar {

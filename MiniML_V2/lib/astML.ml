@@ -17,12 +17,12 @@ type pre_etype =
 
 and etype =
   { etype : pre_etype
-  ; tloc : HelpersML.position
+  ; tloc : Autobill.Misc.position
   }
 
 type variable =
   { basic_ident : string
-  ; vloc : HelpersML.position
+  ; vloc : Autobill.Misc.position
   }
 
 and prog = prog_node list
@@ -33,7 +33,7 @@ and prog_node =
 
 and def =
   { dnode : pre_def
-  ; dloc : HelpersML.position
+  ; dloc : Autobill.Misc.position
   }
 
 and pre_def =
@@ -55,7 +55,7 @@ and pre_def =
 and newconstructor_case =
   { constructor_ident : string
   ; c_of : etype list
-  ; loc : HelpersML.position
+  ; loc : Autobill.Misc.position
   }
 
 and litteral =
@@ -65,7 +65,7 @@ and litteral =
 
 and expr =
   { enode : pre_expr
-  ; eloc : HelpersML.position
+  ; eloc : Autobill.Misc.position
   }
 
 and callable =
@@ -114,8 +114,8 @@ and pre_expr =
 and match_case =
   { pattern : pattern
   ; consequence : expr
-  ; conseq_loc : HelpersML.position
-  ; pattern_loc : HelpersML.position
+  ; conseq_loc : Autobill.Misc.position
+  ; pattern_loc : Autobill.Misc.position
   }
 
 and pattern =

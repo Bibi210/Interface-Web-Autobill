@@ -49,7 +49,7 @@ rule token = parse
 | "with" {LWith}
 | '_' {LUnderScore}
 | bool as boolean          {Lbool (bool_of_string boolean) }
-| vartype as usertype {LVarType usertype}
+| vartype as usertype {LVarType (List.nth (String.split_on_char '\'' usertype) 1)}
 | basic_ident as ident {getToken ident}
 | constructeur_ident as cident {LConstructorIdent cident}
 | white* { token lexbuf }

@@ -1,0 +1,90 @@
+open Ast
+open FullAst
+open Vars
+open Types
+open Constructors
+open Prelude
+
+
+
+module Make () = struct
+
+  let init_env = (Var.Env.empty, CoVar.Env.empty)
+
+
+  let bind_var v (vars,cos) = (Var.Env.add v MulZero vars, cos)
+
+  let bind_covar a (vars, cos) =
+    (vars,  CoVar.Env.add a MulZero cos)
+
+  let annot_var v info (vars, cos) = (Var.Env.update v (update info) vars, cos)
+
+  let annot_covar a info (vars, cos) = (vars, CoVar.Env.update a (update info) cos)
+
+  let use_var v = annot_var v MulOne
+
+  let use_covar a = annot_covar a MulOne
+
+  let gocons c k env = match c with
+    | Unit -> ()
+    | Thunk x | Inj (_, _, x) ->  k env x
+    | Tupple xs | PosCons (_, xs) -> List.fold_left k env xs
+
+  let godestr d kx ka env = match d with
+    | Closure a | Proj (_, _, a) -> ka env a
+    | Call (xs, a) | NegCons (_, xs, a) -> List.fold_left kx (ka env a) xs
+
+  let rec goval env (MetaVal v) = gopreval env v.node
+
+  and gostk env (MetaStack s) = goprestk env s.node
+
+  and gocmd env (Command c) =
+    goval env c.valu; gostk env c.stk
+
+  and gopreval env = function
+    | Var v -> use_var v
+    | CoTop -> ()
+    | Bindcc {bind=(a,_); cmd; _}
+    | Box {bind=(a,_); cmd; _} -> gocmd (bind_covar env a) cmd
+    | Fix {self=(x,_); cont=(a,_); cmd} ->
+      bind_var x; annot_var x MulMany;
+      bind_covar a;
+      gocmd cmd
+    | Cons c -> gocons c goval
+    | Pack (_, _, v) -> goval v
+    | Spec {bind=(a,_); cmd; _} -> bind_covar a; gocmd cmd
+    | Destr patts -> patts |> List.iter (fun (patt, cmd) ->
+        godestr patt (fun (x,_) -> bind_var x) (fun (a,_) -> bind_covar a);
+        gocmd cmd
+      )
+
+  and goprestk env = function
+    | Ret a -> use_covar a
+    | CoZero -> ()
+    | CoBind {bind=(x,_); cmd; _} -> bind_var x; gocmd cmd
+    | CoBox {stk;_} -> gostk stk
+    | CoFix stk -> gostk stk
+    | CoPack {bind=(x,_); cmd; _} -> bind_var x; gocmd cmd
+    | CoSpec (_, _, stk) -> gostk stk
+    | CoDestr d -> godestr d goval gostk
+    | CoCons patts -> patts |> List.iter (fun (patt,cmd) ->
+        gocons patt (fun (x,_) -> bind_var x);
+        gocmd cmd
+      )
+
+  let goitem = function
+    | Value_declaration {name;_} -> bind_var name
+    | Value_definition {name; content;_} -> goval content; bind_var name
+    | Command_execution {content; _} -> gocmd content
+
+  let goprog items =
+    List.iter goitem items;
+    !vars, !covars
+
+end
+
+let infer_multiplicities (pre,prog) =
+  let open Make () in
+  let varmul, covarmul = goprog prog in
+  pre := {!pre with var_multiplicities = varmul; covar_multiplicities = covarmul};
+  (pre, prog)

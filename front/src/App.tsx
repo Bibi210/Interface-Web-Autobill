@@ -1,3 +1,4 @@
+//@ts-ignore
 import { useRef, useState } from "react"
 import CodeMirror, { useCodeMirror } from "@uiw/react-codemirror"
 import { oneDark } from "@codemirror/theme-one-dark"
@@ -20,6 +21,7 @@ function App() {
   const [types, setTypes] = useState('')
   const [print, setPrint] = useState('')
   const editor = useRef(null);
+  let res = ""
   const { state, setState, view } = useCodeMirror({
     container: editor.current,
     value: code,
@@ -45,6 +47,28 @@ function App() {
     // setTypes(evaluation.types)
     // setPrint(evaluation.resultat == "" ? evaluation.erreurs : evaluation.resultat)
   }
+  let erreur = "hi";
+  const [response, setResponse] = useState('');
+  function handleClick() {
+    console.log("ready to send");
+    fetch('http://localhost:3001/api/run-code', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset = UTF-8'
+
+      },
+      body: JSON.stringify({ code: code }) 
+    })
+      .then(res => res.json())
+      .then(data => {setResponse(data.result);
+        res = data.result.resultat;
+        console.log(res)
+      })
+      .catch(error => {console.log("error detected");
+        console.error(error)});
+      console.log("recieved result");
+
+  }
   return (
     <>
       <header className="container">
@@ -66,7 +90,7 @@ function App() {
                 ))
               }
             </select>
-            <button onClick={() => evalCode()}>
+            <button onClick={() => handleClick()}>
               <span>Run</span>
               <span>⌘⏎</span>
             </button>
@@ -79,14 +103,14 @@ function App() {
           {
             print ? 
             <pre className="print">
-              {print}
+              {res}
             </pre>
             : ''
           }
           {
             types ? 
             <pre className="types" >
-              {types}
+              {res}
             </pre>
             : ''
           }

@@ -85,9 +85,7 @@ let rec reduct_match prog ((Raw_Cons cons) as c) patts default =
   | (Raw_Cons patt, cmd) :: patts ->
     if cons.tag = patt.tag then
       let env = List.fold_left2
-          (fun env (x,_) v -> typenv_add env x v) (env prog) patt.typs cons.typs in
-      let env = List.fold_left2
-          (fun env (x,_) v -> typenv_add env x v) env patt.idxs cons.idxs in
+          (fun env (x,_) v -> typenv_add env x v) (env prog) patt.idxs cons.idxs in
       let env = List.fold_left2
           (fun env (x,_) v -> env_add env x v) env patt.args cons.args in
       (env, cmd)
@@ -104,9 +102,7 @@ let rec reduct_comatch prog ((Raw_Destr destr) as d) copatts default
   | (Raw_Destr copatt, cmd) :: copatts ->
     if copatt.tag = destr.tag then
       let env = List.fold_left2
-          (fun env (x,_) v -> typenv_add env x v) (env prog) copatt.typs destr.typs in
-      let env = List.fold_left2
-          (fun env (x,_) v -> typenv_add env x v) env copatt.idxs destr.idxs in
+          (fun env (x,_) v -> typenv_add env x v) (env prog) copatt.idxs destr.idxs in
       let env = List.fold_left2
           (fun env (x,_) v -> env_add env x v) env copatt.args destr.args in
       let env = coenv_add env (fst copatt.cont) destr.cont in

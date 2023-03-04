@@ -108,12 +108,10 @@ typ:
   | t = delim_typ {t}
   | t = infix_tycons_app {t}
   | c = TCONS args = nonempty_list(delim_typ) {app (tvar c) args}
-  | FFUN args = list(delim_typ) ARROW ret = typ {func (ret::args)}
+  | FFUN args = list(delim_typ) ARROW ret = typ {func args ret}
 
 delim_typ:
   | LPAREN t = typ RPAREN {t}
-  | IINT {Types.cons Types.Int}
-  | BBOOL {Types.cons Types.Bool}
   | UUNIT {unit_t}
   | ZZERO {zero}
   | TTOP {top}
@@ -244,11 +242,11 @@ cons:
   | c = consvar
     privates = private_args(or_underscore(sorted_tyvar))
     args = args_paren(typed_var)
-    { cons (PosCons c) [] privates args }
+    { cons (PosCons c) privates args }
   | UNIT {unit}
-  | INT LCURLY n = NUM RCURLY LPAREN RPAREN { cons (Int n) [] [] [] }
-  | TRUE { cons (Bool true) [] [] [] }
-  | FALSE { cons (Bool false) [] [] [] }
+  | INT LCURLY n = NUM RCURLY LPAREN RPAREN { cons (Int n) [] [] }
+  | TRUE { cons (Bool true) [] [] }
+  | FALSE { cons (Bool false) [] [] }
   | TUPPLE LPAREN vs = separated_list(COMMA, typed_var) RPAREN { tuple vs }
   | LEFT LPAREN a = typed_var RPAREN {inj 1 2 a}
   | RIGHT LPAREN b = typed_var RPAREN {inj 2 2 b}
@@ -262,7 +260,7 @@ pre_destr:
   | cons = destrvar
     privates = private_args(or_underscore(sorted_tyvar))
     args = args_paren(typed_var)
-    { destr (NegCons cons) [] privates args }
+    { destr (NegCons cons) privates args }
   | CALL LPAREN vars = separated_list(COMMA, typed_var) RPAREN
     {call vars}
   | YES  LPAREN RPAREN {proj 1 2}
@@ -279,14 +277,14 @@ stack_destr:
   | d = destrvar
     privates = private_args(or_underscore(typ))
     args = args_paren(value)
-    {destr (NegCons d) [] privates args}
+    {destr (NegCons d) privates args}
 
 
 value_cons:
   | UNIT LPAREN RPAREN { unit }
-  | INT LCURLY n = NUM RCURLY LPAREN RPAREN { cons (Int n) [] [] [] }
-  | TRUE { cons (Bool true) [] [] [] }
-  | FALSE { cons (Bool false) [] [] []}
+  | INT LCURLY n = NUM RCURLY LPAREN RPAREN { cons (Int n) [] [] }
+  | TRUE { cons (Bool true) [] [] }
+  | FALSE { cons (Bool false) [] []}
   | TUPPLE LPAREN xs = separated_list(COMMA, value) RPAREN {tuple xs}
   | LEFT LPAREN a = value RPAREN {inj 1 2 a}
   | RIGHT LPAREN b = value RPAREN {inj 2 2 b}
@@ -295,7 +293,7 @@ value_cons:
   | c = consvar
     privates = private_args(or_underscore(typ))
     args = args_paren(value)
-    {cons (PosCons c) [] privates args}
+    {cons (PosCons c) privates args}
 
 (* Méta-langage *)
 
@@ -304,7 +302,7 @@ data_cons_def:
     privates = private_args(sorted_tyvar_def)
     args = args_paren(typ)
     equations = eqns
-    {cons (PosCons c) [] privates args, equations}
+    {cons (PosCons c) privates args, equations}
 
 codata_cons_def:
   | THIS DOT d = destrvar
@@ -312,7 +310,7 @@ codata_cons_def:
     args = args_paren(typ)
     DOT RET LPAREN typ = typ RPAREN
     equations = eqns
-    {destr (NegCons d) [] privates args typ, equations }
+    {destr (NegCons d) privates args typ, equations }
 
 prog:
   | EOF {[]}

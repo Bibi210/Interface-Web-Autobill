@@ -18,30 +18,48 @@ let trans_litl = function
   | Unit -> Expr_Constructor (Unit, [])
 ;;
 
-let unary_closure op loc =
-  let opv1 = generate_variable loc in
-  let exp_opv1 = Expr_Var opv1, loc in
-  Expr_Closure
-    ( Exp
-    , ( Expr_Get
-          [ GetPatTag
-              ( (Call, loc)
-              , [ opv1 ]
-              , (Expr_Thunk (Expr_Mon_Prim (op, exp_opv1), loc), loc)
-              , loc )
-          ]
-      , loc ) )
-;;
+let rec make_unary_closure op loc =
+  let arg = { basic_ident = HelpersML.generate_name (); vloc = loc } in
+  let expr_var = Some { enode = Variable arg; eloc = loc } in
+  let e, _ =
+    trans_expr
+      (HelpersML.func_curryfy
+         [ arg ]
+         { enode = CallUnary { arg = expr_var; op }; eloc = loc })
+  in
+  e
 
-let rec trans_expr e =
+and make_binary_closure args op loc =
+  let arg1 = { basic_ident = HelpersML.generate_name (); vloc = loc } in
+  let expr_var1 = { enode = Variable arg1; eloc = loc } in
+  let closure, _ =
+    trans_expr
+      (match args with
+      | [] ->
+        let arg2 = { basic_ident = HelpersML.generate_name (); vloc = loc } in
+        let expr_var2 = { enode = Variable arg2; eloc = loc } in
+        HelpersML.func_curryfy
+          [ arg1; arg2 ]
+          { enode = CallBinary { args = [ expr_var1; expr_var2 ]; op }; eloc = loc }
+      | [ hd ] ->
+        HelpersML.func_curryfy
+          [ arg1 ]
+          { enode = CallBinary { args = [ expr_var1; hd ]; op }; eloc = loc }
+      | _ -> failwith "Unexpected number of arguments on binary closure")
+  in
+  closure
+
+and trans_expr e =
   let e_loc = e.eloc in
   ( (match e.enode with
     | Litteral l -> trans_litl l
     | Variable v -> Expr_Var (trans_var v)
     | Tuple tpl -> Expr_Constructor (Tuple, trans_expr_ls tpl)
     | CallUnary { op; arg = Some arg } -> Expr_Mon_Prim (op, trans_expr arg)
-    | CallUnary { op; arg = None } -> unary_closure op e_loc
-    | CallBinary { op; args } -> failwith ""
+    | CallUnary { op; arg = None } -> make_unary_closure op e_loc
+    | CallBinary { op; args = first :: second :: _ } ->
+      Expr_Bin_Prim (op, trans_expr first, trans_expr second)
+    | CallBinary { op; args } -> make_binary_closure args op e_loc
     | Construct construct ->
       Expr_Constructor
         (Cons_Named construct.constructor_ident, trans_expr_ls construct.to_group)

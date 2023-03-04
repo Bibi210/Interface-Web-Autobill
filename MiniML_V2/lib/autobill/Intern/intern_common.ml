@@ -137,7 +137,7 @@ type sort_check_env = {
   }
 
 
-let empty_sortcheck () = {
+let initial_sortcheck () = {
   prelude = Prelude.empty_prelude ();
 
   sort_vars = StringEnv.empty;
@@ -153,8 +153,6 @@ let empty_sortcheck () = {
   varsorts = Var.Env.empty;
   covarsorts = CoVar.Env.empty;
   tyvarsorts = TyVar.Env.empty;
-(* INVARIANT: if a value in 'unifier' as a Loc node, then it is at the root.
-   This implies it must be the only one appearing in the value *)
   unifier = USortVar.Env.empty
 }
 
@@ -200,11 +198,6 @@ let rec intern_sort env = function
     try Index (StringEnv.find i env.sort_vars) with
     | Not_found -> fail_undefined_sort i
 
-let rec unintern_sort = function
-  | Base p -> Base p
-  | Index i -> Index (SortVar.to_string i)
-  | Arrow (s,t) -> Arrow (unintern_sort s, unintern_sort t)
-  | Qualifier -> Qualifier
 
 let rec intern_type env scope = function
 
@@ -226,8 +219,6 @@ let rec intern_type env scope = function
             with _ -> fail_undefined_type cons loc in
           Cons name
         | Unit -> Unit
-        | Int -> Int
-        | Bool -> Bool
         | Zero -> Zero
         | Top -> Top
         | Bottom -> Bottom

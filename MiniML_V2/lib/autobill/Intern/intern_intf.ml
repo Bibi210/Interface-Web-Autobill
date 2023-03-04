@@ -3,7 +3,7 @@ open Intern_prelude
 open Intern_prog
 
 let internalize_prelude prog =
-  let env = empty_sortcheck () in
+  let env = initial_sortcheck () in
   let env = internalize_all_sortvar env prog in
   let env = internalize_all_typcons env prog in
   let env = List.fold_left
@@ -32,6 +32,7 @@ let string_of_intern_ast prog =
   Format.flush_str_formatter ()
 
 let internalize prog =
+  let prog = PrimitivePrelude.with_primitives prog in
   let prog, env = internalize_prelude prog in
   let prog, env = intern_prog env prog in
   prog, env

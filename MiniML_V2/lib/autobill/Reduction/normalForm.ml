@@ -89,38 +89,33 @@ and stack_nf env stk = match stk with
 
 and cons_nf prog (Raw_Cons cons) = Raw_Cons {
     tag = cons.tag;
-    typs = List.map (typ_nf prog) cons.typs;
     idxs = List.map (typ_nf prog) cons.idxs;
     args = List.map (metaval_nf prog) cons.args;
   }
 
 and destr_nf prog (Raw_Destr cons) = Raw_Destr {
     tag = cons.tag;
-    typs = List.map (typ_nf prog) cons.typs;
     idxs = List.map (typ_nf prog) cons.idxs;
     args = List.map (metaval_nf prog) cons.args;
     cont = metastack_nf prog cons.cont
   }
 
 and patt_nf env (patt, cmd) =
-  let Raw_Cons { tag; idxs; typs; args } = patt in
-  let env, typs = List.fold_left_map
-      (fun env (x,t) -> typenv_declare env x, (x,t)) env typs in
+  let Raw_Cons { tag; idxs; args } = patt in
   let env, idxs = List.fold_left_map
       (fun env (x,t) -> typenv_declare env x, (x,t)) env idxs in
   let env, args = List.fold_left_map
       (fun env (x,t) -> (env_declare env x, (x, typ_nf env t))) env args in
   let cmd = cmd_nf env cmd in
-  (Raw_Cons {tag; idxs; typs; args}, cmd)
+  (Raw_Cons {tag; idxs; args}, cmd)
 
 and copatt_nf env (copatt, cmd) =
-  let Raw_Destr { tag; idxs; typs; args; cont } = copatt in
-  let env, typs = List.fold_left_map typbind_nf env typs in
+  let Raw_Destr { tag; idxs; args; cont } = copatt in
   let env, idxs = List.fold_left_map typbind_nf env idxs in
   let env, args = List.fold_left_map bind_nf env args in
   let env, cont = cobind_nf env cont in
   let cmd = cmd_nf env cmd in
-  (Raw_Destr {tag; idxs; typs; args; cont}, cmd)
+  (Raw_Destr {tag; idxs; args; cont}, cmd)
 
 and metaval_nf prog (MetaVal v) =
   MetaVal {

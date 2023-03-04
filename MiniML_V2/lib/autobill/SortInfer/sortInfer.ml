@@ -99,7 +99,7 @@ let unify_def ?debug env item =
 
   and unify_typecons upol1 (tcons : 'a Types.type_cons) =
     match tcons with
-    | Unit | Zero | Int | Bool | Closure | Prod _ | Sum _ -> unify upol1 pos_uso
+    | Unit | Zero | Closure | Prod _ | Sum _ -> unify upol1 pos_uso
     | Top | Bottom | Thunk | Fix | Choice _ | Fun _ -> unify upol1 neg_uso
     | Qual _ -> unify upol1 (Litt Qualifier)
     | Cons cons ->
@@ -191,7 +191,6 @@ let unify_def ?debug env item =
     let so = match cons.tag with Thunk -> sort_negtype | _ -> sort_postype in
     unify upol (Loc (loc, Litt so));
     let Consdef { constructor = Raw_Cons def; _ } = def_of_cons prelude cons.tag in
-    List.iter2 (fun t (_, so) -> unify_typ (Litt so) t) cons.typs def.typs;
     List.iter2 (fun t (_, so) -> unify_typ (Litt so) t) cons.idxs def.idxs;
     List.iter (unify_meta_val pos_uso) cons.args
 
@@ -199,7 +198,6 @@ let unify_def ?debug env item =
     let so = match destr.tag with Closure _ -> sort_postype | _ -> sort_negtype in
     unify upol (Loc (loc, Litt so));
     let Destrdef {destructor = Raw_Destr def; _} = def_of_destr prelude destr.tag in
-    List.iter2 (fun t (_, so) -> unify_typ (Litt so) t) destr.typs def.typs;
     List.iter2 (fun t (_, so) -> unify_typ (Litt so) t) destr.idxs def.idxs;
     unify_meta_stk neg_uso destr.cont;
     List.iter (unify_meta_val pos_uso) destr.args
@@ -207,14 +205,9 @@ let unify_def ?debug env item =
   and unify_patt loc upol (Raw_Cons patt, cmd) =
     let so = match patt.tag with Thunk -> sort_negtype | _ -> sort_postype in
     let Consdef { constructor = Raw_Cons def; _} = def_of_cons prelude patt.tag in
-    let def_typs = List.map (fun (t,so) -> (t, Litt so)) def.typs in
     let def_idxs = List.map (fun (t,so) -> (t, Litt so)) def.idxs in
     unify upol (Litt so);
     List.iter (fun bind -> unify_bind pos_uso bind loc) patt.args;
-    List.iter2 (fun (x,so) (_,so') ->
-        unify_tyvar_sort so x;
-        unify_tyvar_sort so' x)
-      def_typs patt.typs;
     List.iter2 (fun (x,so) (_,so') ->
         unify_tyvar_sort so x;
         unify_tyvar_sort so' x)
@@ -227,14 +220,9 @@ let unify_def ?debug env item =
       | _ ->  unify upol (Loc (loc, neg_uso))
     end;
     let Destrdef {destructor = Raw_Destr def; _} = def_of_destr prelude copatt.tag in
-    let def_typs = List.map (fun (t,so) -> (t, Litt so)) def.typs in
     let def_idxs = List.map (fun (t,so) -> (t, Litt so)) def.idxs in
     List.iter (fun bind -> unify_bind pos_uso bind loc) copatt.args;
     unify_cobind neg_uso copatt.cont loc;
-    List.iter2 (fun (x, so) (_, so')->
-        unify_tyvar_sort so x;
-        unify_tyvar_sort so' x)
-      def_typs copatt.typs;
     List.iter2 (fun (x, so) (_, so')->
         unify_tyvar_sort so x;
         unify_tyvar_sort so' x)

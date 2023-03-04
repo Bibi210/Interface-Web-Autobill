@@ -117,27 +117,23 @@ let export_ast env item =
 
   and export_cons (Raw_Cons c) = Raw_Cons {
       tag = c.tag;
-      typs = List.map export_typ c.typs;
       idxs = List.map export_typ c.idxs;
       args = List.map export_meta_val c.args}
 
   and export_destr (Raw_Destr d) = Raw_Destr {
       tag = d.tag;
-      typs = List.map export_typ d.typs;
       idxs = List.map export_typ d.idxs;
       args = List.map export_meta_val d.args;
       cont = export_meta_stk d.cont}
 
   and export_patt (Raw_Cons patt) = Raw_Cons {
       tag = patt.tag;
-      typs = List.map export_typebind patt.typs;
       idxs = List.map export_typebind patt.idxs;
       args = List.map export_bind patt.args
     }
 
   and export_copatt (Raw_Destr copatt) = Raw_Destr {
       tag = copatt.tag;
-      typs = List.map export_typebind copatt.typs;
       idxs = List.map export_typebind copatt.idxs;
       args = List.map export_bind copatt.args;
       cont = export_cobind copatt.cont

@@ -18,49 +18,28 @@ let rec visit_many_vars vars k = function
       let vars, t = visit_many_vars vars k t in
       vars, h :: t
 
-let fill_out_private_of_cons env loc (Raw_Cons cons) mk =
-  let mk so = mk (unintern_sort so) in
-  match cons.tag with
-  | PosCons tag ->
-    let new_cons =
-      try StringEnv.find tag !env.conses
-      with Not_found -> fail_undefined_cons tag loc in
-    let Consdef {constructor = Raw_Cons def; _} =
-      def_of_cons !env.prelude (PosCons new_cons) in
-    let rec go priv typs = match priv, typs with
-      | [], [] -> []
-      | (_,so)::t, [] -> (mk so)::(go t [])
-      | (_,so)::t, None::t' -> (mk so)::(go t t')
-      | _::t, Some h::t' -> Some h :: (go t t')
-      | [], _::_ -> assert false in
-    Raw_Cons { cons with
-               typs = go def.typs cons.typs;
-               idxs = go def.idxs cons.idxs
-             }
-  | _ -> Raw_Cons cons
+let fill_out_private_of_cons env (Raw_Cons cons) mk =
+  let Consdef {constructor = Raw_Cons def; _} = def_of_cons !env.prelude cons.tag in
+  let rec go priv typs = match priv, typs with
+    | [], [] -> []
+    | (_,so)::t, [] -> (mk so)::(go t [])
+    | (_,so)::t, None::t' -> (mk so)::(go t t')
+    | _::t, Some h::t' -> h :: (go t t')
+    | [], _::_ -> assert false in
+  Raw_Cons {cons with idxs = go def.idxs cons.idxs}
 
-let fill_out_private_of_destr env loc (Raw_Destr destr) mk =
-  let mk so = mk (unintern_sort so) in
-  match destr.tag with
-  | NegCons tag ->
-    let new_destr =
-      try StringEnv.find tag !env.destrs
-      with Not_found -> fail_undefined_cons tag loc in
-    let Destrdef {destructor = Raw_Destr def; _} =
-      def_of_destr !env.prelude (NegCons new_destr) in
-    let rec go priv typs = match priv, typs with
-      | [], [] -> []
-      | (_,so)::t, [] -> (mk so)::(go t [])
-      | (_,so)::t, None::t' -> (mk so)::(go t t')
-      | _::t, Some h::t' -> Some h :: (go t t')
-      | [], _::_ -> assert false in
-    Raw_Destr { destr with
-                typs = go def.typs destr.typs;
-                idxs = go def.idxs destr.idxs
-              }
-  | _ -> Raw_Destr destr
+let fill_out_private_of_destr env (Raw_Destr destr) mk =
+  let Destrdef {destructor = Raw_Destr def; _} =
+    def_of_destr !env.prelude destr.tag in
+  let rec go priv typs = match priv, typs with
+    | [], [] -> []
+    | (_,so)::t, [] -> (mk so)::(go t [])
+    | (_,so)::t, None::t' -> (mk so)::(go t t')
+    | _::t, Some h::t' -> h :: (go t t')
+    | [], _::_ -> assert false in
+  Raw_Destr { destr with idxs = go def.idxs destr.idxs}
 
-let visit_cons vars env loc kx kt ki (Raw_Cons cons) =
+let visit_cons vars env loc kx ki (Raw_Cons cons) =
   let tag = match cons.tag with
     | PosCons c -> begin
         try PosCons (StringEnv.find c !env.conses)
@@ -72,12 +51,11 @@ let visit_cons vars env loc kx kt ki (Raw_Cons cons) =
     | Int n -> Int n
     | Tupple l -> Tupple l
     | Inj (i,n) -> Inj (i,n) in
-  let vars, typs = List.fold_left_map kt vars cons.typs in
   let vars, idxs = List.fold_left_map ki vars cons.idxs in
   let vars, args = List.fold_left_map kx vars cons.args in
-  vars, Raw_Cons {tag; typs; idxs; args}
+  vars, Raw_Cons {tag; idxs; args}
 
-let visit_destr vars env loc kx kt ki ka (Raw_Destr destr) =
+let visit_destr vars env loc kx ki ka (Raw_Destr destr) =
   let tag = match destr.tag with
     | NegCons d -> begin
         try NegCons (StringEnv.find d !env.destrs)
@@ -86,11 +64,10 @@ let visit_destr vars env loc kx kt ki ka (Raw_Destr destr) =
     | Call l -> Call l
     | Proj (i,n) -> Proj (i,n)
     | Closure q -> Closure q in
-  let vars, typs = List.fold_left_map kt vars destr.typs in
   let vars, idxs = List.fold_left_map ki vars destr.idxs in
   let vars, args = List.fold_left_map kx vars destr.args in
   let vars, cont = ka vars destr.cont in
-  vars, Raw_Destr {tag; typs; idxs; args; cont}
+  vars, Raw_Destr {tag; idxs; args; cont}
 
 
 let intern_definition env declared_vars def =
@@ -261,48 +238,44 @@ let intern_definition env declared_vars def =
 
 
   and intern_cons env vars loc cons =
-    let mk _ = None in
-    let cons = fill_out_private_of_cons env loc cons mk in
+    let mk _ = tvar (TyVar.fresh ()) in
     let _, cons = visit_cons vars env loc
         (fun vars valu -> (vars, intern_val vars valu))
-        (fun vars typ ->  (vars, intern_type_annot env vars typ))
-        (fun vars typ ->  (vars, intern_type_annot env vars typ))
+        (fun vars typ ->  vars, Some (intern_type_annot env vars typ))
         cons in
-    cons
+    fill_out_private_of_cons env cons mk
 
   and intern_patt env scope loc patt =
-    let mk so = Some (TyVar.to_string (TyVar.fresh ()), Some so) in
-    let patt = fill_out_private_of_cons env loc patt mk in
+    let mk so = (TyVar.fresh (), Litt so) in
     let kx scope (name, typ) =
       let typ = intern_type_annot env scope typ in
       let scope = add_var scope name in
       let var = get_var scope name in
       scope, (var, typ) in
     let kt scope bind =
-      let (tvar, so) = match bind with
-        | None -> assert false
-        | Some x -> x in
-      let so = intern_sort !env so in
-      let scope = add_tyvar scope tvar in
-      let new_var = get_tyvar scope tvar in
-      (scope, (new_var, so)) in
-    visit_cons scope env loc kx kt kt patt
+      match bind with
+      | None -> scope, None
+      | Some (tvar, so) ->
+        let so = intern_sort !env so in
+        let scope = add_tyvar scope tvar in
+        let new_var = get_tyvar scope tvar in
+        (scope, Some (new_var, so)) in
+    let scope, patt = visit_cons scope env loc kx kt patt in
+    scope, fill_out_private_of_cons env patt mk
+
 
 
   and intern_destr env scope loc destr =
-    let mk _ = None in
-    let destr = fill_out_private_of_destr env loc destr mk in
-    let _,destr =  visit_destr scope env loc
+    let mk _ = tvar (TyVar.fresh ()) in
+    let _,destr = visit_destr scope env loc
         (fun vars valu -> (vars, intern_val vars valu))
-        (fun vars typ ->  (vars, intern_type_annot env vars typ))
-        (fun vars typ ->  (vars, intern_type_annot env vars typ))
+        (fun vars typ ->  vars, Some (intern_type_annot env vars typ))
         (fun vars stk -> (vars, intern_stk vars stk))
         destr in
-    destr
+    fill_out_private_of_destr env destr mk
 
   and intern_copatt env scope loc copatt =
-    let mk so = Some (TyVar.to_string (TyVar.fresh ()), Some so) in
-    let copatt = fill_out_private_of_destr env loc copatt mk in
+    let mk so = (TyVar.fresh (), Litt so) in
     let kx scope (name, typ) =
       let scope = add_var scope name in
       let var = get_var scope name in
@@ -314,14 +287,15 @@ let intern_definition env declared_vars def =
       let typ = intern_type_annot env scope typ in
       scope, (var, typ) in
     let kt scope bind =
-      let (tvar, so) = match bind with
-        | None -> assert false
-        | Some x -> x in
-      let so = intern_sort !env so in
-      let scope = add_tyvar scope tvar in
-      let new_var = get_tyvar scope tvar in
-      (scope, (new_var, so)) in
-    visit_destr scope env loc kx kt kt ka copatt
+      match bind with
+      | None -> scope, None
+      | Some (tvar, so) ->
+        let so = intern_sort !env so in
+        let scope = add_tyvar scope tvar in
+        let new_var = get_tyvar scope tvar in
+        (scope, Some (new_var, so)) in
+    let scope, copatt = visit_destr scope env loc kx kt ka copatt in
+    scope, fill_out_private_of_destr env copatt mk
 
   in
 

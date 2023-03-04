@@ -1,37 +1,7 @@
 %{
   open AstML
   open HelpersML
-  open Autobill.Misc
-
-  let unit_expr pos = 
-  { enode = Litteral Unit
-  ; eloc = pos
-  }
-
-  let func_curryfy args body =
-    List.fold_right
-      (fun a acc -> { enode = Lambda { arg =  a ; body = acc }; eloc = a.vloc })
-      args
-      body
-  
-
-  let functype_curryfy args body =
-    List.fold_right
-      (fun a acc ->
-        { etype = TypeLambda { arg =  a ; return_type = acc }; tloc = a.tloc })
-      args
-      body
-  ;;
-
-
-  let call_curryify func args =
-    List.fold_left
-      (fun acc a -> { enode = Call { func = acc ; arg =  a  }; eloc = a.eloc })
-      func
-      args
-  ;;
-
-
+  open Autobill.Misc  
 ;;
 %}
 %token EOF
@@ -42,12 +12,12 @@
 
 
 %token LOpenPar LClosePar 
-%token LSemiColon LDoubleSemiColon
+%token LSemiColon LDoubleSemiColon LRightAngleBraket LLeftAngleBraket
 %token LTupleInfixe LConsInfixe 
 %token LSimpleArrow
 %token LLet LFun LIn LType LRec LOf LMatch LWith LUnderScore
 
-%token LMult LOr LEqual LAnd LAdd LDiv LModulo LSub LNot
+%token LEqual LInf LMult LOr LTOr LTAnd  LAnd LAdd LDiv LModulo LSub LNot
 
 %start <prog> prog
 %%
@@ -109,10 +79,7 @@ def:
 newconstructor_case:
 | constructor_ident = LConstructorIdent{
   { constructor_ident
-  ; c_of = 
-      [{ etype = TypeUnit
-      ; tloc = position $startpos(constructor_ident) $endpos(constructor_ident)
-      }]
+  ; c_of = []
   ; loc = position $startpos(constructor_ident) $endpos(constructor_ident)
   }
 }
@@ -145,12 +112,11 @@ expr:
   ; eloc = position $startpos(op) $endpos(arg)
   }
 }
-/*
-| LOpenPar ; arg1 = expr ; func = binaryoperator ; arg2 = expr;LClosePar {
-  { enode = Call {func;args = [arg1;arg2]}
+| LOpenPar ; arg1 = option(expr) ; op = binaryoperator ; arg2 = option(expr);LClosePar {
+  { enode = CallBinary {op;args = List.filter_map (fun x -> x)[arg1;arg2]}
   ; eloc = position $startpos(arg1) $endpos(arg2)
   }
-} */
+} 
 | LOpenPar ; func = expr ; args = nonempty_list(expr) ; LClosePar {
     call_curryify func args
 }
@@ -179,23 +145,38 @@ expr:
   }
 }
 
-/*  | LOpenPar ; hd = expr ; LConsInfixe; tail = separated_nonempty_list(LConsInfixe,expr);LClosePar  {
+ | LLeftAngleBraket ; togrp = separated_nonempty_list(LSemiColon,expr) ; LRightAngleBraket  {
+  List.fold_right
+    (fun a acc ->
+      { enode = Construct { constructor_ident = "Cons"; to_group = [ a; acc ] }
+      ; eloc = position $startpos(togrp) $endpos(togrp)
+      })
+    togrp
+    { enode = Construct { constructor_ident = "Nil"; to_group = [] }
+    ; eloc = position $startpos($3) $endpos($3)
+    }
+} 
 
-}  */
-
-| constructor_ident =  LConstructorIdent; LOpenPar ; hd = expr ; LTupleInfixe; tail = separated_nonempty_list(LTupleInfixe,expr);LClosePar {
+| constructor_ident =  LConstructorIdent; LOpenPar ; togrp = separated_nonempty_list(LTupleInfixe,expr);LClosePar {
   { 
-    enode = Construct { constructor_ident ; to_group = hd::tail }
-  ; eloc = position $startpos(hd) $endpos(tail)
+    enode = Construct { constructor_ident ; to_group = togrp }
+  ; eloc = position $startpos(togrp) $endpos(togrp)
   }
 }
-| LOpenPar;constructor_ident =  LConstructorIdent;LClosePar  {
-  let pos = position $startpos(constructor_ident) $endpos(constructor_ident) in
+| constructor_ident =  LConstructorIdent  {
   {
-    enode = Construct { constructor_ident ; to_group = [unit_expr pos] }
-  ; eloc = pos
+    enode = Construct { constructor_ident ; to_group = [] }
+  ; eloc = position $startpos(constructor_ident) $endpos(constructor_ident)
   }
 }
+
+| LLeftAngleBraket;LRightAngleBraket  {
+  {
+    enode = Construct { constructor_ident = "Nil" ; to_group = [] }
+  ; eloc = position $startpos($1) $endpos($2)
+  }
+}
+
 | LLet; var = variable; args = nonempty_list(variable);  LEqual; func_body = expr; LIn ;content = expr{
     { enode = Binding {
       var ; init = func_curryfy args func_body
@@ -248,6 +229,26 @@ pattern :
   ; ploc = position $startpos($1) $endpos($1)
   }
 }
+|  LLeftAngleBraket; LRightAngleBraket{
+  { pnode = ConstructorPattern
+      { constructor_ident = "Nil"
+      ; content = []
+      }
+  ; ploc = position $startpos($1) $endpos($2)
+  }
+}
+
+| LLeftAngleBraket ; togrp = separated_nonempty_list(LSemiColon,pattern) ; LRightAngleBraket  {
+  List.fold_right
+    (fun a acc ->
+      { pnode = ConstructorPattern { constructor_ident = "Cons"; content = [ a; acc ] }
+      ; ploc = position $startpos(togrp) $endpos(togrp)
+      })
+    togrp
+    { pnode = ConstructorPattern { constructor_ident = "Nil"; content = [] }
+    ; ploc = position $startpos($3) $endpos($3)
+    }
+} 
 | constructor_ident = LConstructorIdent {
   { pnode = ConstructorPattern
       { constructor_ident
@@ -256,12 +257,12 @@ pattern :
   ; ploc = position $startpos(constructor_ident) $endpos(constructor_ident)
   }
 }
-| constructor_ident = LConstructorIdent; LOpenPar ; hd = pattern ; LTupleInfixe; tail = separated_nonempty_list(LTupleInfixe,pattern);LClosePar {
+| constructor_ident = LConstructorIdent; LOpenPar; togrp = separated_nonempty_list(LTupleInfixe,pattern);LClosePar {
   { pnode = ConstructorPattern
       { constructor_ident
-      ; content = hd::tail
+      ; content = togrp
       }
-  ; ploc = position  $startpos(hd) $endpos(tail)
+  ; ploc = position  $startpos(togrp) $endpos(togrp)
   }
   
 }
@@ -286,14 +287,18 @@ pattern :
 |LNot { Autobill.Lcbpv.Not }
 
 %inline binaryoperator:
-|LSub { Sub }
-|LDiv { Div }
-|LModulo { Modulo }
-|LAdd { Add }
-|LAnd{ BitAnd }
-|LAnd;LAnd { And }
-
-|LOr;LOr {Or}
+|LSub { Autobill.Lcbpv.Subs }
+|LDiv { Autobill.Lcbpv.Div }
+|LMult { Autobill.Lcbpv.Mult }
+|LModulo { Autobill.Lcbpv.Mod }
+|LAdd { Autobill.Lcbpv.Add }
+|LAnd;LAnd { Autobill.Lcbpv.And }
+|LOr;LOr {Autobill.Lcbpv.Or}
+|LTOr {Autobill.Lcbpv.Or}
+|LTAnd { Autobill.Lcbpv.And }
+|LEqual;LEqual {Autobill.Lcbpv.Int_Eq}
+|LInf;LEqual {Autobill.Lcbpv.Int_Leq}
+|LInf {Autobill.Lcbpv.Int_Lt}
 
 
 
@@ -330,13 +335,3 @@ etype:
   ; tloc = position $startpos(hd) $endpos(tail)
   }
   }
-
-
-
-
-
-
-
-
-
-

@@ -9,7 +9,6 @@ let constraint_as_string (prelude, items) =
   let module P = struct let it = prelude end in
   let open Elaborate.Make(P) in
   let x,_ = elab_prog_items items in
-  (* let x = (compress_cand (float_cexists x)) in *)
   pp_set_geometry str_formatter ~max_indent:130 ~margin:200;
   pp_constraint str_formatter x;
   pp_print_newline str_formatter ();

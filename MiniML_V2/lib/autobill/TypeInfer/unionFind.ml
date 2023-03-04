@@ -30,8 +30,6 @@ module type Unifier_params = sig
   val is_syntactic_sort : sort -> bool
   val eq : node -> node -> bool
   val mk_var : unit -> var
-  val var_of_int : int -> var
-  val int_of_var : var -> int
   val deep_of_var : var -> deep
   val deep_of_cons : deep list -> node -> deep
   val folded_of_deep : (var -> sort -> node folded) -> deep -> node folded
@@ -175,8 +173,7 @@ module Make (P : Unifier_params) = struct
       else
         u
     | None ->
-      let u = int_of_var a in
-      add_sort u sort;
+      let u = fresh_u sort in
       _var_env := List.cons (a,u) !_var_env;
       set u (Trivial rank);
       u
@@ -412,7 +409,7 @@ module Make (P : Unifier_params) = struct
       match List.assoc_opt u !ven with
       | Some a -> a
       | None ->
-        let a = var_of_int u in
+        let a = mk_var () in
         if Option.is_none (cell u) then
           set u (Trivial (-2));
         ven := (u, a) :: !ven;

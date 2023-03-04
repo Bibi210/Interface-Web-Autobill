@@ -87,8 +87,6 @@ let type_cons_names =
   ["Unit"; "Zero"; "Top"; "Bottom"; "Prod"; "Sum"; "Fun"; "Choice"; "Thunk"; "Closure"]
 
 type 'tycons type_cons =
-  | Int
-  | Bool
   | Unit
   | Zero
   | Top
@@ -110,8 +108,6 @@ let string_of_box_kind = function
 
 let pp_type_cons kvar fmt cons =
   match cons with
-  | Int -> pp_print_string fmt "Int"
-  | Bool -> pp_print_string fmt "Bool"
   | Unit -> pp_print_string fmt "Unit"
   | Zero -> pp_print_string fmt "Zero"
   | Top -> pp_print_string fmt "Top"
@@ -150,14 +146,14 @@ let app ?loc:(loc = dummy_pos) tfun args = TApp {tfun; args; loc}
 let boxed ?loc q t = app ?loc (cons Closure) [cons q;t]
 
 let unit_t = cons Unit
-let int = cons Int
-let bool = cons Bool
 let zero = cons Zero
 let top = cons Top
 let bottom = cons Bottom
+let int = cons (Cons Primitives.tycons_int)
+let bool = cons (Cons Primitives.tycons_bool)
 let prod ts = app (cons (Prod (List.length ts))) ts
 let sum ts = app (cons (Sum (List.length ts))) ts
-let func ts = app (cons (Fun (List.length ts - 1))) ts
+let func ts ret = app (cons (Fun (List.length ts))) (ret::ts)
 let choice ts = app (cons (Choice (List.length ts))) ts
 let typecons v args = app (cons (Cons v)) args
 let thunk_t t = app (cons Thunk) [t]

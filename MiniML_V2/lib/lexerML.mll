@@ -23,7 +23,6 @@ let newline = '\r' | '\n' | "\r\n"
 let vartype = [''']['a'-'z']['0'-'9']*
 
 rule token = parse
-| num+ as n       { Lint (int_of_string n) }
 | '(' {LOpenPar}
 | ')' {LClosePar}
 | ";;" {LDoubleSemiColon}
@@ -41,14 +40,20 @@ rule token = parse
 | '=' {LEqual}
 | '*' {LMult}
 | '|' {LOr}
+| "or" {LTOr}
+| "and" {LTAnd}
 | '&' {LAnd}
 | '+' {LAdd} 
 | '/' {LDiv} 
 | '%' {LModulo} 
 | '-' {LSub} 
+| '<' {LInf}
 | "match" {LMatch}
 | "with" {LWith}
 | '_' {LUnderScore}
+| '[' {LLeftAngleBraket} 
+| ']' {LRightAngleBraket}
+| num+ as n       { Lint (int_of_string n) }
 | bool as boolean          {Lbool (bool_of_string boolean) }
 | vartype as usertype {LVarType (List.nth (String.split_on_char '\'' usertype) 1)}
 | basic_ident as ident {getToken ident}
@@ -61,4 +66,6 @@ rule token = parse
 and multi_line_comment = parse
 | eof  { raise (Error "Never Ending Comment") }
 | "*)" { token lexbuf }
+| white* { multi_line_comment lexbuf }
+| newline          { Lexing.new_line lexbuf; multi_line_comment lexbuf }
 | _    { multi_line_comment lexbuf }

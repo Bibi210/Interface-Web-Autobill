@@ -145,31 +145,31 @@ module Make (U : Unifier_params) = struct
     pp_close_box fmt ()
 
   let _trace stack con post =
-  let fmt = err_formatter in begin
-    eprintf "@.==========================================@.";
-    eprintf "============== NEW CYCLE =================@.";
-    eprintf "==========================================@.";
-    eprintf "@.------------context stack---------------@.";
-    pp_kontext fmt stack;
-    eprintf "@.--------------constraint----------------@.";
-    pp_constraint fmt con;
-    eprintf "@.------------post-constraint-------------@.";
-    eprintf "global vars: @[<h>%a@]@." pp_uvars !existentials;
-    eprintf "global eqns: %a@." pp_eqns !model;
-    pp_formula fmt post;
-    eprintf "@.-------------type variables-------------@.";
-    let pp_bind fmt (x,(us,u)) =
-      fprintf fmt "v%d : forall @[<h>%a@]. %d"
-        x
-        pp_uvars us
-        u in
-    pp_print_list ~pp_sep:pp_comma_sep pp_bind fmt !_nvar_env;
-    eprintf "@.-------------substitution-------------@.";
-    eprintf "%a@." pp_subst !_state;
-  end
+    let fmt = err_formatter in begin
+      eprintf "@.==========================================@.";
+      eprintf "============== NEW CYCLE =================@.";
+      eprintf "==========================================@.";
+      eprintf "@.------------context stack---------------@.";
+      pp_kontext fmt stack;
+      eprintf "@.--------------constraint----------------@.";
+      pp_constraint fmt con;
+      eprintf "@.------------post-constraint-------------@.";
+      eprintf "global vars: @[<h>%a@]@." pp_uvars !existentials;
+      eprintf "global eqns: %a@." pp_eqns !model;
+      pp_formula fmt post;
+      eprintf "@.-------------type variables-------------@.";
+      let pp_bind fmt (x,(us,u)) =
+        fprintf fmt "v%d : forall @[<h>%a@]. %d"
+          x
+          pp_uvars us
+          u in
+      pp_print_list ~pp_sep:pp_comma_sep pp_bind fmt !_nvar_env;
+      eprintf "@.-------------substitution-------------@.";
+      eprintf "%a@." pp_subst !_state;
+    end
 
 
-    let rec compress_cand c =
+  let rec compress_cand c =
     let rec acc cc c : con list = match c with
       | CAnd [] -> cc
       | CAnd (h::t) -> acc (acc cc h) (CAnd t)
@@ -178,7 +178,7 @@ module Make (U : Unifier_params) = struct
       | CDef (x,s,u,con) -> CDef (x,s,u,compress_cand con) :: cc
       | CGoal lett ->
         CGoal {lett with inner = compress_cand lett.inner;
-                        outer = compress_cand lett.outer} :: cc
+                         outer = compress_cand lett.outer} :: cc
       | _ -> [c] @ cc in
     match acc [] c with
     | [d] -> d
@@ -294,13 +294,12 @@ module Make (U : Unifier_params) = struct
       reset_unifier ();
       let con, gen = elab x in
       if do_trace then _trace KEmpty con PTrue;
-      (* let con = compress_cand (float_cexists con) in *)
       let post = advance KEmpty con in
       let env = finalize_env () in
       let post = finalize_post_con env post in
       gen env, post
 
-   and advance stack con =
+    and advance stack con =
       if do_trace then _trace stack con PTrue;
       match con with
 
@@ -330,8 +329,8 @@ module Make (U : Unifier_params) = struct
                 exist_eqns; univ_eqns} ->
         enter ();
         let stack = KLet1 { typs; outer; quantification_duty;
-                          inner = stack; existentials; accumulated;
-                           univ_eqns; exist_eqns} in
+                            inner = stack; existentials; accumulated;
+                            univ_eqns; exist_eqns} in
         advance stack inner
 
     and backtrack stack post =
@@ -355,7 +354,7 @@ module Make (U : Unifier_params) = struct
               mess
               pp_uvars us
               pp_uvars vs
-           in
+        in
 
         tmp ("checking scheme") (accumulated, typs);
         (* Shorten paths we will take, normalize the variables *)
@@ -367,11 +366,11 @@ module Make (U : Unifier_params) = struct
         let existentials = List.fold_left insert_nodup [] existentials in
 
         accumulated |> List.iter (fun u ->
-        (* There sould be no cycles in cells of syntactic sorts *)
-        if not (occurs_check u) then begin
-          pp_subst err_formatter !_state;
-          raise (Cycle u);
-        end);
+            (* There sould be no cycles in cells of syntactic sorts *)
+            if not (occurs_check u) then begin
+              pp_subst err_formatter !_state;
+              raise (Cycle u);
+            end);
 
         tmp "checks passed, now lifting" (accumulated, typs);
         (* lower each variable, lowest-ranked vars first *)

@@ -91,8 +91,6 @@ and sort_infer_type loc env typ = match typ with
     let aux sort output = (TCons {node=output;loc}, sort) in
     begin match node with
       | Unit -> aux sort_postype Types.Unit
-      | Int -> aux sort_postype Int
-      | Bool -> aux sort_postype Bool
       | Zero -> aux sort_postype Zero
       | Top -> aux sort_negtype Top
       | Bottom -> aux sort_negtype Bottom
@@ -140,12 +138,14 @@ let intern_and_sort_check_eqn loc env scope = function
         args_sort args in
     Rel (rel', args)
 
-let sort_check_tycons_args env scope args =
+let sort_check_tycons_args ?(sort_check = (fun _ -> true)) env scope args =
 
   let scope, new_args = List.fold_left_map
       (fun scope (x,s) ->
+         let s = intern_sort env s in
+         if not (sort_check s) then raise (Failure x);
          let scope = add_tyvar scope x in
-         (scope, (get_tyvar scope x, intern_sort env s)))
+         (scope, (get_tyvar scope x, s)))
       scope
       args in
   let env = List.fold_left
@@ -200,12 +200,11 @@ let sort_check_one_item env item =
         | _ -> fail_bad_constructor loc in
       if StringEnv.mem tag env.conses then
         fail_double_def ("constructor " ^ tag) loc;
-      let env, scope, new_typs = sort_check_tycons_args env scope cons.typs in
-      let env, scope, new_idxs = sort_check_tycons_args env scope cons.idxs in
+      let env, scope, new_idxs =
+        sort_check_tycons_args ~sort_check:is_base_index_sort
+          env scope cons.idxs in
       let new_args = List.map
-          (fun typ ->
-             sort_check_type loc env sort_postype
-               (intern_type env scope typ))
+          (fun typ -> sort_check_type loc env sort_postype (intern_type env scope typ))
           cons.args in
       let new_eqns = List.map
           (intern_and_sort_check_eqn loc env scope)
@@ -213,7 +212,6 @@ let sort_check_one_item env item =
       let new_tag = ConsVar.of_string tag in
       let new_cons = Raw_Cons {
           tag = PosCons new_tag;
-          typs = new_typs;
           idxs = new_idxs;
           args = new_args
         } in
@@ -257,10 +255,9 @@ let sort_check_one_item env item =
         | _ -> fail_bad_constructor loc in
       if StringEnv.mem tag env.destrs then
         fail_double_def ("destructor" ^ tag) loc;
-      let env, scope, new_typs =
-        sort_check_tycons_args env scope destr.typs in
       let env, scope, new_idxs =
-        sort_check_tycons_args env scope destr.idxs in
+        sort_check_tycons_args ~sort_check:is_base_index_sort
+          env scope destr.idxs in
       let new_args = List.map
           (fun typ -> sort_check_type loc env sort_postype
               (intern_type env scope typ))
@@ -273,7 +270,6 @@ let sort_check_one_item env item =
       let new_tag = DestrVar.of_string tag in
       let new_destr = Raw_Destr {
           tag = NegCons new_tag;
-          typs = new_typs;
           idxs = new_idxs;
           args = new_args;
           cont = new_cont
@@ -310,15 +306,17 @@ let sort_check_one_item env item =
 
   | Cst.Sort_declaration {name; _} ->
     let name' = StringEnv.find name env.sort_vars in
-      env.prelude := {
-        !(env.prelude) with
-        sort_defs = SortVar.Env.add name' () !(env.prelude).sort_defs
-      };
-      env
+    env.prelude := {
+      !(env.prelude) with
+      sort_defs = SortVar.Env.add name' () !(env.prelude).sort_defs
+    };
+    env
 
-  | Cst.Rel_declaration {name; args; _} ->
+  | Cst.Rel_declaration {name; args; loc} ->
     let name' = StringEnv.find name env.rels in
     let args' = List.map (intern_sort env) args in
+    if not (List.for_all is_base_index_sort args') then
+      raise (Failure (Misc.string_of_position loc));
     env.prelude := {
       !(env.prelude) with
       relations = RelVar.Env.add name' args' !(env.prelude).relations

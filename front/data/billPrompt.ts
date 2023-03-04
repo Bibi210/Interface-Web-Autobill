@@ -30,33 +30,50 @@ end;
 return map
 `,
 'playground' :`
-let a = true;;
-let x = (1,2,3) ;;
-(match x with 
-(*   | (hd::tail) -> true *)
-  | (a,b,c) -> false
-  | _ -> true
-  )
+(* let rec fibo n = 
+  (match n with
+  0 -> (Cons (0,(Nil)))
+| 1 -> (Cons (1,(Nil)))
+| n -> (Cons ( (fibo (n - 1)),(fibo (n - 2)))))
 ;;
-(1,2,4,5)
+(fibo 10)
 ;;
-42
-;;
+ *)
 type 'a list = 
 | Cons of 'a *  ('a list)
 | Nil
 ;;
-(* let rec f x = (x + 2)
-;; *)
-(4;5;true)
+type 'a option =
+| None
+| Some of 'a
 ;;
-let r = (Cons(a,(Nil)))
+let x = [28;2;3;4];;
+let y = [14];;
+let getHead ls = (
+  match ls with
+  | (hd::tail) -> Some (hd)
+  | _ -> None
+  )
+;;   (* Fun Bug Here *)
+let getHead2 ls = (
+  match ls with
+  | (hd::tail) -> Some (hd)
+  | _ -> None
+  )
 ;;
-(*
-let rec add a b = (a + b)
-;; *)
-let a = (fun a b c d -> (a,b,c,d));;
-(a 1 2 r 4)
+let addHeadSafe ls1 ls2 = 
+let head1 = (getHead ls1) in
+let head2 = (getHead2 ls2) in
+(
+  match head1 with
+  | None -> None
+  | Some(first) -> (
+    match head2 with
+    | None -> None
+    | Some(second) -> Some ( (first + second))
+    )
+);;
+(addHeadSafe  y x)
 `}
 
 export default billPrompts

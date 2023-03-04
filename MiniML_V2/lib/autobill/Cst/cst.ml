@@ -16,12 +16,12 @@ type bind = var * typ option
 type type_bind = tyvar * sort option
 type cont_bind = covar * typ option
 
-type constructor = (consvar, typ option, typ option, value) Constructors.constructor
-and destructor = (destrvar, typ option, typ option, value, stack) Constructors.destructor
-and pattern = (consvar, type_bind option, type_bind option, bind) Constructors.constructor
-and copattern = (destrvar, type_bind option, type_bind option, bind, cont_bind) Constructors.destructor
-and constructor_def = (consvar, tyvar * sort, tyvar * sort, typ) Constructors.constructor
-and destructor_def = (destrvar, tyvar * sort, tyvar * sort, typ, typ) Constructors.destructor
+type constructor = (consvar, typ option, value) Constructors.constructor
+and destructor = (destrvar, typ option, value, stack) Constructors.destructor
+and pattern = (consvar, type_bind option, bind) Constructors.constructor
+and copattern = (destrvar, type_bind option, bind, cont_bind) Constructors.destructor
+and constructor_def = (consvar, tyvar * sort, typ) Constructors.constructor
+and destructor_def = (destrvar, tyvar * sort, typ, typ) Constructors.destructor
 
 and cst_eqn =
   | Eq of typ * typ * unit
@@ -238,6 +238,9 @@ let loc_of_item = function
   | Cmd_execution {loc;_} | Sort_declaration {loc;_}
   | Rel_declaration {loc;_} ->
     loc
+
+let prim_type_int = cons (Cons (Vars.TyConsVar.to_string Primitives.tycons_int))
+let prim_type_bool = cons (Cons (Vars.TyConsVar.to_string Primitives.tycons_bool))
 
 module V = struct
   type t = value

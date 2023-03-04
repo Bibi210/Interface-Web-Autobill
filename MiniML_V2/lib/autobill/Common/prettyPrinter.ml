@@ -37,6 +37,8 @@ module type PP_Params = sig
 
   type type_bind
 
+  type toplevel_bind_annot
+
   val pp_pol : formatter -> polarity -> unit
 
   val pp_bind : formatter -> val_bind -> unit
@@ -46,6 +48,8 @@ module type PP_Params = sig
   val pp_bind_paren : formatter -> val_bind -> unit
 
   val pp_bind_cc : formatter -> cont_bind -> unit
+
+  val pp_toplevel_bind_annot : formatter -> toplevel_bind_annot -> unit
 
 end
 
@@ -58,6 +62,8 @@ module PP_FullAst = struct
   type type_bind = FullAstParams.type_bind
 
   type cont_bind = FullAstParams.cont_bind
+
+  type toplevel_bind_annot = FullAstParams.toplevel_bind_annot
 
   let pp_pol fmt = function
     | Positive -> pp_print_string fmt "+"
@@ -75,6 +81,8 @@ module PP_FullAst = struct
   let pp_bind_paren =
   pp_custom_binding ~prefix:"(" ~suffix:")" Var.pp pp_typ
 
+  let pp_toplevel_bind_annot = pp_typ
+
 end
 
 module Make
@@ -82,7 +90,8 @@ module Make
     (AstParams : AstParams with type polarity = PP_Params.polarity
                             and type val_bind = PP_Params.val_bind
                             and type cont_bind = PP_Params.cont_bind
-                            and type type_bind = PP_Params.type_bind)
+                            and type type_bind = PP_Params.type_bind
+                            and type toplevel_bind_annot = PP_Params.toplevel_bind_annot)
 = struct
 
   include PP_Params
@@ -101,7 +110,6 @@ module Make
   and  pp_cons_val_aux = {
     pp_var = ConsVar.pp;
     pp_idx = pp_typ;
-    pp_typ = pp_typ;
     pp_arg = pp_value;
     pp_cont = pp_stack_trail
   }
@@ -109,7 +117,6 @@ module Make
   and  pp_cons_patt_aux = {
     pp_var = ConsVar.pp;
     pp_idx = pp_type_bind;
-    pp_typ = pp_type_bind;
     pp_arg = pp_bind;
     pp_cont = pp_bind_cc_ret
   }
@@ -199,7 +206,7 @@ module Make
         | None -> ()
         | Some (x,c) ->
           fprintf fmt "@ @[<hov 2>| %a ->@ %a@]" pp_bind x pp_cmd c in
-      fprintf fmt ".match@]@,%a%a,end"
+      fprintf fmt ".match@]@,%a%a@,end"
         (pp_print_list ~pp_sep:pp_print_space pp_case) cases
         pp_default default
 
@@ -252,7 +259,6 @@ module Make
   let pp_cons_def_aux = {
     pp_var = ConsVar.pp;
     pp_idx = pp_type_bind_def;
-    pp_typ = pp_type_bind_def;
     pp_arg = pp_typ;
     pp_cont = fun fmt typ -> fprintf fmt ".ret(%a)" pp_typ typ
   }
@@ -270,23 +276,24 @@ module Make
   let pp_tycons_def fmt (name, def) =
     let {sort; args; content; _} = def in
     let sort = snd (unmk_arrow sort) in
-    match content with
-    | Declared ->
-      fprintf fmt "decl type %a : %a" TyConsVar.pp name pp_sort sort
-    | Predefined ->
-      fprintf fmt "/*primitive type %a : %a*/" TyConsVar.pp name pp_sort sort
-    | Defined content ->
-      fprintf fmt "@[<hov 2>type %a =@ %a@]"
-        (pp_typ_lhs ~sort:sort ()) (name, args)
-        pp_typ content
-    | Data content ->
-      fprintf fmt "@[<v 2>data %a =@,%a@]"
-        (pp_typ_lhs ()) (name, args)
-        (pp_print_list ~pp_sep:pp_print_cut pp_data_decl_item) content
-    | Codata content ->
-      fprintf fmt "@[<v 2>comput %a =@,%a@]"
-        (pp_typ_lhs ()) (name, args)
-        (pp_print_list ~pp_sep:pp_print_cut pp_codata_decl_item) content
+    if not (TyConsVar.is_primitive name) then
+      match content with
+      | Declared ->
+        fprintf fmt "decl type %a : %a@." TyConsVar.pp name pp_sort sort
+      | Predefined ->
+        fprintf fmt "/*primitive type %a : %a*/@." TyConsVar.pp name pp_sort sort
+      | Defined content ->
+        fprintf fmt "@[<hov 2>type %a =@ %a@]@."
+          (pp_typ_lhs ~sort:sort ()) (name, args)
+          pp_typ content
+      | Data content ->
+        fprintf fmt "@[<v 2>data %a =@,%a@]@."
+          (pp_typ_lhs ()) (name, args)
+          (pp_print_list ~pp_sep:pp_print_cut pp_data_decl_item) content
+      | Codata content ->
+        fprintf fmt "@[<v 2>comput %a =@,%a@]@."
+          (pp_typ_lhs ()) (name, args)
+          (pp_print_list ~pp_sep:pp_print_cut pp_codata_decl_item) content
 
   let pp_quantified_cons_args pp_k fmt args =
     if List.length args = 0 then
@@ -303,7 +310,7 @@ module Make
   let pp_cons_def fmt (cons, def) =
     let pp_aux fmt (var, sort) = fprintf fmt "(%a : %a)" pp_tyvar var pp_sort sort in
     let Consdef { typ_args; constructor; resulting_type; equations} = def in
-    fprintf fmt "@[<hov 4>/* constructor \"%a\" is@ %a%a : %a%a*/@]"
+    fprintf fmt "@[<hov 4>/* constructor \"%a\" is@ %a%a : %a%a*/@]@."
       ConsVar.pp cons
       (pp_quantified_cons_args pp_aux) typ_args
       (pp_constructor pp_cons_def_aux) constructor
@@ -313,7 +320,7 @@ module Make
   let pp_destr_def fmt (cons, def) =
     let pp_aux fmt (var, sort) = fprintf fmt "(%a : %a)" pp_tyvar var pp_sort sort in
     let Destrdef {destructor; typ_args; resulting_type; equations} = def in
-    fprintf fmt "@[<hov 4>/* destructor \"%a\" is %a%a : %a%a*/@]"
+    fprintf fmt "@[<hov 4>/* destructor \"%a\" is %a%a : %a%a*/@]@."
       DestrVar.pp cons
       (pp_quantified_cons_args pp_aux) typ_args
       (pp_destructor pp_cons_def_aux) destructor
@@ -324,44 +331,48 @@ module Make
     fprintf fmt "@[<hv 2>/* var %a : %a */@]" Var.pp var pp_typ typ
 
   let pp_tyvar_sort fmt (var, so) =
-    fprintf fmt "@[<hv 2>/* tyvar %a : %a */@]" pp_tyvar var pp_sort so
+    fprintf fmt "@[<hv 2>/* tyvar %a : %a */@]@." pp_tyvar var pp_sort so
 
   let pp_sort_def fmt (so,()) =
-    fprintf fmt "decl sort %a" SortVar.pp so
+    if not (SortVar.is_primitive so) then
+      fprintf fmt "decl sort %a@." SortVar.pp so
 
   let pp_rel_def fmt (rel, args) =
-    let pp_sep fmt () = pp_print_string fmt " * " in
-    fprintf fmt "rel %a : %a"
-      RelVar.pp rel
-      (pp_print_list ~pp_sep pp_sort) args
+    if not (RelVar.is_primitive rel) then
+      let pp_sep fmt () = pp_print_string fmt " * " in
+      fprintf fmt "rel %a : %a@."
+        RelVar.pp rel
+        (pp_print_list ~pp_sep pp_sort) args
 
   let pp_definition fmt def =
     pp_open_vbox fmt 2;
     begin
       match def with
-      | Value_declaration {bind; pol; _} ->
-        fprintf fmt "decl val%a %a"
-          pp_pol_annot pol
-          pp_bind bind
+      | Value_declaration {bind = (x,t); pol; _} ->
+        if not (Var.is_primitive x) then
+          fprintf fmt "decl val%a %a : %a@."
+            pp_pol_annot pol
+            Var.pp x
+            pp_toplevel_bind_annot t
 
       | Value_definition {bind; pol; content; _} ->
-        fprintf fmt "val%a %a =@ %a"
+        fprintf fmt "val%a %a =@ %a@."
           pp_pol_annot pol
           pp_bind  bind
           pp_value content
 
       | Command_execution {name; pol; content; cont; conttyp; _} ->
-        fprintf fmt "cmd%a %a ret %a =@ %a"
+        fprintf fmt "cmd%a %a ret %a : %a =@ %a@."
           pp_pol_annot pol
           Var.pp name
-          (pp_custom_binding ~prefix:"" ~suffix:"" CoVar.pp pp_typ)
-          (cont,conttyp)
+          CoVar.pp cont
+          pp_toplevel_bind_annot conttyp
           pp_cmd content
     end;
     pp_close_box fmt ()
 
   let pp_program fmt ?debug:(debug=false) (prelude, prog) =
-    let is_empty = function [] -> true | _ -> false in
+    let pp_print_list pp = pp_print_list ~pp_sep:(fun _ () -> ()) pp in
     pp_set_geometry ~max_indent:120 ~margin:150 fmt;
     pp_open_vbox fmt 0;
 
@@ -369,32 +380,26 @@ module Make
          vars = _; covars = _} = !prelude in
 
     let sort_defs = SortVar.Env.bindings sort_defs in
-    pp_print_list ~pp_sep:pp_print_cut pp_sort_def fmt sort_defs;
-    if not (is_empty sort_defs) then pp_print_cut fmt ();
+    pp_print_list pp_sort_def fmt sort_defs;
 
     let relations = RelVar.Env.bindings relations in
-    pp_print_list ~pp_sep:pp_print_cut pp_rel_def fmt relations;
-    if not (is_empty sort_defs) then pp_print_cut fmt ();
+    pp_print_list pp_rel_def fmt relations;
 
     let typs = TyConsVar.Env.bindings tycons in
-    pp_print_list ~pp_sep:pp_print_cut pp_tycons_def fmt typs;
-    if not (is_empty typs) then pp_print_cut fmt ();
+    pp_print_list pp_tycons_def fmt typs;
 
     if debug then begin
       let conses = ConsVar.Env.bindings cons in
-      pp_print_list ~pp_sep:pp_print_cut pp_cons_def fmt conses;
-      if not (is_empty conses) then pp_print_cut fmt ();
+      pp_print_list pp_cons_def fmt conses;
 
       let destrs = DestrVar.Env.bindings destr in
-      pp_print_list ~pp_sep:pp_print_cut pp_destr_def fmt destrs;
-      if not (is_empty destrs) then pp_print_cut fmt ();
+      pp_print_list pp_destr_def fmt destrs;
 
       let sorts = TyVar.Env.bindings sorts in
-      pp_print_list ~pp_sep:pp_print_cut pp_tyvar_sort fmt sorts;
-      if not (is_empty sorts) then pp_print_cut fmt ();
+      pp_print_list pp_tyvar_sort fmt sorts;
     end;
 
-    pp_print_list ~pp_sep:pp_print_cut pp_definition fmt prog;
+    pp_print_list pp_definition fmt prog;
     pp_close_box fmt ()
 
 end

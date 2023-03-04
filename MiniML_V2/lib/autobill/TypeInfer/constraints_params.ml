@@ -42,10 +42,6 @@ module Params (Prelude : Prelude) = struct
 
   type var = TyVar.t
 
-  let var_of_int = TyVar._debug_of_int
-
-  let int_of_var = TyVar._debug_to_int
-
   let eq a b = a = b
 
   let string_of_sort = Types.string_of_sort SortVar.to_string
@@ -100,7 +96,7 @@ module Params (Prelude : Prelude) = struct
 
       | TCons {node; _} -> begin match node with
 
-          | Types.Unit | Int | Bool | Zero | Top | Bottom | Qual _ as c -> fold (Cons c) []
+          | Types.Unit | Zero | Top | Bottom | Qual _ as c -> fold (Cons c) []
 
           | Cons c ->
             let def = def_of_tycons Prelude.it (Cons c) in

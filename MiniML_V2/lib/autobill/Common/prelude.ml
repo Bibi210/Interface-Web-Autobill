@@ -6,9 +6,9 @@ open FirstOrder.FullFOL
 
 type type_bind = TyVar.t * SortVar.t Types.sort
 
-type cons_for_def = (ConsVar.t, type_bind, type_bind, typ) constructor
+type cons_for_def = (ConsVar.t, type_bind, typ) constructor
 
-type destr_for_def = (ConsVar.t, type_bind, type_bind, typ, typ) destructor
+type destr_for_def = (ConsVar.t, type_bind, typ, typ) destructor
 
 type tycons_definition = {
   sort : sort;
@@ -96,28 +96,22 @@ let add_sorts prelude binds =
                     !prelude.sorts
                     binds}
 
-let refresh_cons prelude env (Raw_Cons {tag; idxs; typs; args}) =
+let refresh_cons prelude env (Raw_Cons {tag; idxs; args}) =
   let idxs = List.map (refresh_type_bind env) idxs in
-  let typs = List.map (refresh_type_bind env) typs in
   add_sorts prelude idxs;
-  add_sorts prelude typs;
   Raw_Cons ({
       tag;
       idxs;
-      typs;
       args = List.map (refresh_typ env) args
     })
 
 
-let refresh_destr prelude env (Raw_Destr {tag; idxs; typs; args; cont}) =
+let refresh_destr prelude env (Raw_Destr {tag; idxs; args; cont}) =
   let idxs = List.map (refresh_type_bind env) idxs in
-  let typs = List.map (refresh_type_bind env) typs in
   add_sorts prelude idxs;
-  add_sorts prelude typs;
   Raw_Destr ({
       tag;
       idxs;
-      typs;
       args = List.map (refresh_typ env) args;
       cont = refresh_typ env cont
     })
@@ -166,13 +160,13 @@ let def_of_cons prelude (c : _ constructor_tag) = match c with
     }
   | Bool b -> Consdef {
       typ_args = [];
-      constructor = cons (Bool b) [] [] [];
+      constructor = cons (Bool b) [] [];
       equations = [];
       resulting_type = bool
     }
   | Int n -> Consdef {
       typ_args = [];
-      constructor = cons (Int n) [] [] [];
+      constructor = cons (Int n) [] [];
       equations = [];
       resulting_type = int
     }
@@ -216,7 +210,7 @@ let def_of_destr prelude (destr : _ destructor_tag) = match destr with
       typ_args = (ret, sort_negtype) :: (List.map (fun t -> (t, sort_postype)) args);
       destructor = call (List.map tvar args) (tvar ret);
       equations = [];
-      resulting_type = func (tvar ret :: List.map tvar args)
+      resulting_type = func (List.map tvar args) (tvar ret)
     }
   | Proj (i, n) ->
     let ts = List.init n ( fun _ -> TyVar.fresh ()) in
@@ -253,7 +247,7 @@ let def_of_tycons prelude = function
     let pos = Base Positive in
     let neg = Base Negative in
     let sos, rets = match t with
-      | Unit | Zero | Int | Bool -> cst pos
+      | Unit | Zero -> cst pos
       | Top | Bottom -> cst neg
       | Prod n | Sum n -> (List.init n (fun _ -> pos) ) --> pos
       | Choice n -> (List.init n (fun _ -> neg)) --> neg

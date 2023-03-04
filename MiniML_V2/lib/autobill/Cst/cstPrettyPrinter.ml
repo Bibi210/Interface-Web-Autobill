@@ -56,14 +56,12 @@ let pp_pol_annot fmt pol =
 let rec pp_cons_aux = {
   pp_var = pp_consvar;
   pp_idx = pp_or_underscore pp_typ;
-  pp_typ = pp_or_underscore pp_typ;
   pp_arg = pp_value;
   pp_cont = pp_stack_trail
 }
 
 and pp_patt_aux = {
   pp_var = pp_consvar;
-  pp_typ = pp_or_underscore pp_type_bind;
   pp_idx = pp_or_underscore pp_type_bind;
   pp_arg = pp_bind;
   pp_cont = pp_bind_cc
@@ -72,7 +70,6 @@ and pp_patt_aux = {
 and pp_cons_def_aux = {
   pp_var = pp_consvar;
   pp_idx = pp_type_bind_def;
-  pp_typ = pp_type_bind_def;
   pp_arg = pp_typ;
   pp_cont = pp_ret
 }

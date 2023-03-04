@@ -46,7 +46,7 @@ module FOL (P : FOL_Params) = struct
       fprintf fmt "(:eq %a %a)" pp_term a pp_term b
     | Rel (rel,args) -> fprintf fmt "@[<hov 1>(:rel \"%a\"@ %a)@]" pp_rel rel (pp_list pp_term) args
 
-  let pp_eqns fmt eqns = fprintf fmt "@[<hov 1>(%a)@]" (pp_list pp_eqn) eqns
+  let pp_eqns fmt eqns = fprintf fmt "@[<hv 1>(%a)@]" (pp_list pp_eqn) eqns
 
   let pp_vars fmt vars = fprintf fmt "@[(%a)@]" (pp_list pp_var) vars
 
@@ -149,8 +149,10 @@ let rec compress_logic ?(remove_loc = false) c =
     | PEqn eqns -> backtrack (PEqn (compress_eqns eqns)) ctx
     | PLoc (loc, c) ->
       if remove_loc then advance c ctx else advance c (lift_loc loc ctx)
-    | PAnd [] -> backtrack PTrue ctx
-    | PAnd (x::xs) -> advance x (lift_and xs ctx)
+    | PAnd xs ->
+      let eqns, xs = compress_and xs in
+      if xs = [] then advance (PEqn eqns) ctx else
+        advance (PEqn eqns) (KAnd ([], ctx, xs))
     | PExists ([], [], x) -> kill (); advance x ctx
     | PForall ([], [], [], x) -> kill (); advance x ctx
     | PExists (vs, eqns, x) ->
@@ -167,11 +169,22 @@ let rec compress_logic ?(remove_loc = false) c =
     | KForall (vs, ws, eqns, ctx) -> backtrack (PForall (vs, ws, eqns, c)) ctx
     | KExists (vs, eqns, ctx) -> backtrack (PExists (vs, eqns, c)) ctx
 
+  and compress_and cs =
+    let rec go acc eqns cs = match cs with
+      | [] -> eqns, acc
+      | PAnd (cs') :: cs -> go acc eqns (cs' @ cs)
+      | PEqn eqns' :: cs -> go acc (eqns' @ eqns) cs
+      | c :: cs -> go (c::acc) eqns cs in
+   go [] [] cs
+
   and lift_loc loc = function
     | KLoc (_, ctx) -> kill (); KLoc (loc, ctx)
     | ctx -> KLoc (loc, ctx)
 
-  and lift_quant vs ctx = match vs,ctx with
+  and lift_quant vs ctx =
+    if vs = Univ ([], [], []) || vs = Exist ([], []) then
+      ctx
+    else match vs,ctx with
     | Exist (vs, eqns), KExists (vs', eqns', ctx') ->
       let vs = List.fold_left Misc.insert_nodup vs vs' in
       kill (); KExists (vs, eqns@eqns', ctx')
@@ -181,10 +194,6 @@ let rec compress_logic ?(remove_loc = false) c =
       kill (); KForall (vs, ws, eqns@eqns', ctx')
     | Exist (vs, eqns), _ -> KExists (vs, eqns, ctx)
     | Univ (vs, ws, eqns), _ -> KForall (vs, ws, eqns, ctx)
-
-  and lift_and cs ctx = match ctx with
-    | KAnd (xs, ctx, ys) -> kill (); KAnd (xs, ctx, cs @ ys)
-    | ctx -> KAnd ([], ctx, cs)
 
   and shortcut_false ctx = match ctx with
     | KEmpty -> PFalse

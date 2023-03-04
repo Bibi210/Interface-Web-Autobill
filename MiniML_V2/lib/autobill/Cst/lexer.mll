@@ -64,8 +64,6 @@ rule token = parse
   | "Zero" {ZZERO}
   | "Top" {TTOP}
   | "Bottom" {BBOTTOM}
-  | "Int" {IINT}
-  | "Bool" {BBOOL}
 
   | "tuple" {TUPPLE}
   | "left" {LEFT}

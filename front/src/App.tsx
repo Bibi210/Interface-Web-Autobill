@@ -47,7 +47,6 @@ function App() {
     // setTypes(evaluation.types)
     // setPrint(evaluation.resultat == "" ? evaluation.erreurs : evaluation.resultat)
   }
-  let erreur = "hi";
   const [response, setResponse] = useState('');
   function handleClick() {
     console.log("ready to send");

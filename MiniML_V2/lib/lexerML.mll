@@ -33,6 +33,7 @@ rule token = parse
 | "let" {LLet}
 | "rec" {LRec}
 | "fun" {LFun}
+| "not" {LNot}
 | "->" {LSimpleArrow}
 | "in" {LIn}
 | "of" {LOf}

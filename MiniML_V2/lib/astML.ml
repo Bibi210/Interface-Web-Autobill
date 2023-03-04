@@ -6,7 +6,7 @@ type pre_etype =
   | TypeUnit
   | TypeTuple of etype list
   | TypeLambda of
-      { args : etype list
+      { arg : etype
       ; return_type : etype
       }
   | TypeVar of vartype
@@ -68,23 +68,20 @@ and expr =
   ; eloc : Autobill.Misc.position
   }
 
-and callable =
-  | ApplyExpr of expr
-  | Add
-  | Sub
-  | Mult
-  | Or
-  | And
-  | Div
-  | Modulo
-  | BitAnd
-
 and pre_expr =
   | Litteral of litteral
   | Variable of variable
-  | Call of
-      { func : callable
+  | CallUnary of
+      { op : Autobill.Lcbpv.prim_mon_op
+      ; arg : expr option
+      }
+  | CallBinary of
+      { op : Autobill.Lcbpv.prim_bin_op
       ; args : expr list
+      }
+  | Call of
+      { func : expr
+      ; arg : expr
       }
   | Sequence of expr list
   | Binding of
@@ -93,7 +90,7 @@ and pre_expr =
       ; content : expr
       }
   | Lambda of
-      { args : variable list
+      { arg : variable
       ; body : expr
       }
   | Tuple of expr list
@@ -114,11 +111,15 @@ and pre_expr =
 and match_case =
   { pattern : pattern
   ; consequence : expr
-  ; conseq_loc : Autobill.Misc.position
-  ; pattern_loc : Autobill.Misc.position
+  ; cloc : Autobill.Misc.position
   }
 
 and pattern =
+  { pnode : pre_pattern
+  ; ploc : Autobill.Misc.position
+  }
+
+and pre_pattern =
   | LitteralPattern of litteral
   | VarPattern of string
   | WildcardPattern (* Ok *)

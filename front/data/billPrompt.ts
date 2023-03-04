@@ -41,23 +41,22 @@ let x = (1,2,3) ;;
 (1,2,4,5)
 ;;
 42
-(* ;;
+;;
 type 'a list = 
 | Cons of 'a *  ('a list)
-| Nil *)
+| Nil
+;;
 (* let rec f x = (x + 2)
-;;
+;; *)
 (4;5;true)
-
 ;;
-fun a -> a
+let r = (Cons(a,(Nil)))
 ;;
-(Cons(a,(Nil)))
-;;
+(*
 let rec add a b = (a + b)
-;;
-
- *)
+;; *)
+let a = (fun a b c d -> (a,b,c,d));;
+(a 1 2 r 4)
 `}
 
 export default billPrompts

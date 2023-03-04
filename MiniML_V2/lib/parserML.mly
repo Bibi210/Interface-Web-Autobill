@@ -3,11 +3,35 @@
   open HelpersML
   open Autobill.Misc
 
-    let unit_expr pos = 
-    { enode = Litteral Unit
-    ; eloc = pos
-    }
+  let unit_expr pos = 
+  { enode = Litteral Unit
+  ; eloc = pos
+  }
+
+  let func_curryfy args body =
+    List.fold_right
+      (fun a acc -> { enode = Lambda { arg =  a ; body = acc }; eloc = a.vloc })
+      args
+      body
+  
+
+  let functype_curryfy args body =
+    List.fold_right
+      (fun a acc ->
+        { etype = TypeLambda { arg =  a ; return_type = acc }; tloc = a.tloc })
+      args
+      body
   ;;
+
+
+  let call_curryify func args =
+    List.fold_left
+      (fun acc a -> { enode = Call { func = acc ; arg =  a  }; eloc = a.eloc })
+      func
+      args
+  ;;
+
+
 ;;
 %}
 %token EOF
@@ -23,7 +47,7 @@
 %token LSimpleArrow
 %token LLet LFun LIn LType LRec LOf LMatch LWith LUnderScore
 
-%token LMult LOr LEqual LAnd LAdd LDiv LModulo LSub
+%token LMult LOr LEqual LAnd LAdd LDiv LModulo LSub LNot
 
 %start <prog> prog
 %%
@@ -60,10 +84,7 @@ def:
   { dloc = position $startpos($1) $endpos(body);
     dnode = VariableDef{
               var
-              ; init = 
-                { eloc = position $startpos($1) $endpos(body)
-                  ; enode = Lambda{args;body}   
-                }
+              ; init = func_curryfy args body   
     }   
   }
 }
@@ -119,20 +140,19 @@ expr:
   ; eloc = position $startpos(var) $endpos(var)
   }
 }
-| LOpenPar;func = unaryoperator ; arg = expr; LClosePar{
-  { enode = Call {func;args = [arg]}
-  ; eloc = position $startpos(func) $endpos(arg)
+ | LOpenPar;op = unaryoperator ; arg = option(expr); LClosePar{
+  { enode = CallUnary {op;arg}
+  ; eloc = position $startpos(op) $endpos(arg)
   }
 }
+/*
 | LOpenPar ; arg1 = expr ; func = binaryoperator ; arg2 = expr;LClosePar {
   { enode = Call {func;args = [arg1;arg2]}
   ; eloc = position $startpos(arg1) $endpos(arg2)
   }
-}
+} */
 | LOpenPar ; func = expr ; args = nonempty_list(expr) ; LClosePar {
-  { enode = Call {func = ApplyExpr func;args}
-  ; eloc = position $startpos(func) $endpos(args)
-  }
+    call_curryify func args
 }
 | LOpenPar ; hd = expr ; LSemiColon; tail = separated_nonempty_list(LSemiColon,expr);LClosePar {
   { enode = Sequence (hd::tail)
@@ -145,12 +165,13 @@ expr:
   }
 }
  | LFun;args = list(variable);LSimpleArrow;body = expr {
-  { enode = Lambda
-        { args = args
-        ; body = body 
-        } 
-  ; eloc = position $startpos($1) $endpos(body)
-  }
+    let args = if List.length args <> 0 then args 
+          else [
+                { basic_ident = generate_name ();
+                  vloc = position $startpos(args) $endpos(args) 
+                }
+          ] in
+   func_curryfy args body
 } 
 | LOpenPar ; hd = expr ; LTupleInfixe; tail = separated_nonempty_list(LTupleInfixe,expr);LClosePar  {
   { enode = Tuple (hd::tail)
@@ -177,10 +198,7 @@ expr:
 }
 | LLet; var = variable; args = nonempty_list(variable);  LEqual; func_body = expr; LIn ;content = expr{
     { enode = Binding {
-      var ; init = 
-              { eloc = position $startpos($1) $endpos(func_body)
-              ; enode = Lambda{args;body = func_body}   
-              }
+      var ; init = func_curryfy args func_body
       ; content}
       ; eloc = position $startpos($1) $endpos(content)
   }
@@ -208,46 +226,64 @@ expr:
 
 match_case :
 | pattern = pattern ;LSimpleArrow; consequence = expr{
-    { pattern
-  ; consequence
-  ; conseq_loc = position $startpos(consequence) $endpos(consequence)
-  ; pattern_loc = position $startpos(pattern) $endpos(pattern)
-  }
+    { pattern ; consequence ; 
+    cloc = position $startpos(pattern) $endpos(consequence)}
 }
 
 
 pattern :
 | LOpenPar ; p = pattern ; LClosePar {p}
-| l = litteral  {LitteralPattern l}
-| ident = LBasicIdent {VarPattern ident }
-| LUnderScore {WildcardPattern}
+| l = litteral  {
+    { pnode = LitteralPattern l
+    ; ploc = position $startpos(l) $endpos(l)
+    }
+  }
+| ident = LBasicIdent {
+  { pnode = VarPattern ident
+  ; ploc = position $startpos(ident) $endpos(ident)
+  }
+}
+| LUnderScore {
+  { pnode = WildcardPattern
+  ; ploc = position $startpos($1) $endpos($1)
+  }
+}
 | constructor_ident = LConstructorIdent {
-  ConstructorPattern
+  { pnode = ConstructorPattern
       { constructor_ident
       ; content = []
       }
+  ; ploc = position $startpos(constructor_ident) $endpos(constructor_ident)
+  }
 }
 | constructor_ident = LConstructorIdent; LOpenPar ; hd = pattern ; LTupleInfixe; tail = separated_nonempty_list(LTupleInfixe,pattern);LClosePar {
-  ConstructorPattern
+  { pnode = ConstructorPattern
       { constructor_ident
       ; content = hd::tail
       }
+  ; ploc = position  $startpos(hd) $endpos(tail)
+  }
+  
 }
 | LOpenPar ; hd = pattern ; LTupleInfixe; tail = separated_nonempty_list(LTupleInfixe,pattern);LClosePar  {
-  TuplePattern (hd::tail)
+  { pnode = TuplePattern (hd::tail)
+  ; ploc =  position $startpos(hd) $endpos(tail)
+  }
 }
 | LOpenPar ; hd = pattern ; LConsInfixe; tail = separated_nonempty_list(LConsInfixe,pattern);LClosePar  {
     let last,rem = list_getlast_rem tail in
     List.fold_right
     (fun elem acc ->
-      ConstructorPattern
-        { constructor_ident = "Cons"; content = [ elem; acc ] })
+      { pnode = ConstructorPattern { constructor_ident = "Cons"; content = [ elem; acc ] }
+      ; ploc = elem.ploc
+      }
+    )
     (hd::rem) last
 }
 
 
 %inline unaryoperator:
-|LSub { Sub }
+|LNot { Autobill.Lcbpv.Not }
 
 %inline binaryoperator:
 |LSub { Sub }
@@ -276,9 +312,7 @@ etype:
 }
 | LOpenPar;args = nonempty_list(etype)
   ;LSimpleArrow;return_type = etype;LClosePar {
-    { etype = TypeLambda {args;return_type}
-    ; tloc = position $startpos(args) $endpos(return_type)
-    }
+    functype_curryfy args return_type
 }
 | t = LVarType {
   { etype = TypeVar t

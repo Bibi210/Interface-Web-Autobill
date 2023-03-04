@@ -14,10 +14,11 @@ let list_getlast ls =
 ;;
 
 let array_getlast array = Array.get array (Array.length array - 1)
+let node_counter = ref 0
 
-let generate_name =
-  let node_counter = ref 0 in
-  fun () ->
-    incr node_counter;
-    "%.MLTempVar" ^ Int.to_string !node_counter
+let generate_name () =
+  incr node_counter;
+  "%.MLTempVar" ^ Int.to_string !node_counter
 ;;
+
+let reset_node_counter () = node_counter := 0

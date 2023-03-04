@@ -21,6 +21,7 @@ let err msg pos =
 ;;
 
 let generate_ast code =
+  HelpersML.reset_node_counter ();
   try ParserML.prog LexerML.token code with
   | LexerML.Error c ->
     err (Printf.sprintf "unrecognized char '%s'" c) (Lexing.lexeme_start_p code)
@@ -82,5 +83,3 @@ let _ =
          end
     end)
 ;;
-
-

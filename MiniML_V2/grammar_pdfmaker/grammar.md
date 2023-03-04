@@ -46,7 +46,7 @@ date: 2 fevrier, 2023
 
 ## Separators
 
-    { } [ ] ( ) ; : , * -> | = 
+    { } [ ] ( ) ; , * -> | = 
 
 ## Mots-Clefs
 
@@ -79,19 +79,15 @@ date: 2 fevrier, 2023
 
 \pagebreak
 # Grammaire
-    # For Type Inference
-    Variable :=     | basic_ident
-                    | basic_ident : Type
-
     Prog := | Def
             | Expr
             | Prog ;; Prog
 
 ## Definitions
 
-    Def :=  | let Variable = Expr
-            | let basic_ident Variable Variable list = Expr
-            | let rec basic_ident Variable Variable list = Expr
+    Def :=  | let basic_ident = Expr
+            | let basic_ident list = Expr
+            | let rec basic_ident list = Expr
             | type vartype list basic_ident =  NewContructor_Case  #TypeDef
 
     NewContructor_Case :=   | constructeur_ident
@@ -106,18 +102,18 @@ date: 2 fevrier, 2023
 
     Expr    :=  | ( Expr )
                 | Litteral
-                | Variable
+                | basic_ident
                 | UnaryOperator Expr
                 | Expr BinaryOperator Expr
                 | Expr Expr # Call
                 | Expr ; Expr # Sequence
-                | let Variable = Expr in Expr # Binding
-                | fun Variable list -> Expr # Lambda
+                | let basic_ident = Expr in Expr # Binding
+                | fun basic_ident list -> Expr # Lambda
                 | Expr constructeur_infixes Expr 
                 | constructeur_ident Expr # Built Expr
                 | constructeur_ident # Avoid Nil ()
-                | let basic_ident Variable Variable list = Expr in Expr
-                | let rec basic_ident Variable Variable list = Expr in Expr
+                | let basic_ident list = Expr in Expr
+                | let rec basic_ident basic_ident list = Expr in Expr
                 | match Expr with Match_Case
 
     UnaryOperator :=    | ~
@@ -157,3 +153,77 @@ date: 2 fevrier, 2023
                 | vartype # 'a
                 | basic_ident # defined type
                 | Type List  # Parametred Type (EXEMPLE : int list option)
+
+\pagebreak
+# Traduction
+
+## Programmes
+    (PROG) si  ꜔ pi -> ω
+        alors  ꜔ [pi] -> Prog(ω)
+
+## Suites de commandes
+    (DEFS) si d ∈ DEF, si ꜔ d -> ω et si ꜔ pi -> ω' 
+        alors  ꜔ (Def(d), pi) -> (ω, ω')
+    (BLOCK) si b ∈ BLOCK, si ꜔ b -> ω et si ꜔ pi -> ω'
+        alors  ꜔ (Expr(b), pi) -> (Do(ω), ω')
+
+
+## Définitions 
+    (VALDEF) si ꜔ v -> v',si  ꜔ e -> e' et si ꜔ pi -> ω'
+        alors  ꜔ (VariableDef(d), pi) -> (ω, ω')
+    (FUNREC)
+    (TYPDEF) si td ∈ CONSTR, si ꜔ td -> ω et si ꜔ pi -> ω'
+        alors  ꜔ (TypeDef(n, [t1,...,tn], td), pi) 
+                -> (Typ_Def(n, [t1,...,tn], ω), ω')
+
+## Constructeurs
+    (SYNON) si 
+    (DATYP)
+    (COMPUT)
+*To be done*
+
+## Litteraux et Expressions
+    (INT) si i ∈ NUM 
+        alors ꜔ Integer(i) -> Expr_Int(i)
+    (TRUE) si ꜔ b -> true 
+        alors ꜔ Boolean(b) -> Expr_Constructor(True,[])
+    (FALSE) si ꜔ b -> false
+        alors ꜔ Boolean(b) -> Expr_Constructor(False,[])
+    (TUPLE) si ꜔ e1 -> e_1, ..., si ꜔ eN -> e_N
+        alors ꜔ Tuple([e1,...,eN]) 
+                -> Expr_Constructor(Tuple, [e_1,...,e_N])
+    (CONSTR) si ꜔ e -> e' 
+        alors ꜔ Construct((c,e)) 
+                -> Expr_Constructor(Cons_Named c, [e'])
+    (BIND) si ꜔ i -> i' et si ꜔ c -> c' 
+        alors ꜔ Binding((v,i,c)) 
+            -> Expr_Block(Blk([Ins_Let (v, i')], c'))
+    (MATCH) si ꜔ m -> m', si m1 ∈ CASE,..., si mN ∈ CASE,
+            si ꜔ m1 -> m_1, ... et si ꜔ mN -> m_N 
+        alors ꜔ Match((m,[m1,...,mN])) 
+            -> Expr_Match(m', [m_1,...,m_N])
+
+## Motifs et Filtrage
+    (LITPAT1) si l = Integer(l') et ꜔ e -> e'
+        alors ꜔ Case(LitteralPattern(l), e) -> 
+            -> MatchPatTag(Int_litt l', [], e')
+    (LITPAT2) si l = Boolean(_), si ꜔ l -> l' et ꜔ e -> e'
+        alors ꜔ Case(LitteralPattern(l), e) 
+            -> MatchPatTag(l', [], e')
+    (LITPAT3) si l = Unit et ꜔ e -> e'
+        alors ꜔ Case(LitteralPattern(l), e)
+            -> MatchPatTag(Unit, [], e')
+    (TUPAT) si p1 ∈ CASE,..., si pN ∈ CASE,
+            si ꜔ p1 -> p_1, ..., si ꜔ pN -> p_N et ꜔ e -> e'
+        alors ꜔ Case(TuplePattern([p1,...,pN]), e)
+            -> MatchPatTag(Tuple, [p_1,...,p_N], e')
+    (CONSPAT)  si c ∈ CASE, si ꜔ c -> c' et ꜔ e -> e'
+        alors ꜔ Case(ConstructorPattern((n,c)), e)
+            -> MatchPatTag(Cons_Named(n), c', e')
+    (VARPAT) si ꜔ e -> e'
+        alors ꜔ Case(VarPattern(x), e, l)
+            -> MatchPatVar((x, l), e', l))
+    (WILDPAT) si ꜔ e -> e' 
+        alors ꜔ Case(WildcardPattern(), e, l)
+            -> MatchPatVar((n, l), e', l)
+    

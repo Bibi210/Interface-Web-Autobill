@@ -1,26 +1,86 @@
+open Js_of_ocaml
+open Autobill
+open Intern_intf
+open Sort_intf
+open TypeInfer_intf
+open Reduction_intf
 open MiniML
-open Helpers
 
-let generate_ast fname =
-  (*Open the file to compile*)
-  let f = open_in fname in
-  (* Tokenize the file *)
-  let buf = Lexing.from_channel f in
-  try
-    let output = Parser.prog Lexer.token buf in
-    close_in f;
-    output
-  with
-  | Lexer.Error c ->
-    err (Printf.sprintf "unrecognized char '%s'" c) (Lexing.lexeme_start_p buf)
-  | Parser.Error -> err "syntax error" (Lexing.lexeme_start_p buf)
+let string_of_full_ast ?(debug = false) prog =
+  PrettyPrinter.PP.pp_program ~debug Format.str_formatter prog;
+  Format.flush_str_formatter ()
 ;;
 
-let () =
-  if Array.length Sys.argv != 2
-  then (
-    Printf.eprintf "\nUsage: %s <file>\n" Sys.argv.(0);
-    exit 1);
-  let ast = generate_ast Sys.argv.(1) in
-  print_endline ("Before Interpretation : \n" ^ Format.fmt_prog ast)
+let err msg pos =
+  failwith
+    (Printf.sprintf
+       "Error on line %d col %d: %s.\n"
+       pos.Lexing.pos_lnum
+       (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
+       msg)
+;;
+
+let generate_ast code =
+  HelpersML.reset_node_counter ();
+  Global_counter._counter := 0;
+  try ParserML.prog LexerML.token code with
+  | LexerML.Error c ->
+    err (Printf.sprintf "unrecognized char '%s'" c) (Lexing.lexeme_start_p code)
+  | ParserML.Error -> err "syntax error" (Lexing.lexeme_start_p code)
+;;
+
+let trad code = Lcbpv_of_ML.trans_prog (generate_ast code)
+
+let _ =
+  Js.export
+    "ml"
+    (object%js
+       method translate code =
+         let stderr_buff = Buffer.create 100 in
+         Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
+         let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
+         object%js
+           val resultat = Js.string (Lcbpv_intf.string_of_cst (trad lexbuf))
+           val erreur = Js.string (Buffer.contents stderr_buff)
+         end
+
+       method ast code =
+         let stderr_buff = Buffer.create 100 in
+         Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
+         let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
+         object%js
+           val resultat = Js.string (FormatML.fmt_prog (generate_ast lexbuf))
+           val erreur = Js.string (Buffer.contents stderr_buff)
+         end
+
+       method parse code =
+         let stderr_buff = Buffer.create 100 in
+         Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
+         let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
+         let prog, env =
+           internalize (Lcbpv_intf.convert_to_machine_code (Lcbpv_intf.parse lexbuf))
+         in
+         let prog = polarity_inference ~trace:false env prog in
+         let prelude, prog, _ = type_infer ~trace:false prog in
+         let res = string_of_full_ast (prelude, prog) in
+         object%js
+           val resultat = Js.string res
+           val erreur = Js.string (Buffer.contents stderr_buff)
+         end
+
+       method interprete code =
+         let stderr_buff = Buffer.create 100 in
+         Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
+         let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
+         let cst = trad lexbuf in
+         let prog, env = internalize (Lcbpv_intf.convert_to_machine_code cst) in
+         let prog = polarity_inference ~trace:false env prog in
+         let prelude, prog, _ = type_infer ~trace:false prog in
+         let prog = interpret_prog (prelude, prog) in
+         let res = string_of_full_ast prog in
+         object%js
+           val resultat = Js.string res
+           val erreur = Js.string (Buffer.contents stderr_buff)
+         end
+    end)
 ;;

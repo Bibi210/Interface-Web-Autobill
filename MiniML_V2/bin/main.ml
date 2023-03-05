@@ -11,23 +11,13 @@ let string_of_full_ast ?(debug = false) prog =
   Format.flush_str_formatter ()
 ;;
 
-let err msg pos =
-  failwith
-    (Printf.sprintf
-       "{\"line\": %d, \"text\": \"Error on line %d col %d: %s.\"}"
-       pos.Lexing.pos_lnum
-       pos.Lexing.pos_lnum
-       (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
-       msg)
-;;
-
 let generate_ast code =
   HelpersML.reset_node_counter ();
   Global_counter._counter := 0;
   try ParserML.prog LexerML.token code with
   | LexerML.Error c ->
-    err (Printf.sprintf "unrecognized char '%s'" c) (Lexing.lexeme_start_p code)
-  | ParserML.Error -> err "syntax error" (Lexing.lexeme_start_p code)
+    HelpersML.err (Printf.sprintf "unrecognized char '%s'" c) (Lexing.lexeme_start_p code)
+  | ParserML.Error -> HelpersML.err "syntax error" (Lexing.lexeme_start_p code)
 ;;
 
 let trad code = Lcbpv_of_ML.trans_prog (generate_ast code)

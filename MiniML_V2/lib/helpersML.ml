@@ -2,6 +2,16 @@ open AstML
 
 (*For error messages*)
 
+let err msg pos =
+  failwith
+    (Printf.sprintf
+       "{\"line\": %d, \"text\": \"Error on line %d col %d: %s.\"}"
+       pos.Lexing.pos_lnum
+       pos.Lexing.pos_lnum
+       (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
+       msg)
+;;
+
 let rec list_getlast_rem = function
   | [] -> raise Not_found
   | [ hd ] -> hd, []

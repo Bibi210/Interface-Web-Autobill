@@ -2,6 +2,8 @@ open AstML
 open Autobill.Lcbpv
 open Autobill.Misc
 
+exception Error of string
+
 let generate_variable pos = HelpersML.generate_name (), pos
 
 let trans_boolean = function
@@ -45,7 +47,8 @@ and make_binary_closure args op loc =
         HelpersML.func_curryfy
           [ arg1 ]
           { enode = CallBinary { args = [ expr_var1; hd ]; op }; eloc = loc }
-      | _ -> failwith "Unexpected number of arguments on binary closure")
+      | _ ->
+        HelpersML.err "Unexpected number of arguments on binary closure" loc.start_pos)
   in
   closure
 
@@ -103,7 +106,7 @@ and trans_expr e =
                   , body.eloc )
               ]
           , e_loc ) )
-    | FunctionRec _ -> failwith "How?")
+    | FunctionRec _ -> HelpersML.err "Function Recusive is Unhandled ?" e_loc.start_pos)
   , e_loc )
 
 and trans_match_case case =
@@ -128,12 +131,15 @@ and getPatternVariable case =
   let step pt =
     match pt.pnode with
     | VarPattern x -> x, pt.ploc
-    | _ -> failwith "DeepMatch Pattern Unhandled : Pattern Containig Non Variable"
+    | _ ->
+      HelpersML.err
+        "DeepMatch Pattern Unhandled : Pattern Containig Non Variable"
+        pt.ploc.start_pos
   in
   match case.pattern.pnode with
   | TuplePattern ptt -> List.map step ptt
   | ConstructorPattern ptt -> List.map step ptt.content
-  | _ -> failwith "DeepMatch Pattern Unhandled"
+  | _ -> HelpersML.err "DeepMatch Pattern Unhandled" case.pattern.ploc.start_pos
 
 and trans_match_case_ls ls = List.map trans_match_case ls
 and trans_expr_ls ls = List.map trans_expr ls
@@ -179,7 +185,7 @@ let trans_def def =
          , loc ))
   | VariableDef newglb ->
     NewGlobal (Ins_Let (trans_var newglb.var, trans_expr newglb.init), loc)
-  | FunctionRecDef _ -> failwith "How ?" (* TODO *)
+  | FunctionRecDef _ -> HelpersML.err "Function Recusive is Unhandled ?" loc.start_pos
 ;;
 
 let trans_prog_node (glbvarls, program_items, last_expr) node =

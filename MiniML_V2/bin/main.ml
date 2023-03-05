@@ -14,7 +14,8 @@ let string_of_full_ast ?(debug = false) prog =
 let err msg pos =
   failwith
     (Printf.sprintf
-       "Error on line %d col %d: %s.\n"
+       "{\"line\": %d, \"text\": \"Error on line %d col %d: %s.\"}"
+       pos.Lexing.pos_lnum
        pos.Lexing.pos_lnum
        (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
        msg)

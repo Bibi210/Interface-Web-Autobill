@@ -94,8 +94,9 @@ function App() {
       setTypes(evaluation.erreur !== "" ? evaluation.erreur : "")
     } catch (error) {
       setPrint("")
-      setTypes(error[2].c)
-      highlight(44)
+      const err = JSON.parse(error[2].c)
+      setTypes(err.text)
+      highlight(err.line)
     }
   }
 

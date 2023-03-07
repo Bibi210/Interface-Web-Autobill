@@ -59,8 +59,9 @@ function App() {
       body: JSON.stringify({ code: code }) 
     })
       .then(res => res.json())
-      .then(data => {setResponse(data.result);
+      .then(data => {
         res = data.result.resultat;
+        setResponse(res)
         console.log(res)
       })
       .catch(error => {console.log("error detected");
@@ -100,9 +101,9 @@ function App() {
             <span className="output">Output</span>
           </aside>
           {
-            print ? 
+            response!=='' ? 
             <pre className="print">
-              {res}
+              {response}
             </pre>
             : ''
           }

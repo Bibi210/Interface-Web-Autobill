@@ -32,8 +32,8 @@ app.listen(3001, () =>{
 
 //npm start
 
-const { spawn } = require('child_process');
-const fs = require('fs');
+const { exec } = require('child_process');
+const MiniZinc = require('minizinc');
 
 
 
@@ -94,6 +94,70 @@ app.post('/api/run-code', async (req, res) => {
   */
   console.log("code traite");
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
-  console.log(evaluation);
   res.send(JSON.stringify({ result: evaluation }) );
+});
+
+app.post('/api/minizinc', (req, res) => {
+  const code = req.body.code;
+  /*
+  MiniZinc.init({
+    // Executable name
+    minizinc: 'minizinc',
+    // Search paths (can omit to use PATH)
+    minizincPaths: ['usr/bin']
+  });
+
+  const model = new MiniZinc.Model();
+  model.addString(code);
+
+  
+  const solve = model.solve({
+    options: {
+      solver: 'gecode',
+      timeout: 10000,
+      statistics: true
+    }
+  });
+
+
+  solve.on('solution', solution => console.log(solution.output.json));
+  solve.on('statistics', stats => console.log(stats.statistics));
+  solve.then(result => {
+    console.log(result.solution.output.json);
+    console.log(result.statistics);
+  });
+
+  console.log(code);
+
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.send(result.solution.output.json)
+  */
+
+  // Write the MiniZinc code to a temporary file
+  const fs = require('fs');
+  const tmpFile = './temp.mzn';
+  fs.writeFileSync(tmpFile, code);
+
+  // Run the MiniZinc code using the minizinc executable
+  const cmd = `minizinc --solver Gecode ${tmpFile}`;
+  exec(cmd, (error, stdout, stderr) => {
+    // Check for errors
+    if (error) {
+      console.error(`exec error: ${error}`);
+      res.status(500).send('Internal Server Error');
+      return;
+    }
+    if (stderr) {
+      console.error(`stderr: ${stderr}`);
+      res.status(500).send('Internal Server Error');
+      return;
+    }
+
+    fs.unlink('temp.mzn', (err) => {
+      if (err) throw err;
+      console.log('File deleted!');
+    });
+    // Send the MiniZinc output back to the client
+    res.send(stdout);
+  });
 });

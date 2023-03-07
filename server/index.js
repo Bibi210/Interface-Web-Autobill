@@ -157,7 +157,8 @@ app.post('/api/minizinc', (req, res) => {
       if (err) throw err;
       console.log('File deleted!');
     });
+    console.log(stdout);
     // Send the MiniZinc output back to the client
-    res.send(stdout);
+    res.send(JSON.stringify({ result: stdout }) );
   });
 });

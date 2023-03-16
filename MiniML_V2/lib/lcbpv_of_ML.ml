@@ -106,8 +106,24 @@ and trans_expr e =
                   , body.eloc )
               ]
           , e_loc ) )
-    | FunctionRec _ -> HelpersML.err "Function Recusive is Unhandled ?" e_loc.start_pos)
-  , e_loc )
+          | FunctionRec { var; body } ->
+            (match body.enode with
+            | Lambda { arg; body } ->
+              Expr_Closure
+                ( Exp
+                , ( Expr_Rec
+                      ( trans_var var
+                      , ( Expr_Get
+                            [ GetPatTag
+                                ( (Call, e_loc)
+                                , [ trans_var arg ]
+                                , (Expr_Thunk (trans_expr body), body.eloc)
+                                , body.eloc )
+                            ]
+                        , e_loc ) )
+                  , e_loc ) )
+            | _ -> failwith ""))
+        , e_loc )
 
 and trans_match_case case =
   let conseq = trans_expr case.consequence in
@@ -185,7 +201,6 @@ let trans_def def =
          , loc ))
   | VariableDef newglb ->
     NewGlobal (Ins_Let (trans_var newglb.var, trans_expr newglb.init), loc)
-  | FunctionRecDef _ -> HelpersML.err "Function Recusive is Unhandled ?" loc.start_pos
 ;;
 
 let trans_prog_node (glbvarls, program_items, last_expr) node =

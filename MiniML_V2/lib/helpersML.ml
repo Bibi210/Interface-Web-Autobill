@@ -30,7 +30,7 @@ let node_counter = ref 0
 
 let generate_name () =
   incr node_counter;
-  "%.MLTempVar" ^ Int.to_string !node_counter
+  "mLTempVar" ^ Int.to_string !node_counter
 ;;
 
 let reset_node_counter () = node_counter := 0
@@ -41,6 +41,11 @@ let func_curryfy args body =
     args
     body
 ;;
+
+let func_rec var args body =
+  { enode = FunctionRec { var; body = func_curryfy args body }; eloc = var.vloc }
+;;
+
 
 let functype_curryfy args body =
   List.fold_right

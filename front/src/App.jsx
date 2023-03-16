@@ -8,74 +8,98 @@ import billPrompts from "../data/billPrompt"
 import "../../MiniML_V2/_build/default/bin/main.bc.js"
 import { EditorView } from "codemirror"
 import { StateField, StateEffect } from "@codemirror/state"
-import { Decoration} from '@codemirror/view';
+import { Decoration } from "@codemirror/view"
+import { Model } from "https://cdn.jsdelivr.net/npm/minizinc/dist/minizinc.mjs"
+import { SYMBOL_PREVIEW_DATA } from "next/dist/server/api-utils"
 
 function App() {
   const selectNode = useRef(null)
   const modeNode = useRef(null)
   const [code, setCode] = useState(billPrompts.lists)
-
+  const [instance, setInstance] = useState(null)
   const [mode, setMode] = useState("LCBPV -> Equation")
   const [types, setTypes] = useState("")
   const [print, setPrint] = useState("")
   const [dispatchSpec, setDispatchSpec] = useState(null)
   const editor = useRef(null)
-  const addLineHighlight = StateEffect.define();
+  const addLineHighlight = StateEffect.define()
 
   const lineHighlightMark = Decoration.line({
-    attributes: {style: 'background-color: #ff00004f; cursor: pointer', 'data-error':types},
-    class: "line-error"
-  });
+    attributes: {
+      style: "background-color: #ff00004f; cursor: pointer",
+      "data-error": types,
+    },
+    class: "line-error",
+  })
 
   const lineHighlightField = StateField.define({
     create() {
-      return Decoration.none;
+      return Decoration.none
     },
     update(lines, tr) {
-      lines = lines.map(tr.changes);
-      if(dispatchSpec!==null){
+      lines = lines.map(tr.changes)
+      if (dispatchSpec !== null) {
         let e = dispatchSpec.effects
-        lines = lines.update({add: [lineHighlightMark.range(e.value)]})
-      } else{
+        lines = lines.update({ add: [lineHighlightMark.range(e.value)] })
+      } else {
         for (let e of tr.effects) {
           if (e.is(addLineHighlight)) {
-            lines = lines.update({add: [lineHighlightMark.range(e.value)]});
+            lines = lines.update({ add: [lineHighlightMark.range(e.value)] })
           }
         }
       }
-      return lines;
+      return lines
     },
     provide: (f) => EditorView.decorations.from(f),
-  });
+  })
 
-  
   const { view } = useCodeMirror({
     container: editor.current,
     value: code,
-    onChange: (val, _) => {setCode(val);setDispatchSpec(null)},
+    onChange: (val, _) => {
+      setCode(val)
+      setDispatchSpec(null)
+    },
     height: "100%",
     maxWidth: "60vw",
     theme: oneDark,
-    extensions: [StreamLanguage.define(lcbpv), EditorView.lineWrapping, lineHighlightField],
+    extensions: [
+      StreamLanguage.define(lcbpv),
+      EditorView.lineWrapping,
+      lineHighlightField,
+    ],
     indentWithTab: true,
     className: "editor",
     basicSetup: {
       syntaxHighlighting: true,
     },
   })
-  function highlight(l){
-    let docPosition =  view.state.doc.line(l).from
-    setDispatchSpec({effects: addLineHighlight.of(docPosition)});
+  function highlight(l) {
+    let docPosition = view.state.doc.line(l).from
+    setDispatchSpec({ effects: addLineHighlight.of(docPosition) })
   }
   function handleSelect() {
     let val = selectNode.current?.value
     setCode(billPrompts[val])
   }
-  const evalCode = (e) => {
+  const evalCode = async (e) => {
     e.preventDefault()
     try {
-      let evaluation
+      let evaluation ={
+        resultat: "",
+        erreur: ""
+      }
       switch (mode) {
+        case "Equation -> Soluce":
+          const model = new Model()
+          model.addFile("playground.mzn", code)
+          const solve = await model.solve({
+            options: {
+              solver: "gecode",
+            },
+          })
+          evaluation.resultat = solve.solution ? JSON.stringify(solve.solution.output.json) : "Insatisfiable"
+          break
         case "LCBPV -> Equation":
           evaluation = ml.parse(code)
           break
@@ -93,6 +117,7 @@ function App() {
       setPrint(evaluation.resultat !== "" ? evaluation.resultat : "")
       setTypes(evaluation.erreur !== "" ? evaluation.erreur : "")
     } catch (error) {
+      console.log(error)
       setPrint("")
       const err = JSON.parse(error[2].c)
       setTypes(err.text)
@@ -134,6 +159,9 @@ function App() {
                 <option value={"MiniML -> Equation"}>
                   {"MiniML -> Equation"}
                 </option>
+                <option value={"Equation -> Soluce"}>
+                  {"Equation -> Soluce"}
+                </option>
               </select>
             </div>
             <div className="mode">
@@ -158,7 +186,7 @@ function App() {
           </footer>
         </section>
         <section>
-          <aside style={{marginBottom: "1.5rem"}}>
+          <aside style={{ marginBottom: "1.5rem" }}>
             <span className="output">Output</span>
           </aside>
           {print ? <pre className="print">{print}</pre> : ""}

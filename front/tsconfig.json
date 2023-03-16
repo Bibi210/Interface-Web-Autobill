@@ -17,6 +17,6 @@
     "jsx": "react-jsx",
     "alwaysStrict": true
   },
-  "include": ["src"],
+  "include": ["src", "public/minizinc.js"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

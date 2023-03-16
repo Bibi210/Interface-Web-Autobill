@@ -19,12 +19,6 @@ and fmt_def d =
   match d.dnode with
   | VariableDef { var; init } ->
     Printf.sprintf "%s = %s" (fmt_variable var) (fmt_expr init)
-  | FunctionRecDef { var; args; body } ->
-    Printf.sprintf
-      "RecFunc %s [%s] -> %s"
-      var.basic_ident
-      (fmt_variable_ls args)
-      (fmt_expr body)
   | TypeDef { basic_ident; parameters; constructors } ->
     Printf.sprintf
       "NewType %s Parameters=[%s] Constructors(\n | %s)"
@@ -81,12 +75,8 @@ and fmt_expr exp =
   | Tuple expr_ls -> Printf.sprintf "\nTuple(\n  %s )" (fmt_expr_ls expr_ls)
   | Construct { constructor_ident; to_group } ->
     Printf.sprintf "%s(%s)" constructor_ident (fmt_expr_ls to_group)
-  | FunctionRec { var; args; body } ->
-    Printf.sprintf
-      "RecFunc %s( [%s] -> (%s))"
-      var.basic_ident
-      (fmt_variable_ls args)
-      (fmt_expr body)
+  | FunctionRec { var; body } ->
+    Printf.sprintf "RecFunc %s( (%s))" var.basic_ident (fmt_expr body)
   | Match { to_match; cases } ->
     Printf.sprintf "Match (%s) with (%s)" (fmt_expr to_match) (fmt_match_case_ls cases)
 

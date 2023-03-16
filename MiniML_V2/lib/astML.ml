@@ -41,11 +41,6 @@ and pre_def =
       { var : variable
       ; init : expr
       }
-  | FunctionRecDef of
-      { var : variable
-      ; args : variable list
-      ; body : expr
-      }
   | TypeDef of
       { basic_ident : string
       ; parameters : vartype list
@@ -100,7 +95,6 @@ and pre_expr =
       }
   | FunctionRec of
       { var : variable
-      ; args : variable list
       ; body : expr
       }
   | Match of

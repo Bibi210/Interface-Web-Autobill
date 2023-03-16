@@ -59,11 +59,14 @@ def:
   }
 }
 | LLet;LRec; var = variable; args = nonempty_list(variable);  LEqual; body = expr{
-  { dloc = position $startpos($1) $endpos(body);
-    dnode = FunctionRecDef{
-      var; args;body
-    }   
-  }
+  
+    { dloc = position $startpos($1) $endpos(body);
+      dnode = VariableDef{
+                var
+              ; init = func_rec var args body   
+      }   
+    }  
+  
 }
 | LType; parameters = list(LVarType);basic_ident = LBasicIdent ; LEqual ; 
   option(LOr) ;constructors = separated_nonempty_list(LOr,newconstructor_case){
@@ -186,14 +189,7 @@ expr:
 }
 | LLet ; LRec; var = variable; args = nonempty_list(variable);  LEqual; func_body = expr; LIn ;content = expr{
     { enode = Binding {
-            var ; init = 
-              { eloc = position $startpos($1) $endpos(func_body)
-              ; enode = FunctionRec
-                  { var
-                  ; args
-                  ; body = func_body
-                  } 
-              }
+            var ; init = func_rec var args func_body  
             ; content}
     ; eloc = position $startpos($1) $endpos(content)
   }

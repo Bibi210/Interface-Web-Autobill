@@ -11,25 +11,17 @@ let string_of_full_ast ?(debug = false) prog =
   Format.flush_str_formatter ()
 ;;
 
-let err msg pos =
-  failwith
-    (Printf.sprintf
-       "Error on line %d col %d: %s.\n"
-       pos.Lexing.pos_lnum
-       (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
-       msg)
-;;
-
 let generate_ast code =
   HelpersML.reset_node_counter ();
   Global_counter._counter := 0;
   try ParserML.prog LexerML.token code with
   | LexerML.Error c ->
-    err (Printf.sprintf "unrecognized char '%s'" c) (Lexing.lexeme_start_p code)
-  | ParserML.Error -> err "syntax error" (Lexing.lexeme_start_p code)
+    HelpersML.err (Printf.sprintf "unrecognized char '%s'" c) (Lexing.lexeme_start_p code)
+  | ParserML.Error -> HelpersML.err "syntax error" (Lexing.lexeme_start_p code)
 ;;
 
-let trad code = Lcbpv_of_ML.trans_prog (generate_ast code)
+let trad code = 
+  Lcbpv_of_ML.trans_prog (generate_ast code)
 
 let _ =
   Js.export
@@ -61,8 +53,9 @@ let _ =
            internalize (Lcbpv_intf.convert_to_machine_code (Lcbpv_intf.parse lexbuf))
          in
          let prog = polarity_inference ~trace:false env prog in
-         let prelude, prog, _ = type_infer ~trace:false prog in
-         let res = string_of_full_ast (prelude, prog) in
+         let res = constraint_as_string prog in
+         (* let prelude, prog, post_con = type_infer ~trace:false prog in
+         let res = post_contraint_as_string (prelude, prog, post_con) in *)
          object%js
            val resultat = Js.string res
            val erreur = Js.string (Buffer.contents stderr_buff)
@@ -75,9 +68,8 @@ let _ =
          let cst = trad lexbuf in
          let prog, env = internalize (Lcbpv_intf.convert_to_machine_code cst) in
          let prog = polarity_inference ~trace:false env prog in
-         let prelude, prog, _ = type_infer ~trace:false prog in
-         let prog = interpret_prog (prelude, prog) in
-         let res = string_of_full_ast prog in
+         let prelude, prog, post_con = type_infer ~trace:false prog in
+         let res = post_contraint_as_string (prelude, prog, post_con) in
          object%js
            val resultat = Js.string res
            val erreur = Js.string (Buffer.contents stderr_buff)

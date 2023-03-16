@@ -13,6 +13,7 @@
   --main-color : #39ace3;
   --color-focus : #2C313A;
   --bg-color: #1E1E1E;
+  --light-bg : #272727;
 }
 
 html, body, #root{
@@ -115,7 +116,7 @@ section{
 }
 main section:nth-child(2){
   width: 40%;
-  background: #272727;
+  background: var(--light-bg);
 }
 
 aside{
@@ -152,7 +153,6 @@ pre #text{
   max-width: 100%;
 }
 span.types, pre.print{
-  
   font-family: 'Monaco', sans-serif !important;
   font-size: 1.1rem;
   padding-left: 1.5rem;
@@ -194,4 +194,19 @@ select::before{
   align-items: center;
   font-size: 18px;
   font-weight: 700;
+}
+.line-error{
+  position: relative;
+  overflow: visible;
+}
+.line-error:hover::before{
+  width: 25ch;
+  display: block;
+  content: attr(data-error);
+  position: fixed;
+  z-index: 1000;
+  transform: translateY(25px);
+  background-color: #fff;
+  color: var(--bg-color);
+  padding: 0.5rem;
 }

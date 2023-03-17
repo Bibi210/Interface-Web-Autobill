@@ -10,13 +10,11 @@ import { EditorView } from "codemirror"
 import { StateField, StateEffect } from "@codemirror/state"
 import { Decoration } from "@codemirror/view"
 import { Model } from "https://cdn.jsdelivr.net/npm/minizinc/dist/minizinc.mjs"
-import { SYMBOL_PREVIEW_DATA } from "next/dist/server/api-utils"
 
 function App() {
   const selectNode = useRef(null)
   const modeNode = useRef(null)
   const [code, setCode] = useState(billPrompts.lists)
-  const [instance, setInstance] = useState(null)
   const [mode, setMode] = useState("LCBPV -> Equation")
   const [types, setTypes] = useState("")
   const [print, setPrint] = useState("")

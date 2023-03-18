@@ -54,16 +54,10 @@ let getHead ls = (
   | (hd::tail) -> Some (hd)
   | _ -> None
   )
-;;   (* Fun Bug Here *)
-let getHead2 ls = (
-  match ls with
-  | (hd::tail) -> Some (hd)
-  | _ -> None
-  )
 ;;
 let addHeadSafe ls1 ls2 = 
 let head1 = (getHead ls1) in
-let head2 = (getHead2 ls2) in
+let head2 = (getHead ls2) in
 (
   match head1 with
   | None -> None

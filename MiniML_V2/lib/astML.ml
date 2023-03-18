@@ -10,6 +10,7 @@ type pre_etype =
       ; return_type : etype
       }
   | TypeVar of vartype
+  | TypeDefined of vartype
   | TypeConstructor of
       { to_build : etype
       ; parameters : etype list

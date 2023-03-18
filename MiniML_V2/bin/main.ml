@@ -12,6 +12,11 @@ let string_of_full_ast ?(debug = false) prog =
   Format.flush_str_formatter ()
 ;;
 
+let fmtMiniML prog =
+  FormatML.fmp_prog Format.str_formatter prog;
+  Format.flush_str_formatter ()
+;;
+
 let generate_ast code =
   HelpersML.reset_node_counter ();
   Global_counter._counter := 0;
@@ -48,7 +53,7 @@ let _ =
          Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
          let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
          object%js
-           val resultat = Js.string (FormatML.fmt_prog (generate_ast lexbuf))
+           val resultat = Js.string (fmtMiniML (generate_ast lexbuf))
            val erreur = Js.string (Buffer.contents stderr_buff)
          end
 
@@ -89,7 +94,7 @@ let _ =
          let cst = translate_ML_to_LCBPV lexbuf in
          let prog, env = internalize (Lcbpv_intf.convert_to_machine_code cst) in
          let prog = polarity_inference ~trace:false env prog in
-         let prelude, prog, post_con = type_infer ~trace:false prog in
+         let prelude, prog, _ = type_infer ~trace:false prog in
          let prog = interpret_prog (prelude, prog) in
          let res = string_of_full_ast prog in
          object%js

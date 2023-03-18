@@ -160,6 +160,7 @@ let rec trans_type t =
     | TypeBool -> Typ_App ((Typ_Bool, t.tloc), [])
     | TypeUnit -> Typ_App ((Typ_Unit, t.tloc), [])
     | TypeTuple x -> Typ_App ((Typ_Tuple, t.tloc), trans_type_ls x)
+    | TypeDefined defined -> Typ_Var (String.capitalize_ascii defined)
     | TypeVar vartype -> Typ_Var (String.capitalize_ascii vartype)
     | TypeConstructor x -> Typ_App (trans_type x.to_build, trans_type_ls x.parameters)
     | TypeLambda { arg; return_type } ->

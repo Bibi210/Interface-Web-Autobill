@@ -1,127 +1,169 @@
+(* Should make a pp_printer ? *)
 open AstML
+open Format
 
-let list_sprintf list fmt_func separator =
-  String.concat separator (List.map fmt_func list)
-;;
+let fmt_string = pp_print_string
+let fmt_variable fmt { basic_ident; _ } = fmt_string fmt basic_ident
+let fmt_with_string str = pp_print_list ~pp_sep:(fun fmt () -> fprintf fmt str)
+let fmt_with_space pp fmt l = fmt_with_string " " pp fmt l
+let fmt_with_comma pp fmt l = fmt_with_string ", " pp fmt l
+let fmt_with_semicolon pp fmt l = fmt_with_string "; " pp fmt l
+let fmt_with_mult pp fmt l = fmt_with_string "* " pp fmt l
 
-let array_sprintf array fmt_func separator =
-  list_sprintf (List.of_seq (Array.to_seq array)) fmt_func separator
-;;
-
-let rec fmt_variable x = Printf.sprintf "(VarName = %s)" x.basic_ident
-and fmt_prog p = list_sprintf p fmt_prog_node " ;;\n****************\n\n"
-
-and fmt_prog_node = function
-  | Def def -> Printf.sprintf "Def(%s)" (fmt_def def)
-  | Expr expr -> Printf.sprintf "Expr(%s)" (fmt_expr expr)
-
-and fmt_def d =
-  match d.dnode with
-  | VariableDef { var; init } ->
-    Printf.sprintf "%s = %s" (fmt_variable var) (fmt_expr init)
-  | TypeDef { basic_ident; parameters; constructors } ->
-    Printf.sprintf
-      "NewType %s Parameters=[%s] Constructors(\n | %s)"
-      basic_ident
-      (String.concat " " parameters)
-      (fmt_newconstructor_case_ls constructors)
-
-and fmt_newconstructor_case case =
-  Printf.sprintf
-    "ConstructorCase(%s of %s)\n"
-    case.constructor_ident
-    (fmt_type_ls case.c_of)
-
-and fmt_litteral = function
-  | Integer i -> Printf.sprintf "Int(%d)" i
-  | Boolean b -> Printf.sprintf "Bool(%s)" (string_of_bool b)
-  | Unit -> "Unit"
-
-and fmt_unary_op = function
-  | Autobill.Lcbpv.Not -> Printf.sprintf "!"
-  | Autobill.Lcbpv.Opp -> Printf.sprintf "opp"
-
-and fmt_binary_op = function
-  | Autobill.Lcbpv.Add -> "+"
-  | Autobill.Lcbpv.Mult -> "*"
-  | Autobill.Lcbpv.Subs -> "-"
-  | Autobill.Lcbpv.Div -> "/"
-  | Autobill.Lcbpv.Mod -> "%"
-  | Autobill.Lcbpv.And -> "and"
-  | Autobill.Lcbpv.Or -> "or"
-  | Autobill.Lcbpv.Int_Eq -> "=="
-  | Autobill.Lcbpv.Int_Leq -> "<="
-  | Autobill.Lcbpv.Int_Lt -> "<"
-
-and fmt_expr exp =
-  match exp.enode with
-  | Litteral litteral -> fmt_litteral litteral
-  | Variable variable -> Printf.sprintf "Variable %s" (fmt_variable variable)
-  | Call { func; arg } -> Printf.sprintf "Apply(%s on %s)" (fmt_expr func) (fmt_expr arg)
-  | CallUnary { op; arg = Some arg } ->
-    Printf.sprintf "(%s%s)" (fmt_unary_op op) (fmt_expr arg)
-  | CallUnary { op; arg = None } -> Printf.sprintf "(%s)" (fmt_unary_op op)
-  | CallBinary { op; args } ->
-    Printf.sprintf "(%s)" (list_sprintf args fmt_expr (fmt_binary_op op))
-  | Sequence expr_ls -> Printf.sprintf "\nSequence(\n  %s)" (fmt_expr_ls expr_ls)
-  | Binding { var; init; content } ->
-    Printf.sprintf
-      "Binding(%s = (%s) in\n (%s))"
-      (fmt_variable var)
-      (fmt_expr init)
-      (fmt_expr content)
-  | Lambda { arg; body } ->
-    Printf.sprintf "Lambda %s\n -> (%s)" (fmt_variable arg) (fmt_expr body)
-  | Tuple expr_ls -> Printf.sprintf "\nTuple(\n  %s )" (fmt_expr_ls expr_ls)
-  | Construct { constructor_ident; to_group } ->
-    Printf.sprintf "%s(%s)" constructor_ident (fmt_expr_ls to_group)
-  | FunctionRec { var; arg; body } ->
-    Printf.sprintf
-      "RecFunc %s( %s -> (%s))"
-      var.basic_ident
-      arg.basic_ident
-      (fmt_expr body)
-  | Match { to_match; cases } ->
-    Printf.sprintf "Match (%s) with (%s)" (fmt_expr to_match) (fmt_match_case_ls cases)
-
-and fmt_match_case case =
-  Printf.sprintf
-    "MatchCase (%s -> %s) "
-    (fmt_pattern case.pattern)
-    (fmt_expr case.consequence)
-
-and fmt_pattern ptt =
-  match ptt.pnode with
-  | LitteralPattern litteral -> fmt_litteral litteral
-  | VarPattern string -> string
-  | WildcardPattern -> "_"
-  | TuplePattern pattern_ls ->
-    Printf.sprintf "TuplePattern(%s)" (fmt_pattern_ls pattern_ls)
-  | ConstructorPattern { constructor_ident; content } ->
-    Printf.sprintf "%s(%s)" constructor_ident (fmt_pattern_ls content)
-
-and fmt_type_opt = function
-  | None -> "None"
-  | Some x -> fmt_type x
-
-and fmt_type t =
+let rec fmt_type fmt t =
+  let fmt_string = fmt_string fmt in
   match t.etype with
-  | TypeInt -> "Int_t"
-  | TypeBool -> "Bool_t"
-  | TypeUnit -> "Unit_t"
-  | TypeTuple type_ls -> Printf.sprintf "Tuple_t of (%s)" (fmt_type_ls type_ls)
+  | TypeInt -> fmt_string "int"
+  | TypeBool -> fmt_string "bool"
+  | TypeUnit -> fmt_string "()"
+  | TypeTuple type_ls -> fprintf fmt "(%a)" (fmt_with_mult fmt_type) type_ls
   | TypeLambda { arg; return_type } ->
-    Printf.sprintf "Function_t [%s] -> (%s)" (fmt_type arg) (fmt_type return_type)
-  | TypeVar vartype -> Printf.sprintf "%s_t" vartype
+    fprintf fmt "(%a -> %a)" fmt_type arg fmt_type return_type
+  | TypeVar vartype -> fmt_string ("'" ^ vartype)
+  | TypeDefined t -> fmt_string t
   | TypeConstructor construct ->
-    Printf.sprintf
-      "(ParametredType %s with %s)"
-      (fmt_type construct.to_build)
-      (fmt_type_ls construct.parameters)
+    fprintf
+      fmt
+      "(%a %a)"
+      (fmt_with_space fmt_type)
+      construct.parameters
+      fmt_type
+      construct.to_build
+;;
 
-and fmt_match_case_ls ls = list_sprintf ls fmt_match_case "\n | "
-and fmt_variable_ls x = list_sprintf x fmt_variable " , "
-and fmt_newconstructor_case_ls ls = list_sprintf ls fmt_newconstructor_case " | "
-and fmt_pattern_ls ls = list_sprintf ls fmt_pattern " , "
-and fmt_type_ls x = list_sprintf x fmt_type " , "
-and fmt_expr_ls x = list_sprintf x fmt_expr " \n, "
+let fmt_unary_op fmt op =
+  pp_print_string
+    fmt
+    (match op with
+    | Autobill.Lcbpv.Not -> "!"
+    | Autobill.Lcbpv.Opp -> "-")
+;;
+
+let fmt_binary_op fmt op =
+  pp_print_string
+    fmt
+    (match op with
+    | Autobill.Lcbpv.Add -> "+"
+    | Autobill.Lcbpv.Mult -> "*"
+    | Autobill.Lcbpv.Subs -> "-"
+    | Autobill.Lcbpv.Div -> "/"
+    | Autobill.Lcbpv.Mod -> "%"
+    | Autobill.Lcbpv.And -> "and"
+    | Autobill.Lcbpv.Or -> "or"
+    | Autobill.Lcbpv.Int_Eq -> "=="
+    | Autobill.Lcbpv.Int_Leq -> "<="
+    | Autobill.Lcbpv.Int_Lt -> "<")
+;;
+
+let fmt_litteral fmt = function
+  | Integer i -> pp_print_int fmt i
+  | Boolean b -> pp_print_bool fmt b
+  | Unit -> pp_print_string fmt "()"
+;;
+
+let rec fmt_pattern fmt ptt =
+  match ptt.pnode with
+  | LitteralPattern litteral -> fmt_litteral fmt litteral
+  | VarPattern string -> pp_print_string fmt string
+  | WildcardPattern -> pp_print_char fmt '_'
+  | TuplePattern pattern_ls -> fprintf fmt "(%a)" (fmt_with_comma fmt_pattern) pattern_ls
+  | ConstructorPattern { constructor_ident; content } ->
+    fprintf
+      fmt
+      "(%a(%a))"
+      fmt_string
+      constructor_ident
+      (fmt_with_comma fmt_pattern)
+      content
+;;
+
+let rec fmt_expr fmt exp =
+  match exp.enode with
+  | Litteral litteral -> fmt_litteral fmt litteral
+  | Variable variable -> fmt_variable fmt variable
+  | Call { func; arg } -> fprintf fmt "(%a %a)" fmt_expr func fmt_expr arg
+  | CallUnary { op; arg = Some arg } -> fprintf fmt "(%a%a)" fmt_unary_op op fmt_expr arg
+  | CallUnary { op; arg = None } -> fprintf fmt "(%a)" fmt_unary_op op
+  | CallBinary { op; args = first :: second :: _ } ->
+    fprintf fmt "(%a %a %a)" fmt_expr first fmt_binary_op op fmt_expr second
+  | CallBinary { op; args = [] } -> fprintf fmt "(%a)" fmt_binary_op op
+  | CallBinary { op; args = [ arg ] } ->
+    fprintf fmt "(%a %a)" fmt_binary_op op fmt_expr arg
+  | Sequence expr_ls -> fprintf fmt "(%a)" (fmt_with_semicolon fmt_expr) expr_ls
+  | Binding { var; init; content } ->
+    fprintf
+      fmt
+      "@[let %a = @[%a@] in @[%a@] @]"
+      fmt_variable
+      var
+      fmt_expr
+      init
+      fmt_expr
+      content
+  | Lambda { arg; body } -> fprintf fmt "fun %a -> @[%a@]" fmt_variable arg fmt_expr body
+  | Tuple expr_ls -> fprintf fmt "(%a)" (fmt_with_comma fmt_expr) expr_ls
+  | Construct { constructor_ident; to_group } ->
+    fprintf fmt "(%a(%a))" fmt_string constructor_ident (fmt_with_comma fmt_expr) to_group
+  | FunctionRec { var; arg; body } ->
+    fprintf
+      fmt
+      "@[let rec %a = (fun %a -> @[%a@]) in @[%a@] @]"
+      fmt_variable
+      var
+      fmt_variable
+      arg
+      fmt_expr
+      body
+      fmt_variable
+      arg
+  | Match { to_match; cases } ->
+    fprintf
+      fmt
+      "(match %a with @[%a@])"
+      fmt_expr
+      to_match
+      (pp_print_list ~pp_sep:pp_print_cut fmt_case)
+      cases
+
+and fmt_case fmt case =
+  fprintf fmt "@[| %a -> %a @]" fmt_pattern case.pattern fmt_expr case.consequence
+;;
+
+let fmt_construtors fmt newConstr =
+  fprintf
+    fmt
+    "@[| %a of %a @]"
+    fmt_string
+    newConstr.constructor_ident
+    (fmt_with_mult fmt_type)
+    newConstr.c_of
+;;
+
+let fmt_def fmt d =
+  match d.dnode with
+  | VariableDef { var; init } -> fprintf fmt "let %a = %a" fmt_variable var fmt_expr init
+  | TypeDef { basic_ident; parameters; constructors } ->
+    fprintf
+      fmt
+      "type %a %a = @ %a"
+      (fmt_with_space fmt_string)
+      (List.map (fun x -> "'" ^ x) parameters)
+      fmt_string
+      basic_ident
+      (pp_print_list ~pp_sep:pp_print_cut fmt_construtors)
+      constructors
+;;
+
+let fmt_prog_node fmt = function
+  | Def def -> fmt_def fmt def
+  | Expr expr -> fmt_expr fmt expr
+;;
+
+let fmt_with_double_semicolon pp fmt l = fmt_with_string ";;@ " pp fmt l
+
+let fmp_prog fmt prog =
+  pp_open_vbox fmt 0;
+  fmt_with_double_semicolon fmt_prog_node fmt prog;
+  pp_print_cut fmt ();
+  pp_close_box fmt ()
+;;

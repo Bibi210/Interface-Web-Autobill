@@ -1,7 +1,5 @@
 open AstML
 
-(*For error messages*)
-
 let err msg (pos : Autobill.Misc.position) =
   let pos = pos.start_pos in
   failwith

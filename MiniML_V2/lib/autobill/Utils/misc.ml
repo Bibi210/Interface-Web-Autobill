@@ -54,12 +54,15 @@ let dummy_pos = {
   is_dummy = true
 }
 
-let string_of_position p =
-  let fname = p.start_pos.pos_fname in
-  let lnum = p.start_pos.pos_lnum in
+let string_of_position ?(with_filename = true) p =
+  let fname = if with_filename then p.start_pos.pos_fname ^ ":" else "" in
+  let st_lnum = p.start_pos.pos_lnum in
+  let endd_lnum = p.end_pos.pos_lnum in
   let st = p.start_pos.pos_cnum - p.start_pos.pos_bol in
   let endd = p.end_pos.pos_cnum - p.end_pos.pos_bol in
   if p.is_dummy then
     "(no-position)"
+  else if st_lnum = endd_lnum then
+    Printf.sprintf "%s%d:%d-%d" fname st_lnum st endd
   else
-    Printf.sprintf "%s:%d:%d-%d" fname lnum st endd
+    Printf.sprintf "%s%d:%d-%d:%d" fname st_lnum st endd_lnum endd

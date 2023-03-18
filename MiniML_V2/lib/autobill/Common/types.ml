@@ -5,7 +5,6 @@ open Format
 type polarity = Positive | Negative
 type 'var sort =
   | Base of polarity
-  | Qualifier
   | Index of 'var
   | Arrow of 'var sort * 'var sort
 
@@ -15,7 +14,6 @@ let sort_postype = Base Positive
 let sort_negtype = Base Negative
 let sort_base p = Base p
 let sort_idx i = Index i
-let sort_qual = Qualifier
 let sort_arrow arg ret = List.fold_right (fun arg so -> Arrow (arg,so)) arg ret
 
 let rec unmk_arrow sort = match sort with
@@ -26,23 +24,23 @@ let is_base_sort = function
   | Base _ -> true
   | _ -> false
 let is_base_index_sort = function
-  | Index _ | Qualifier -> true
+  | Index _ -> true
   | _ -> false
 let rec is_index_sort = function
   | Base _ -> false
-  | Index _ | Qualifier -> true
+  | Index _ -> true
   | Arrow (s,t) -> is_index_sort s && is_index_sort t
 let rec is_monotype_sort = function
   | Base _ -> true
-  | Index _ | Qualifier -> false
+  | Index _ -> false
   | Arrow (s,t) -> is_index_sort s && is_monotype_sort t
 let is_monotype_sort_with_base_indices = function
   | Base _ -> true
-  | Index _ | Qualifier -> false
+  | Index _ -> false
   | Arrow (s,t) -> is_base_index_sort s && is_monotype_sort t
 let rec is_polytype_sort = function
   | Base _ -> true
-  | Index _ | Qualifier -> false
+  | Index _ -> false
   | Arrow _ as so when is_monotype_sort so -> true
   | Arrow (s,t) -> is_monotype_sort s && is_polytype_sort t
 let is_valid_sort so = is_index_sort so || is_polytype_sort so
@@ -53,7 +51,6 @@ let string_of_polarity  = function
 let rec string_of_sort kv = function
   | Base p -> string_of_polarity p
   | Index i -> kv i
-  | Qualifier -> "qual"
   | Arrow (s,t) -> "(" ^ (string_of_sort kv s) ^ " -> " ^ (string_of_sort kv t) ^")"
 let pp_sort kv fmt sort = pp_print_string fmt (string_of_sort kv sort)
 
@@ -92,8 +89,7 @@ type 'tycons type_cons =
   | Top
   | Bottom
   | Thunk
-  | Closure
-  | Qual of box_kind
+  | Closure of box_kind option
   | Fix
   | Prod of int
   | Sum of int
@@ -113,13 +109,13 @@ let pp_type_cons kvar fmt cons =
   | Top -> pp_print_string fmt "Top"
   | Bottom -> pp_print_string fmt "Bottom"
   | Thunk -> pp_print_string fmt "Thunk"
-  | Closure -> pp_print_string fmt "Closure"
+  | Closure None -> pp_print_string fmt "Closure Lin"
+  | Closure (Some q) -> fprintf fmt "Closure %s" (string_of_box_kind q)
   | Fix -> pp_print_string fmt "Fix"
   | Prod _ -> pp_print_string fmt "Prod"
   | Sum _ -> pp_print_string fmt "Sum"
   | Fun _ -> pp_print_string fmt "Fun"
   | Choice _ -> pp_print_string fmt "Choice"
-  | Qual q -> pp_print_string fmt (string_of_box_kind q)
   | Cons var -> kvar fmt var
 
 type ('tycons, 'var) pre_typ =
@@ -135,15 +131,15 @@ type ('tycons, 'var) pre_typ =
 type typ = (TyConsVar.t, TyVar.t) pre_typ
 
 
-let linear = Qual Linear
-let affine = Qual Affine
-let exp = Qual Exponential
+let linear = Some Linear
+let affine = Some Affine
+let exp = Some Exponential
 let tvar ?loc:(loc = dummy_pos) node = TVar {node; loc}
 let posvar ?loc:(loc = dummy_pos) v = tvar ~loc:loc v
 let negvar ?loc:(loc = dummy_pos) v = tvar ~loc:loc v
 let cons ?loc:(loc = dummy_pos) node = TCons {node; loc}
 let app ?loc:(loc = dummy_pos) tfun args = TApp {tfun; args; loc}
-let boxed ?loc q t = app ?loc (cons Closure) [cons q;t]
+let boxed ?loc q t = app ?loc (cons (Closure q)) [t]
 
 let unit_t = cons Unit
 let zero = cons Zero

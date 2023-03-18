@@ -3,6 +3,7 @@ open Ast
 open Constructors
 open FullAst
 open Prelude
+open AlphaConversion
 
 type runtime_env =  {
   covars : S.t CoVar.Env.t;
@@ -33,7 +34,8 @@ let curr (_, cmd) = cmd
 
 let env (env, _) = env
 
-let env_get env var = Var.Env.find var env.vars
+let env_get env var =
+  alpha_val empty_renaming (Var.Env.find var env.vars)
 
 let env_declare env var = {env with declared_vars = Var.Env.add var () env.declared_vars}
 
@@ -57,13 +59,15 @@ let env_set_shared env var =
 
 let env_is_shared env var = Var.Env.mem var env.shared_vars
 
-let typenv_get env var = TyVar.Env.find var env.tyvars
+let typenv_get env var =
+  alpha_typ empty_renaming (TyVar.Env.find var env.tyvars)
 
 let typenv_add env var valu = {env with tyvars = TyVar.Env.add var valu env.tyvars}
 
 let typenv_declare env var = {env with declared_tyvars = TyVar.Env.add var () env.declared_tyvars}
 
-let coenv_get env covar = CoVar.Env.find covar env.covars
+let coenv_get env covar =
+  alpha_stk empty_renaming (CoVar.Env.find covar env.covars)
 
 let coenv_add env covar stk = {env with covars = CoVar.Env.add covar stk env.covars}
 
@@ -137,12 +141,12 @@ let reduct_head_once ((env, Command cmd) as prog) : runtime_prog =
     if kind1 <> kind2 then fail_box_kind_mistatch prog else
       (coenv_add env a cont2, mcmd1)
 
-  | Cons cons, CoCons {cases; default} ->
+  | Cons cons, CoCons {cases; default; _} ->
     begin try reduct_match prog cons cases default
       with Not_found -> fail_malformed_case prog
     end
 
-  | Destr {cases; default}, CoDestr destr ->
+  | Destr {cases; default; _}, CoDestr destr ->
     begin try reduct_comatch prog destr cases default
       with Not_found -> fail_malformed_case prog
     end

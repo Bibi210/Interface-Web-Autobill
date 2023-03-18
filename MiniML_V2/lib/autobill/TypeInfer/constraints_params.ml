@@ -23,7 +23,7 @@ module Params (Prelude : Prelude) = struct
                          || (Types.is_monotype_sort_with_base_indices so)
 
   let is_syntactic_sort = function
-    | Base _ | Qualifier -> true
+    | Base _ -> true
     | Index _ | Arrow _ -> false
 
   let pp_rel = RelVar.pp
@@ -45,6 +45,8 @@ module Params (Prelude : Prelude) = struct
   let eq a b = a = b
 
   let string_of_sort = Types.string_of_sort SortVar.to_string
+
+  let rank_relation = Primitives.rank_nat_rel
 
   let string_of_node = function
     | Var (v,sort) -> TyVar.to_string v ^ ":" ^ string_of_sort sort
@@ -96,7 +98,7 @@ module Params (Prelude : Prelude) = struct
 
       | TCons {node; _} -> begin match node with
 
-          | Types.Unit | Zero | Top | Bottom | Qual _ as c -> fold (Cons c) []
+          | Types.Unit | Zero | Top | Bottom as c -> fold (Cons c) []
 
           | Cons c ->
             let def = def_of_tycons Prelude.it (Cons c) in
@@ -105,11 +107,11 @@ module Params (Prelude : Prelude) = struct
                 assert (def.args = []); (* Constructors must be fully applied *)
                 go typ 
               | _ -> match def.sort with
-                | Base _ | Index _ | Qualifier -> fold (Cons (Cons c)) []
+                | Base _ | Index _ -> fold (Cons (Cons c)) []
                 | Arrow _ -> assert false (* Constructors must be fully applied *)
             end
 
-          | Prod _ | Choice _ | Sum _ | Fun _ | Closure | Fix | Thunk -> assert false
+          | Prod _ | Choice _ | Sum _ | Fun _ | Closure _ | Fix | Thunk -> assert false
           (* this is treated further down *)
         end
 
@@ -120,7 +122,7 @@ module Params (Prelude : Prelude) = struct
 
       | TApp {tfun = TCons {node;_}; args; _} -> begin
           match node with
-          | Prod _ | Sum _ | Choice _ | Fun _ | Thunk | Closure | Fix as c ->
+          | Prod _ | Sum _ | Choice _ | Fun _ | Thunk | Closure _ | Fix as c ->
             fold (Cons c) (List.map go args)
           | Cons c -> begin
               let def = def_of_tycons Prelude.it (Cons c) in

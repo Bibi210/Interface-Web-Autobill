@@ -15,49 +15,62 @@ module Make (U : Unifier_params) = struct
 
   type post = formula
 
+  type 'a model = {
+        typs : uvar list;
+        duty : uvar list;
+        inner : 'a;
+        accumulated : uvar list;
+        eqns : eqn list;
+      }
+
   type con =
     | CTrue
     | CFalse
     | CLoc of position * con
     | CEq of uvar * uvar
     | CAnd of con list
+    | CCases of con list
     | CExists of uvar list * con
     | CGuardedExists of uvar list * eqn list * con
     | CDef of int * string * uvar * con
     | CVar of int * uvar
-    | CGoal of {
+    | CUnivIdx of {
         typs : uvar list;
         inner : con;
-        outer : con;
-        quantification_duty : uvar list;
+        duty : uvar list;
         accumulated : uvar list;
-        univ_eqns : eqn list;
-        existentials : uvar list;
-        exist_eqns : eqn list;
+        eqns : eqn list;
       }
+    | CExistsIdx of {
+        typs : uvar list;
+        inner : con;
+        duty : uvar list;
+        accumulated : uvar list;
+        eqns : eqn list;
+      }
+
 
   type kontext =
     | KEmpty
     | KLoc of position * kontext
     | KAnd of post list * kontext * con list
+    | KCases of post list * kontext * con list
     | KDef of int * string * uvar * kontext
-    | KLet1 of {
+    | KUnivIdx of {
         typs : uvar list;
         inner : kontext;
-        outer : con;
-        quantification_duty : uvar list;
+        duty : uvar list;
         accumulated : uvar list;
-        univ_eqns : eqn list;
-        existentials : uvar list;
-        exist_eqns : eqn list;
-      }
-    | KLet2 of {
-        typs : uvar list;
-        outer : kontext;
-        quantified : uvar list;
         eqns : eqn list;
-        post : post;
       }
+      | KExistsIdx of {
+        typs : uvar list;
+        duty : uvar list;
+        inner : kontext;
+        accumulated : uvar list;
+        eqns : eqn list;
+      }
+
 
   let eq u v = CEq (u,v)
 
@@ -70,38 +83,55 @@ module Make (U : Unifier_params) = struct
     | None -> CExists (xs,con)
     | Some eqns -> CGuardedExists (xs, eqns, con)
 
-  let pp_amper_sep fmt () = fprintf fmt "@ & "
+  let pp_uvars fmt vars =
+    fprintf fmt "@[(%a)@]" (pp_print_list ~pp_sep:pp_print_space pp_uvar) vars
 
-  let pp_comma_sep fmt () = fprintf fmt ",@ "
-
-  let pp_uvars = pp_print_list ~pp_sep:pp_comma_sep pp_uvar
+  let pp_model tag pp fmt {duty; accumulated; typs; eqns; inner} =
+    fprintf fmt "@[<v 1>(:%s %a@ :got %a@ :goal %a@ :assume %a@ :then %a)@]"
+      tag
+      pp_uvars duty
+      pp_uvars accumulated
+      pp_uvars typs
+      pp_eqns eqns
+      pp inner
 
   let rec pp_constraint fmt = function
-    | CTrue -> pp_print_string fmt "T"
-    | CFalse -> pp_print_string fmt "F"
-    | CEq (a,b) -> fprintf fmt "%a=%a" pp_uvar a pp_uvar b
-    | CVar (x, t) -> fprintf fmt "_ @ %d : %a" x pp_term t
+    | CTrue -> pp_print_string fmt ":true"
+    | CFalse -> pp_print_string fmt ":false"
+    | CEq (a,b) -> fprintf fmt "(:eq-base %a %a)" pp_uvar a pp_uvar b
+    | CVar (x, t) -> fprintf fmt "(:var-isa %d %a)" x pp_term t
     | CLoc (loc, c) ->
-      fprintf fmt "@[<v 2>at \"%s\":@,%a@]" (string_of_position loc) pp_constraint c
+      fprintf fmt "@[<v 1>(:located \"%s\"@ %a)@]" (string_of_position loc) pp_constraint c
+    | CAnd [] -> fprintf fmt ":true"
+    | CAnd [c] -> pp_constraint fmt c
     | CAnd cons ->
-      fprintf fmt "@[<hov 0>(& %a)@]" (pp_print_list ~pp_sep:pp_print_space pp_con_paren) cons
+      fprintf fmt "@[<v 1>(:and@ %a)@]" (pp_print_list ~pp_sep:pp_print_space pp_con_paren) cons
+    | CCases cons ->
+      fprintf fmt "@[<v 1>(:cases@ %a)@]" (pp_print_list ~pp_sep:pp_print_space pp_con_paren) cons
     | CExists (vars, con) ->
-      fprintf fmt "@[<b 2>exists %a.@ %a@]" pp_uvars vars pp_constraint con
+      fprintf fmt "@[<v 1>(:exists %a@ %a)@]" pp_uvars vars pp_constraint con
     | CGuardedExists (vars, eqns, con) ->
-      fprintf fmt "@[<b 2>exists %a.@ (%a)@ &%a@]" pp_uvars vars pp_eqns eqns pp_constraint con
+      fprintf fmt "@[<v 2>(:exists %a@ :witness %a@ %a@]"
+        pp_uvars vars
+        pp_eqns eqns
+        pp_constraint con
     | CDef (x, s, t, c) ->
-      fprintf fmt "@[<b 2>var %s @@ %d : %a in@ %a@]" s x pp_term t pp_constraint c
-    | CGoal {typs; accumulated; inner; outer; quantification_duty;
-             univ_eqns; exist_eqns; existentials; _} ->
-      fprintf fmt "@[<b 2>let forall %a. exists %a. %a => %a@ &(%a) (got %a)@ = %a@ in %a@]"
-        pp_uvars quantification_duty
-        pp_uvars existentials
-        pp_eqns univ_eqns
-        pp_eqns exist_eqns
-        (pp_print_list ~pp_sep:pp_comma_sep pp_uvar) typs
+      fprintf fmt "@[<v 1>(:var-def %s=%d :isa %a :in@ %a)@]"
+        s x pp_term t pp_constraint c
+    | CUnivIdx {typs; accumulated; inner; duty; eqns} ->
+      fprintf fmt "@[<v 1>(:forall-idx %a :got %a :goal %a@ :assume %a@ %a)@]"
+        pp_uvars duty
         pp_uvars accumulated
+        pp_uvars typs
+        pp_eqns eqns
         pp_constraint inner
-        pp_constraint outer
+    | CExistsIdx {typs; accumulated; duty; inner; eqns} ->
+      fprintf fmt "@[<v 1>(:exists-idx %a :witness: %a goal %a@ :witness %a@ %a)@]"
+        pp_uvars accumulated
+        pp_uvars duty
+        pp_uvars typs
+        pp_eqns eqns
+        pp_constraint inner
 
   and pp_con_paren fmt con = fprintf fmt "(%a)" pp_constraint con
 
@@ -110,132 +140,115 @@ module Make (U : Unifier_params) = struct
     let rec once ctx = match ctx with
       | KEmpty -> pp_print_cut fmt ()
       | KLoc (loc, ctx) ->
-        fprintf fmt "-location: %s@," (string_of_position loc);
+        fprintf fmt "--- (:located %s)@," (string_of_position loc);
         once ctx
       | KAnd (posts, ctx, rests) ->
-        fprintf fmt "@[<v 2>-conjonction:@,@[<hov 2>done:%a@]@,@[<hov 2>todo:%a@]@]@,"
+        fprintf fmt "--- @[<v 1>(:and :done %a@ :todo %a)@]@,"
+          (pp_print_list ~pp_sep:pp_print_cut pp_formula) posts
+          (pp_print_list ~pp_sep:pp_print_cut pp_constraint) rests;
+        once ctx
+      | KCases (posts, ctx, rests) ->
+        fprintf fmt "--- @[<v 1>(:cases :done %a@ :todo %a)@]@,"
           (pp_print_list ~pp_sep:pp_print_cut pp_formula) posts
           (pp_print_list ~pp_sep:pp_print_cut pp_constraint) rests;
         once ctx
       | KDef (x, s, t, ctx) ->
-        fprintf fmt "-var %s @@ %d : %a@," s x pp_uvar t;
+        fprintf fmt "--- (:var-def %s=%d :isa %a)@," s x pp_uvar t;
         once ctx
-      | KLet1 {typs; inner; outer; quantification_duty;
-               accumulated; univ_eqns; existentials; exist_eqns;_ } ->
-        fprintf fmt "@[<v 2>-let forall @[<h>%a@]. exists @[<h>%a@]. (%a)@, eqns: %a => %a@, accumulated: @[%a@]@,todo: %a@]@,"
-          pp_uvars quantification_duty
-          pp_uvars existentials
-          (pp_print_list ~pp_sep:pp_comma_sep pp_uvar) typs
-          pp_eqns univ_eqns
-          pp_eqns exist_eqns
+      | KUnivIdx {typs; accumulated; inner; duty; eqns} ->
+        fprintf fmt "--- @[<v 1>(:forall-idx %a :got %a :goal %a@ :assume %a)@]@,"
+          pp_uvars duty
           pp_uvars accumulated
-          pp_constraint outer;
+          pp_uvars typs
+          pp_eqns eqns;
         once inner
-      | KLet2 { typs; outer; quantified; eqns; post } ->
-        fprintf fmt "@[<v 2>-letted forall %a. %a => (%a)@,post:%a@]"
-          pp_uvars quantified
-          pp_eqns eqns
-          (pp_print_list ~pp_sep:pp_comma_sep pp_uvar) typs
-          (pp_formula ~with_loc:false) post;
-        once outer
+      | KExistsIdx {typs; accumulated; inner;duty; eqns} ->
+        fprintf fmt "--- @[<v 1>(:exists-idx %a :witness %a :goal %a@ :witness %a)@]@,"
+          pp_uvars accumulated
+          pp_uvars duty
+          pp_uvars typs
+          pp_eqns eqns;
+          once inner
     in
-
     pp_open_vbox fmt 0;
     once ctx;
     pp_close_box fmt ()
 
   let _trace stack con post =
-    let fmt = err_formatter in begin
-      eprintf "@.==========================================@.";
-      eprintf "============== NEW CYCLE =================@.";
-      eprintf "==========================================@.";
-      eprintf "@.------------context stack---------------@.";
+    let fmt = std_formatter in begin
+      pp_set_geometry err_formatter ~max_indent:180 ~margin:200;
+      fprintf fmt "@.==========================================@.";
+      fprintf fmt "============== NEW CYCLE =================@.";
+      fprintf fmt "==========================================@.";
+      fprintf fmt "@.------------context stack---------------@.";
       pp_kontext fmt stack;
-      eprintf "@.--------------constraint----------------@.";
+      fprintf fmt "@.--------------constraint----------------@.";
       pp_constraint fmt con;
-      eprintf "@.------------post-constraint-------------@.";
-      eprintf "global vars: @[<h>%a@]@." pp_uvars !existentials;
-      eprintf "global eqns: %a@." pp_eqns !model;
+      fprintf fmt "@.------------post-constraint-------------@.";
+      fprintf fmt "global vars: @[<h>%a@]@." pp_uvars !existentials;
+      fprintf fmt "global eqns: %a@." pp_eqns !model;
       pp_formula fmt post;
-      eprintf "@.-------------type variables-------------@.";
+      fprintf fmt "@.-------------type of variables-------------@.";
       let pp_bind fmt (x,(us,u)) =
-        fprintf fmt "v%d : forall @[<h>%a@]. %d"
+        fprintf fmt "(:var-scheme %d :forall %a :isa %d)@."
           x
           pp_uvars us
           u in
-      pp_print_list ~pp_sep:pp_comma_sep pp_bind fmt !_nvar_env;
-      eprintf "@.-------------substitution-------------@.";
-      eprintf "%a@." pp_subst !_state;
+      pp_print_list pp_bind fmt !_nvar_env;
+      fprintf fmt "@.-------------substitution-------------@.";
+      fprintf fmt "%a@." pp_subst !_state;
     end
-
-
-  let rec compress_cand c =
-    let rec acc cc c : con list = match c with
-      | CAnd [] -> cc
-      | CAnd (h::t) -> acc (acc cc h) (CAnd t)
-      | CExists (u, con) -> CExists (u, compress_cand con) :: cc
-      | CLoc (loc, con) -> CLoc (loc, compress_cand con) :: cc
-      | CDef (x,s,u,con) -> CDef (x,s,u,compress_cand con) :: cc
-      | CGoal lett ->
-        CGoal {lett with inner = compress_cand lett.inner;
-                         outer = compress_cand lett.outer} :: cc
-      | _ -> [c] @ cc in
-    match acc [] c with
-    | [d] -> d
-    | l -> CAnd l
-
-  let float_cexists c =
-    let rec aux c = match c with
-      | CExists (u,d) ->
-        let fv,d = aux d in u@fv,d
-      | CDef (x,s,u,d) ->
-        let fv,d = aux d in
-        fv, CDef (x,s,u,d)
-      | CAnd cc ->
-        let fvs, cc = List.split (List.map aux cc) in
-        let fvs = List.concat fvs in
-        fvs, CAnd cc
-      | CLoc (loc, c) ->
-        let fvs, c = aux c in
-        fvs, CLoc (loc, c)
-      | CGoal lett ->
-        let (fv1,inner), (fv2,outer) = aux lett.inner, aux lett.outer in
-        let inner = if fv1 = [] then inner else CExists (fv1,inner) in
-        fv2, CGoal {lett with inner; outer}
-      | CEq _ | CVar _ | CTrue | CFalse -> [], c
-      | CGuardedExists (xs, eqns, c) ->
-        let ys, c = aux c in
-        [], CGuardedExists (xs@ys, eqns, c) in
-    let fv,c = aux c in
-    CExists (fv,c)
 
   let rec lookup_scheme stack x = match stack with
     | KEmpty ->
       raise (Failure ("Broken invariant: Unbound var during constraint solving: v"
                       ^ string_of_int x))
-    | KAnd (_, ctx, _) -> lookup_scheme ctx x
+    | KAnd (_, ctx, _) | KCases (_, ctx, _) -> lookup_scheme ctx x
     | KLoc (_, ctx) -> lookup_scheme ctx x
     | KDef (y,_,a,ctx) -> if x = y then ([], a, []) else lookup_scheme ctx x
-    | KLet1 { inner;_} -> lookup_scheme inner x
-    | KLet2 {outer;_}  -> lookup_scheme outer x
+    | KUnivIdx { inner;_} -> lookup_scheme inner x
+    | KExistsIdx {inner;_}  -> lookup_scheme inner x
+
+
+  let check_freevars_in_stack eqns stack =
+    let fvs = freevars_of_eqns (fun x -> UFOL.S.singleton x) eqns in
+    let rec go fvs = function
+      | KEmpty -> UFOL.S.elements fvs
+      | KAnd (_, ctx, _) | KCases (_, ctx, _) -> go fvs ctx
+      | KLoc (_, ctx) -> go fvs ctx
+      | KDef (_, _, _, ctx) -> go fvs ctx
+      | KUnivIdx univ -> go (UFOL.S.diff fvs (UFOL.S.of_list univ.accumulated)) univ.inner
+      | KExistsIdx exists -> go (UFOL.S.diff fvs (UFOL.S.of_list exists.accumulated)) exists.inner in
+    let fvs = go fvs stack in
+      if fvs <> [] then begin
+      Format.printf "variables out of bound in eqns %a@." pp_eqns eqns;
+      assert false
+    end
 
   let lift_exist us ?st:(eqns=[]) stack =
-    let us, idx = List.partition (fun x -> is_syntactic_sort (get_sort x)) us in
     let rec go stack = match stack with
       | KEmpty -> begin
+          let idx = List.filter (fun x -> not (is_syntactic_sort (get_sort x))) us in 
           existentials := idx @ !existentials;
           model := eqns @ !model;
           KEmpty
         end
       | KAnd (cons, ctx, post) -> KAnd (cons, go ctx, post)
+      | KCases (cons, ctx, post) -> KCases (cons, go ctx, post)
       | KLoc (loc, ctx) -> KLoc (loc, go ctx)
       | KDef (x,s,a,ctx) -> KDef (x,s,a,go ctx)
-      | KLet1 lett->
-        KLet1 {lett with
-               accumulated = List.fold_left insert_nodup us lett.accumulated;
-               existentials = List.fold_left insert_nodup idx lett.existentials;
-               exist_eqns =  List.fold_left insert_nodup eqns lett.exist_eqns}
-      | KLet2 lett -> KLet2 {lett with outer = go lett.outer} in
+      | KUnivIdx univ ->
+        KUnivIdx { univ with
+          accumulated = us @ univ.accumulated;
+          eqns = eqns @ univ.eqns;
+        }
+      | KExistsIdx exists ->
+        KExistsIdx { exists with
+          accumulated = us @ exists.accumulated;
+          eqns = eqns @ exists.eqns;
+        }
+
+    in
     go stack
 
   let rec fail_unification ctx u v = match ctx with
@@ -248,7 +261,8 @@ module Make (U : Unifier_params) = struct
     | KEmpty ->
       let message = Printf.sprintf "unification failed between %d and %d" u v in
       raise (Failure message)
-    | KAnd (_, ctx, _) | KDef (_, _, _, ctx) | KLet1 {inner=ctx;_} | KLet2 {outer=ctx;_} ->
+    | KAnd (_, ctx, _) | KDef (_, _, _, ctx) | KCases (_, ctx, _)
+    | KUnivIdx {inner=ctx;_} | KExistsIdx {inner=ctx;_} ->
       fail_unification ctx u v
 
   let unify_or_fail ctx u v =
@@ -263,7 +277,68 @@ module Make (U : Unifier_params) = struct
   let ( >>> ) con gen = con, gen
 
 
+  let lift_idx_freevars post =
+
+    let open UFOL in
+
+    let rec advance r p ctx = match p with
+
+      | PTrue | PFalse | PEqn _ -> backtrack r p ctx
+      | PLoc (loc, p) -> advance r p (KLoc (loc, ctx))
+      | PAnd ps -> advance r PTrue (KAnd ([], ctx, ps))
+      | PCases ps -> advance r PTrue (KCases ([], ctx, ps))
+      | PExists (xs, ys, eqns, p) ->
+        let ctx = KExists ([], ys, eqns, ctx) in
+        let ctx = List.fold_left (lift (r+1)) ctx xs in
+        advance (r+1) p ctx
+      | PForall (xs, ys, eqns, p) ->
+        let ctx = KForall ([], ys, eqns, ctx) in
+        let ctx = List.fold_left (lift (r+1)) ctx xs in
+        advance (r+1) p ctx
+
+    and backtrack r p ctx = match ctx with
+      | KEmpty -> assert (r = 0); p
+      | KLoc (loc ,ctx) -> backtrack r (PLoc (loc, p)) ctx
+      | KAnd (dones, ctx, []) -> backtrack r (PAnd (p::dones)) ctx
+      | KCases (dones, ctx, []) -> backtrack r (PCases (p::dones)) ctx
+      | KAnd (dones, ctx, p'::todos) -> advance r p' (KAnd (p::dones, ctx, todos))
+      | KCases (dones, ctx, p'::todos) -> advance r p' (KCases (p::dones, ctx, todos))
+      | KForall (xs, ys, eqns, ctx) ->
+        backtrack (r-1) (PForall (xs, ys, eqns, p)) ctx
+      | KExists (xs, ys, eqns, ctx) ->
+        backtrack (r-1) (PExists (xs, ys, eqns, p)) ctx
+
+
+    and lift r ctx v =
+
+      let r_goal = rank v in
+
+      let rec go r ctx = match ctx with
+      | KEmpty -> assert false
+      | KLoc (loc, ctx) -> KLoc (loc, go r ctx)
+      | KAnd (dones, ctx, todos) -> KAnd (dones, go r ctx, todos)
+      | KCases (dones, ctx, todos) -> KCases (dones, go r ctx, todos)
+      | KForall (xs, ys, eqns, ctx) ->
+        if r <= r_goal then
+          KForall (v :: xs, ys, eqns, ctx)
+        else
+          KForall (xs, ys, eqns, go (r-1) ctx)
+      | KExists (xs, ys, eqns, ctx) ->
+        if r <= r_goal then
+          KExists (v :: xs, ys, eqns, ctx)
+        else
+          KExists (xs, ys, eqns, go (r-1) ctx) in
+
+      go r ctx
+
+    in
+
+    advance 0 post UFOL.KEmpty
+
+
   let finalize_post_con env c =
+    let c = lift_idx_freevars c in
+    let c = PExists (!existentials, [], !model, c) in
     let model_id x = FFOL.Eq (deep_of_var (env.get x), env.u x, get_sort x) in
     let finalize_eqns  = List.map (function
         | UFOL.Eq (a, b, so) -> FFOL.Eq (env.u a, env.u b, so)
@@ -274,19 +349,19 @@ module Make (U : Unifier_params) = struct
       | PLoc (loc, c) -> PLoc (loc, go c)
       | PEqn eqns -> PEqn (finalize_eqns eqns)
       | PAnd cs -> PAnd (List.map go cs)
-      | PExists (vars, eqns, c) ->
+      | PCases cs -> PCases (List.map go cs)
+      | PExists (vars, duty, eqns, c) ->
         PExists (List.map env.get vars,
+                 List.map env.get duty,
                  List.map model_id vars @ finalize_eqns eqns,
                  go c)
-      | PForall (vars, exist, eqns, c) ->
+      | PForall (vars, duty, eqns, c) ->
         PForall (List.map env.get vars,
-                 List.map env.get exist,
-                 List.map model_id (vars @ exist) @ finalize_eqns eqns,
+                 List.map env.get duty,
+                 List.map model_id vars @ finalize_eqns eqns,
                  go c) in
-    let existentials = List.fold_left insert_nodup [] (List.map repr !existentials) in
-    FFOL.PExists (List.map env.get existentials,
-                  finalize_eqns !model @ List.map model_id existentials,
-                  go c)
+    go c
+
 
   let solve ?trace:(do_trace=false) (elab : 'a elaboration) (x : 'a) =
 
@@ -306,11 +381,15 @@ module Make (U : Unifier_params) = struct
       | CTrue -> backtrack stack PTrue
       | CFalse -> backtrack stack PFalse
       | CEq (a,b) ->
-        backtrack stack
-          (PEqn (List.map (fun (u,v) -> Eq (u,v, get_sort u)) (unify_or_fail stack a b)))
+        let eqns = (List.map (fun (u,v) -> Eq (u,v, get_sort u)) (unify_or_fail stack a b)) in
+        backtrack (lift_exist [] ~st:eqns stack) PTrue
+        (* backtrack stack (PEqn eqns)  *)
       | CAnd [] -> backtrack stack PTrue
       | CAnd [con] -> advance stack con
       | CAnd (h::t) -> advance (KAnd ([], stack, t)) h
+      | CCases [] -> backtrack stack PTrue
+      | CCases [con] -> advance stack con
+      | CCases (h::t) -> advance (KCases ([], stack, t)) h
       | CDef (x,s,u,con) -> advance (KDef (x,s,u,stack)) con
       | CLoc (loc, con) -> advance (KLoc (loc, stack)) con
 
@@ -323,97 +402,88 @@ module Make (U : Unifier_params) = struct
         let eqs = unify_or_fail stack u v in
         backtrack stack (PEqn (List.map (fun (u,v) -> Eq (u,v,get_sort u)) eqs))
 
-      | CGoal { typs; accumulated;
-                inner; outer;
-                quantification_duty; existentials;
-                exist_eqns; univ_eqns} ->
+      | CUnivIdx {duty; accumulated; eqns; inner; typs} ->
         enter ();
-        let stack = KLet1 { typs; outer; quantification_duty;
-                            inner = stack; existentials; accumulated;
-                            univ_eqns; exist_eqns} in
-        advance stack inner
+        advance (KUnivIdx {duty; accumulated; eqns; typs; inner = stack}) inner
+      | CExistsIdx {duty; accumulated; eqns; inner; typs} ->
+        enter ();
+        advance (KExistsIdx {accumulated; duty; eqns; typs; inner = stack}) inner
+
 
     and backtrack stack post =
       if do_trace then _trace stack CTrue post;
+      let compress post = UFOL.compress_logic ~remove_loc:false post in 
       match stack with
 
       | KEmpty -> post
-      | KAnd (posts, stack, []) -> backtrack stack (PAnd (post :: posts))
+      | KAnd (posts, stack, []) -> backtrack stack (compress (PAnd (post :: posts)))
+      | KCases (posts, stack, []) -> backtrack stack (compress (PCases (post :: posts)))
       | KLoc (loc, stack) -> backtrack stack (PLoc (loc, post))
       | KAnd (posts, stack, h::t) -> advance (KAnd (post :: posts, stack, t)) h
+      | KCases (posts, stack, h::t) -> advance (KCases (post :: posts, stack, t)) h
       | KDef (x, _, u, stack) -> define x ([],u); backtrack stack post
-      | KLet2 {outer;post=post';_} -> backtrack outer (PAnd [post;post'])
 
-      | KLet1 { typs; inner; outer;
-                quantification_duty; existentials;
-                exist_eqns; univ_eqns; accumulated} ->
-
+      | KUnivIdx {duty; accumulated; eqns; inner; typs} ->
         let tmp mess (us, vs) =
           if do_trace then
-            fprintf err_formatter "%s forall %a. %a\n"
+            printf "%s forall %a. %a\n"
               mess
               pp_uvars us
-              pp_uvars vs
-        in
-
+              pp_uvars vs in
         tmp ("checking scheme") (accumulated, typs);
         (* Shorten paths we will take, normalize the variables *)
-        let typs = List.map repr typs in
-        let quantification_duty = List.map repr quantification_duty in
-        let accumulated = List.map repr accumulated in
-        let accumulated = List.fold_left insert_nodup [] accumulated in
-        let existentials = List.map repr existentials in
-        let existentials = List.fold_left insert_nodup [] existentials in
-
-        accumulated |> List.iter (fun u ->
-            (* There sould be no cycles in cells of syntactic sorts *)
-            if not (occurs_check u) then begin
-              pp_subst err_formatter !_state;
-              raise (Cycle u);
-            end);
-
-        tmp "checks passed, now lifting" (accumulated, typs);
+        let normalize_vars v =
+          let v = List.map repr v in
+          List.fold_left insert_nodup [] v in
+        let typs = normalize_vars typs in
+        let accumulated = normalize_vars accumulated in
+        let duty = normalize_vars duty in
+        let fvs = List.concat ([accumulated; duty]
+                               @ List.map freevars_of_type typs) in
+        tmp "extended to" (fvs, typs);
         (* lower each variable, lowest-ranked vars first *)
-        let fvs = List.concat (existentials
-                               :: accumulated
-                               :: List.map freevars_of_type typs) in
         Array.iteri lift_freevars (ranked_freevars fvs !_rank);
         (* We now know which vars can be lifted in the surronding scope! *)
         let accumulated, old = extract_old_vars accumulated !_rank in
-        let existentials, old' = extract_old_vars existentials !_rank in
-
-        (* verify we polymorphized enough *)
-        let xs =
-          List.filter (fun x -> is_syntactic_sort (get_sort x)) accumulated
-        and ys =
-          List.filter (fun x -> is_syntactic_sort (get_sort x)) quantification_duty in
-        if not (is_sublist ys xs) then begin
-          eprintf "===xs===@.%a@."
-            (pp_print_list ~pp_sep:pp_print_newline pp_print_int) xs;
-          eprintf "===ys not sublist===@.%a@."
-            (pp_print_list ~pp_sep:pp_print_newline pp_print_int) ys;
-          raise (Not_sufficiently_polymorphic typs)
-        end;
-
-        tmp "After lifting scheme" (accumulated, typs) ;
+        tmp "after lifing" (accumulated, typs);
         let inner = lift_exist old inner in
-        let inner = lift_exist old' inner in
-
         leave ();
-
         let idx = List.filter
-            (fun x -> not (is_syntactic_sort (get_sort x)))
-            accumulated in
-        let existentials = List.filter (fun x -> not (List.mem x idx)) existentials in
+            (fun x -> not (is_syntactic_sort (get_sort x))
+                      && not (List.mem x duty))
+            accumulated in 
+        backtrack inner (PForall (idx, duty, eqns, post))
 
-        let post = PForall (idx, existentials, univ_eqns, PAnd [post; PEqn exist_eqns]) in
-        let ctx = KLet2 {
-            typs; post;
-            quantified = ys;
-            outer=inner;
-            eqns = univ_eqns
-          } in
-        advance ctx outer
+      | KExistsIdx {accumulated; eqns; duty; inner; typs} ->
+
+        let tmp mess (us, vs) =
+          if do_trace then
+            printf "%s forall %a. %a\n"
+              mess
+              pp_uvars us
+              pp_uvars vs in
+        tmp ("lifting scheme") (accumulated, typs);
+        (* Shorten paths we will take, normalize the variables *)
+        let normalize_vars v =
+          let v = List.map repr v in
+          List.fold_left insert_nodup [] v in
+        let typs = normalize_vars typs in
+        let accumulated = normalize_vars accumulated in
+        let duty = normalize_vars duty in
+        (* lower each variable, lowest-ranked vars first *)
+        let fvs = List.concat ([accumulated; duty]
+                               @ List.map freevars_of_type typs) in
+        (* lower each variable, lowest-ranked vars first *)
+        Array.iteri lift_freevars (ranked_freevars fvs !_rank);
+        (* We now know which vars can be lifted in the surronding scope! *)
+        let accumulated, old = extract_old_vars accumulated !_rank in
+        let inner = lift_exist old inner in
+        leave ();
+        let idx = List.filter
+            (fun x -> not (is_syntactic_sort (get_sort x))
+                    && not (List.mem x duty))
+            accumulated in 
+        backtrack inner (PExists (idx, duty, eqns, post))
     in
 
     (* entrypoint is defined at the top of elaborate *)

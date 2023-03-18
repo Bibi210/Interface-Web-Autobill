@@ -12,6 +12,9 @@ let nat_add = TyConsVar.of_primitive "Add"
 
 let nat_leq = RelVar.of_primitive "leq"
 
+let rank_nat_rel rel args = match rel, args with
+  | r, [a;b] when r = nat_leq -> [a;b]
+  | _ -> assert false
 
 let tycons_int = TyConsVar.of_primitive "Int"
 

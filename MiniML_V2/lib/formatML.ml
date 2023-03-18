@@ -75,8 +75,12 @@ and fmt_expr exp =
   | Tuple expr_ls -> Printf.sprintf "\nTuple(\n  %s )" (fmt_expr_ls expr_ls)
   | Construct { constructor_ident; to_group } ->
     Printf.sprintf "%s(%s)" constructor_ident (fmt_expr_ls to_group)
-  | FunctionRec { var; body } ->
-    Printf.sprintf "RecFunc %s( (%s))" var.basic_ident (fmt_expr body)
+  | FunctionRec { var; arg; body } ->
+    Printf.sprintf
+      "RecFunc %s( %s -> (%s))"
+      var.basic_ident
+      arg.basic_ident
+      (fmt_expr body)
   | Match { to_match; cases } ->
     Printf.sprintf "Match (%s) with (%s)" (fmt_expr to_match) (fmt_match_case_ls cases)
 

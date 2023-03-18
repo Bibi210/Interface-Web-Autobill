@@ -9,7 +9,7 @@ let constraint_as_string (prelude, items) =
   let module P = struct let it = prelude end in
   let open Elaborate.Make(P) in
   let x,_ = elab_prog_items items in
-  pp_set_geometry str_formatter ~max_indent:130 ~margin:200;
+  pp_set_geometry str_formatter ~max_indent:300 ~margin:400;
   pp_constraint str_formatter x;
   pp_print_newline str_formatter ();
   pp_print_newline str_formatter ();
@@ -19,12 +19,28 @@ let constraint_as_string (prelude, items) =
 let post_contraint_as_string (prelude, _, post) =
   let module P = struct let it = prelude end in
   let open Elaborate.Make(P) in
-  let post = FOLNormalize.normalize post in
-  FOLNormalize.pp_formula str_formatter post;
+  let post = FirstOrder.FullFOL.compress_logic ~remove_loc:true post in
+  let post = FirstOrder.FullFOL.compress_unification post in
+  let post = FirstOrder.FullFOL.compress_logic ~remove_loc:true post in
+  let post = FirstOrder.FullFOL.compress_unification post in
+  let post = FirstOrder.FullFOL.compress_logic ~remove_loc:true post in
+  pp_set_geometry str_formatter ~margin:180 ~max_indent:170;
+  FirstOrder.FullFOL.pp_formula ~with_loc:true str_formatter post;
   pp_print_newline str_formatter ();
-  pp_print_newline str_formatter ();
-  pp_subst str_formatter !_state;
   flush_str_formatter ()
+
+let coq_term_as_string (prelude, _, post) =
+  let module P = struct let it = prelude end in
+  let open Elaborate.Make(P) in
+  let post = FirstOrder.FullFOL.compress_logic ~remove_loc:true post in
+  let post = FirstOrder.FullFOL.compress_unification post in
+  let post = FirstOrder.FullFOL.compress_logic ~remove_loc:true post in
+  pp_set_geometry str_formatter ~margin:180 ~max_indent:170;
+  CoqExport.export str_formatter post;
+  pp_print_newline str_formatter ();
+  flush_str_formatter ()
+
+
 
 let fill_out_types items =
 
@@ -51,7 +67,7 @@ let fill_out_types items =
       bind_covar cont;
       gocmd cmd
     | Cons (Raw_Cons cons) -> List.iter goval cons.args
-    | Destr {default; cases} ->
+    | Destr {default; cases; _} ->
       List.iter (fun (Raw_Destr patt, cmd) ->
           List.iter bind_var patt.args;
           bind_covar patt.cont;
@@ -66,7 +82,7 @@ let fill_out_types items =
     | CoBox {stk;_} -> gostk stk
     | CoFix stk -> gostk stk
     | CoDestr (Raw_Destr destr) -> List.iter goval destr.args; gostk destr.cont
-    | CoCons {cases; default} ->
+    | CoCons {cases; default; _} ->
       List.iter (fun (Raw_Cons patt,cmd) ->
           List.iter bind_var patt.args;
           gocmd cmd

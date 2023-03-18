@@ -57,6 +57,7 @@ module Ast (Params : AstParams) = struct
       }
     | Cons of constructor
     | Destr of {
+        for_type : TyConsVar.t type_cons;
         cases : (copattern * command) list;
         default : (cont_bind * command) option;
       }
@@ -82,6 +83,7 @@ module Ast (Params : AstParams) = struct
     | CoFix of meta_stack
     | CoDestr of destructor
     | CoCons of {
+        for_type : TyConsVar.t type_cons;
         cases : (pattern * command) list;
         default : (val_bind * command) option;
       }
@@ -134,7 +136,7 @@ module Ast (Params : AstParams) = struct
     let bindcc ?loc ?typ pol bind cmd = val_meta ?loc ?typ (Bindcc {pol;cmd;bind})
     let box ?loc ?typ kind bind cmd = val_meta ?loc ?typ (Box {kind; bind; cmd})
     let cons ?loc ?typ c = val_meta ?loc ?typ (Cons c)
-    let case ?loc ?typ ?default cases = val_meta ?loc ?typ (Destr {cases; default})
+    let case ?loc ?typ ?default for_type cases = val_meta ?loc ?typ (Destr {for_type; cases; default})
   end
 
   module S = struct
@@ -144,7 +146,8 @@ module Ast (Params : AstParams) = struct
     let bind ?loc ?typ pol bind cmd = stack_meta ?loc ?typ (CoBind {pol; bind; cmd})
     let box ?loc ?typ kind stk = stack_meta ?loc ?typ (CoBox {kind; stk})
     let destr ?loc ?typ c = stack_meta ?loc ?typ (CoDestr c)
-    let case ?loc ?typ ?default cases  = stack_meta ?loc ?typ (CoCons {default; cases})
+    let case ?loc ?typ ?default for_type cases  =
+      stack_meta ?loc ?typ (CoCons {for_type; default; cases})
   end
 
 end

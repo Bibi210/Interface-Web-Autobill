@@ -57,7 +57,7 @@ let rec export_type (t,loc)= match t with
   | Typ_App((Typ_LazyPair, loc2), xs) ->
     app ~loc (cons ~loc:loc2 (Choice (List.length xs))) (List.map export_type xs)
   | Typ_App((Typ_Closure q, _), [x]) ->
-    boxed ~loc (Qual (export_box_kind q)) (export_type x)
+    boxed ~loc (Some (export_box_kind q)) (export_type x)
   | Typ_App((Typ_Thunk, loc2), [x]) ->
     app ~loc (cons ~loc:loc2 Thunk) [export_type x]
   | Typ_App((Typ_Var v, _), []) -> tvar ~loc v

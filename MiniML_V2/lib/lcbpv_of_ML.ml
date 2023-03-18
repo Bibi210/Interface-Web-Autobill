@@ -47,8 +47,7 @@ and make_binary_closure args op loc =
         HelpersML.func_curryfy
           [ arg1 ]
           { enode = CallBinary { args = [ expr_var1; hd ]; op }; eloc = loc }
-      | _ ->
-        HelpersML.err "Unexpected number of arguments on binary closure" loc.start_pos)
+      | _ -> HelpersML.err "Unexpected number of arguments on binary closure" loc)
   in
   closure
 
@@ -106,24 +105,21 @@ and trans_expr e =
                   , body.eloc )
               ]
           , e_loc ) )
-          | FunctionRec { var; body } ->
-            (match body.enode with
-            | Lambda { arg; body } ->
-              Expr_Closure
-                ( Exp
-                , ( Expr_Rec
-                      ( trans_var var
-                      , ( Expr_Get
-                            [ GetPatTag
-                                ( (Call, e_loc)
-                                , [ trans_var arg ]
-                                , (Expr_Thunk (trans_expr body), body.eloc)
-                                , body.eloc )
-                            ]
-                        , e_loc ) )
-                  , e_loc ) )
-            | _ -> failwith ""))
-        , e_loc )
+    | FunctionRec { var; arg; body } ->
+      Expr_Closure
+        ( Exp
+        , ( Expr_Rec
+              ( trans_var var
+              , ( Expr_Get
+                    [ GetPatTag
+                        ( (Call, e_loc)
+                        , [ trans_var arg ]
+                        , (Expr_Thunk (trans_expr body), body.eloc)
+                        , body.eloc )
+                    ]
+                , e_loc ) )
+          , e_loc ) ))
+  , e_loc )
 
 and trans_match_case case =
   let conseq = trans_expr case.consequence in
@@ -148,14 +144,12 @@ and getPatternVariable case =
     match pt.pnode with
     | VarPattern x -> x, pt.ploc
     | _ ->
-      HelpersML.err
-        "DeepMatch Pattern Unhandled : Pattern Containig Non Variable"
-        pt.ploc.start_pos
+      HelpersML.err "DeepMatch Pattern Unhandled : Pattern Containig Non Variable" pt.ploc
   in
   match case.pattern.pnode with
   | TuplePattern ptt -> List.map step ptt
   | ConstructorPattern ptt -> List.map step ptt.content
-  | _ -> HelpersML.err "DeepMatch Pattern Unhandled" case.pattern.ploc.start_pos
+  | _ -> HelpersML.err "DeepMatch Pattern Unhandled" case.pattern.ploc
 
 and trans_match_case_ls ls = List.map trans_match_case ls
 and trans_expr_ls ls = List.map trans_expr ls

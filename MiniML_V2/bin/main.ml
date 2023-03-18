@@ -5,6 +5,7 @@ open Sort_intf
 open TypeInfer_intf
 open Reduction_intf
 open MiniML
+open Autobill.Misc
 
 let string_of_full_ast ?(debug = false) prog =
   PrettyPrinter.PP.pp_program ~debug Format.str_formatter prog;
@@ -16,12 +17,16 @@ let generate_ast code =
   Global_counter._counter := 0;
   try ParserML.prog LexerML.token code with
   | LexerML.Error c ->
-    HelpersML.err (Printf.sprintf "unrecognized char '%s'" c) (Lexing.lexeme_start_p code)
-  | ParserML.Error -> HelpersML.err "syntax error" (Lexing.lexeme_start_p code)
+    HelpersML.err
+      (Printf.sprintf "Unrecognized char '%s'" c)
+      (position (Lexing.lexeme_start_p code) (Lexing.lexeme_end_p code))
+  | ParserML.Error ->
+    HelpersML.err
+      "Syntax error"
+      (position (Lexing.lexeme_start_p code) (Lexing.lexeme_end_p code))
 ;;
 
-let trad code = 
-  Lcbpv_of_ML.trans_prog (generate_ast code)
+let translate_ML_to_LCBPV code = Lcbpv_of_ML.trans_prog (generate_ast code)
 
 let _ =
   Js.export
@@ -32,7 +37,9 @@ let _ =
          Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
          let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
          object%js
-           val resultat = Js.string (Lcbpv_intf.string_of_cst (trad lexbuf))
+           val resultat =
+             Js.string (Lcbpv_intf.string_of_cst (translate_ML_to_LCBPV lexbuf))
+
            val erreur = Js.string (Buffer.contents stderr_buff)
          end
 
@@ -61,15 +68,30 @@ let _ =
            val erreur = Js.string (Buffer.contents stderr_buff)
          end
 
-       method interprete code =
+       method mltoequation code =
          let stderr_buff = Buffer.create 100 in
          Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
          let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
-         let cst = trad lexbuf in
+         let cst = translate_ML_to_LCBPV lexbuf in
          let prog, env = internalize (Lcbpv_intf.convert_to_machine_code cst) in
          let prog = polarity_inference ~trace:false env prog in
          let prelude, prog, post_con = type_infer ~trace:false prog in
          let res = post_contraint_as_string (prelude, prog, post_con) in
+         object%js
+           val resultat = Js.string res
+           val erreur = Js.string (Buffer.contents stderr_buff)
+         end
+
+       method mlinterpretation code =
+         let stderr_buff = Buffer.create 100 in
+         Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
+         let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
+         let cst = translate_ML_to_LCBPV lexbuf in
+         let prog, env = internalize (Lcbpv_intf.convert_to_machine_code cst) in
+         let prog = polarity_inference ~trace:false env prog in
+         let prelude, prog, post_con = type_infer ~trace:false prog in
+         let prog = interpret_prog (prelude, prog) in
+         let res = string_of_full_ast prog in
          object%js
            val resultat = Js.string res
            val erreur = Js.string (Buffer.contents stderr_buff)

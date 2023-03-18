@@ -19,8 +19,7 @@ let export_ast env item =
   and export_upol ?loc uso =
     match export_usort ?loc uso with
     | Base p -> p
-    | Arrow _ | Index _ | Qualifier ->
-      fail_ambiguous_sort (Option.value loc ~default:dummy_pos)
+    | Arrow _ | Index _ -> fail_ambiguous_sort (Option.value loc ~default:dummy_pos)
 
   and export_bind (var, typ) =
     let typ = export_typ typ in
@@ -84,7 +83,8 @@ let export_ast env item =
       let bind = export_cobind bind in
       FullAst.Box {kind; bind; cmd = export_cmd cmd}
     | Cons cons -> FullAst.Cons (export_cons cons)
-    | Destr {default; cases} -> FullAst.Destr {
+    | Destr {default; cases; for_type} -> FullAst.Destr {
+        for_type;
         cases =
           List.map (fun (copatt, cmd) -> (export_copatt copatt, export_cmd cmd)) cases;
         default = Option.map (fun (a,cmd) -> (export_cobind a, export_cmd cmd)) default
@@ -105,8 +105,9 @@ let export_ast env item =
       FullAst.CoBind {bind; pol; cmd = export_cmd cmd}
     | CoBox {kind; stk} -> FullAst.CoBox {kind; stk = export_meta_stk stk}
     | CoDestr destr -> FullAst.CoDestr (export_destr destr)
-    | CoCons {default; cases} ->
+    | CoCons {default; cases; for_type} ->
       FullAst.CoCons {
+        for_type;
         cases = List.map (fun (patt, cmd) -> (export_patt patt, export_cmd cmd))
             cases;
         default = Option.map (fun (a,cmd) -> (export_bind a, export_cmd cmd)) default

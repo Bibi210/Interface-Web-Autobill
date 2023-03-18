@@ -83,7 +83,7 @@ function App() {
   const evalCode = async (e) => {
     e.preventDefault()
     try {
-      let evaluation ={
+      let evaluation = {
         resultat: "",
         erreur: ""
       }
@@ -108,7 +108,10 @@ function App() {
           evaluation = ml.translate(code)
           break
         case "MiniML -> Equation":
-          evaluation = ml.interprete(code)
+          evaluation = ml.mltoequation(code)
+          break
+        case "MiniML -> Interpretation":
+          evaluation = ml.mlinterpretation(code)
           break
       }
       setDispatchSpec(null)
@@ -156,6 +159,9 @@ function App() {
                 </option>
                 <option value={"MiniML -> Equation"}>
                   {"MiniML -> Equation"}
+                </option>
+                <option value={"MiniML -> Interpretation"}>
+                  {"MiniML -> Interpretation"}
                 </option>
                 <option value={"Equation -> Soluce"}>
                   {"Equation -> Soluce"}

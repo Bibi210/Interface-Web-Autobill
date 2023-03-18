@@ -153,7 +153,7 @@ module Make
 
     | Cons c -> pp_constructor pp_cons_val_aux fmt c
 
-    | Destr {cases; default} ->
+    | Destr {cases; default; _} ->
       let pp_case fmt (p,c) =
         fprintf fmt "@[<hov 2>| this%a ->@ %a@]" pp_copattern p pp_cmd c in
       let pp_default fmt = function
@@ -199,7 +199,7 @@ module Make
       pp_print_cut fmt ();
       pp_destructor pp_cons_val_aux fmt d
 
-    | CoCons {default; cases} ->
+    | CoCons {default; cases; _} ->
       let pp_case fmt (p,c) =
         fprintf fmt "@[<hov 2>| %a ->@ %a@]" pp_pattern p pp_cmd c in
        let pp_default fmt = function

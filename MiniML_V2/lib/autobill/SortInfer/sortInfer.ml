@@ -99,9 +99,8 @@ let unify_def ?debug env item =
 
   and unify_typecons upol1 (tcons : 'a Types.type_cons) =
     match tcons with
-    | Unit | Zero | Closure | Prod _ | Sum _ -> unify upol1 pos_uso
+    | Unit | Zero | Closure _ | Prod _ | Sum _ -> unify upol1 pos_uso
     | Top | Bottom | Thunk | Fix | Choice _ | Fun _ -> unify upol1 neg_uso
-    | Qual _ -> unify upol1 (Litt Qualifier)
     | Cons cons ->
       let consdef = TyConsVar.Env.find cons !prelude.tycons in
       let _, ret_so = unmk_arrow consdef.sort in
@@ -153,7 +152,8 @@ let unify_def ?debug env item =
       unify_cobind neg_uso bind loc;
       unify_cmd cmd;
       unify upol (Loc (loc, neg_uso))
-    | Destr {default; cases} ->
+    | Destr {default; cases; for_type} ->
+      unify_typecons upol for_type;
       List.iter (unify_copatt loc upol) cases;
       match default with
       | None -> ()
@@ -177,7 +177,8 @@ let unify_def ?debug env item =
       unify_meta_stk neg_uso stk
     | CoDestr destr ->
       unify_destr loc upol destr
-    | CoCons {default; cases} ->
+    | CoCons {default; cases; for_type} ->
+      unify_typecons upol for_type;
       List.iter (unify_patt loc upol) cases;
       begin match default with
         | None -> ()

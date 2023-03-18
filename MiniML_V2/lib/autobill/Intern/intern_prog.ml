@@ -127,7 +127,13 @@ let intern_definition env declared_vars def =
       let val_typ = TInternal (TyVar.fresh ()) in
       MetaVal {node = Cons (intern_cons env scope loc node); loc; val_typ}
 
-    | Cst.Destr {cases; default; loc} ->
+    | Cst.Destr {cases = []; default = None; loc} ->
+      intern_val scope (CoTop {loc})
+
+    | Cst.Destr {cases = []; default = Some (bind,cmd); loc} ->
+      intern_val scope (Bindcc {bind; cmd; loc; pol = None})
+
+    | Cst.Destr {cases = (_::_) as cases ; default; loc} ->
       let val_typ = TInternal (TyVar.fresh ()) in
       let go_one (destr, cmd) =
         let scope, destr = intern_copatt env scope loc destr in
@@ -142,7 +148,7 @@ let intern_definition env declared_vars def =
           let name = get_covar scope name in
           let cmd = intern_cmd scope cmd in
           Some ((name, typ), cmd) in
-      MetaVal {loc; val_typ; node = Destr {cases; default}}
+      MetaVal {loc; val_typ; node = Destr {cases; default; for_type = tycons_for_copatts cases}}
 
     | Fix {self=(x,tx); cont=(a,ta); cmd; loc} ->
       let scope = add_var (add_covar scope a) x in
@@ -208,7 +214,13 @@ let intern_definition env declared_vars def =
       let node = CoBox {kind; stk = intern_stk scope stk} in
       MetaStack {loc; cont_typ; node}
 
-    | CoCons {cases; default; loc} ->
+    | CoCons {cases = []; default = None; loc} ->
+      intern_stk scope (CoZero {loc})
+
+    | CoCons {cases = []; default = Some (bind, cmd); loc} ->
+      intern_stk scope (CoBind {loc; bind; cmd; pol = None})
+
+    | CoCons {cases = (_::_) as cases; default; loc} ->
       let go_one (cons, cmd) =
         let scope, cons = intern_patt env scope loc cons in
         let cmd = intern_cmd scope cmd in
@@ -224,7 +236,7 @@ let intern_definition env declared_vars def =
       let cases = List.map go_one cases in
       MetaStack {loc;
                  cont_typ = tvar (TyVar.fresh ());
-                 node = CoCons {cases; default}
+                 node = CoCons {cases; default; for_type = tycons_for_patts cases}
                 }
 
     | CoDestr {node; loc} ->
@@ -236,6 +248,15 @@ let intern_definition env declared_vars def =
       let stk = intern_stk scope stk in
       MetaStack {loc; cont_typ; node = CoFix stk}
 
+
+  and tycons_for_patts patts =
+    match patts with
+    | [] -> assert false
+    | (Raw_Cons cons, _) :: _ ->
+      let Consdef consdef = def_of_cons !env.prelude cons.tag in
+      match consdef.resulting_type with
+        | TCons {node = c; _} | TApp {tfun = TCons {node = c; _}; _} -> c
+        | _ -> assert false
 
   and intern_cons env vars loc cons =
     let mk _ = tvar (TyVar.fresh ()) in
@@ -264,6 +285,14 @@ let intern_definition env declared_vars def =
     scope, fill_out_private_of_cons env patt mk
 
 
+  and tycons_for_copatts copatts =
+    match copatts with
+    | [] -> assert false
+    | (Raw_Destr destr, _) :: _ ->
+      let Destrdef destrdef = def_of_destr !env.prelude destr.tag in
+      match destrdef.resulting_type with
+        | TCons {node = c; _} | TApp {tfun = TCons {node = c; _}; _} -> c
+        | _ -> assert false
 
   and intern_destr env scope loc destr =
     let mk _ = tvar (TyVar.fresh ()) in

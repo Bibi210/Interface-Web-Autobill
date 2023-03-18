@@ -30,7 +30,6 @@ rule token = parse
   | '.' {DOT}
   | ',' {COMMA}
   | "->" {ARROW}
-  | '/' {SLASH}
   | '*' {STAR}
   | '&' {AMPER}
   | '|' {BAR}
@@ -59,7 +58,6 @@ rule token = parse
   | "Fun" {FFUN}
   | "Thunk" {TTHUNK}
   | "Closure" {CCLOSURE}
-  | "Exp" {EEXP}
   | "Unit" {UUNIT}
   | "Zero" {ZZERO}
   | "Top" {TTOP}
@@ -74,7 +72,6 @@ rule token = parse
   | "no" {NO}
   | "proj" {PROJ}
   | "thunk" {THUNK}
-  | "closure" {CLOSURE}
   | "true" {TRUE}
   | "false" {FALSE}
   | "int" {INT}

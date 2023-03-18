@@ -33,6 +33,7 @@ module type Unifier_params = sig
   val deep_of_var : var -> deep
   val deep_of_cons : deep list -> node -> deep
   val folded_of_deep : (var -> sort -> node folded) -> deep -> node folded
+  val rank_relation : rel -> int list -> int list
   val pp_rel : formatter -> rel -> unit
   val pp_sort : formatter -> sort -> unit
   val pp_node : formatter -> node -> unit
@@ -94,8 +95,6 @@ module Make (P : Unifier_params) = struct
 
   type scheme = uvar list * uvar
 
-  let _fresh_uvar () = Global_counter.fresh_int ()
-
   let _state = ref S.empty
 
   let _var_env : (P.var * uvar) list ref = ref []
@@ -125,8 +124,8 @@ module Make (P : Unifier_params) = struct
     let sort = get_sort u in
     match c with
     | Redirect v -> fprintf fmt "%d -> %d : %a" u v pp_sort sort
-    | Trivial r -> fprintf fmt "%d -> ρ%d free : %a" u r pp_sort sort
-    | Cell (sh,r) -> fprintf fmt "%d -> ρ%d %a : %a" u r pp_shallow sh pp_sort sort
+    | Trivial r -> fprintf fmt "%d -> r%d free : %a" u r pp_sort sort
+    | Cell (sh,r) -> fprintf fmt "%d -> r%d %a : %a" u r pp_shallow sh pp_sort sort
 
   let pp_subst fmt s =
     pp_print_list ~pp_sep:pp_print_newline pp_cell fmt (S.bindings s)
@@ -141,15 +140,14 @@ module Make (P : Unifier_params) = struct
   let set k v = _state := S.add k v !_state
 
   let fresh_u so =
-    let u = _fresh_uvar () in
+    let u = Global_counter.fresh_int () in
     set u (Trivial !_rank);
     add_sort u so;
     u
 
   let shallow ?rank:r ~sort:so sh =
     let r = Option.value r ~default:!_rank in
-    let u = _fresh_uvar () in
-    add_sort u so;
+    let u = fresh_u so in
     set u (Cell (sh, r));
     u
 
@@ -292,7 +290,6 @@ module Make (P : Unifier_params) = struct
     end;
     !non_syntactic_unifications
 
-
   let freevars_of_type u =
     let rec go fvs u = match cell u with
       | Some (Cell (Var _ ,_))
@@ -304,6 +301,10 @@ module Make (P : Unifier_params) = struct
         List.fold_left go fvs xs
     in
     go [] u
+
+  let freevars_of_eqn = function
+    | Eq (a,b,_) -> [a;b]
+    | Rel (_,args) -> args
 
   let ranked_freevars fvs r =
     let a = Array.make (r+1) [] in
@@ -348,7 +349,7 @@ module Make (P : Unifier_params) = struct
   let lift_freevars r vs : unit =
     let rec aux children =
       List.fold_left (fun acc child -> go child; max acc (rank child))
-        0 children
+        (-1) children
     and go v =
       begin
         lower_rank v r;
@@ -361,6 +362,7 @@ module Make (P : Unifier_params) = struct
       end
     and go_sh v vr = function
       | Var _ -> ()
+      | Shallow (_, []) -> ()
       | Shallow (_, args) -> if vr = r then lower_rank v (aux args)
     in
     List.iter go vs

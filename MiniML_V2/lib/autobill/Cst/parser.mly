@@ -9,14 +9,14 @@
     module Autobill = struct end
 %}
 
-%token COLUMN PLUS EQUAL MINUS DOT ARROW COMMA SLASH META BAR UNDERSCORE
+%token COLUMN PLUS EQUAL MINUS DOT ARROW COMMA META BAR UNDERSCORE
 %token LPAREN RPAREN LANGLE RANGLE LCURLY RCURLY
-%token UUNIT ZZERO TTOP BBOTTOM FFUN TTHUNK CCLOSURE FFIX BBOOL IINT
+%token UUNIT ZZERO TTOP BBOTTOM FFUN TTHUNK CCLOSURE FFIX
 %token VAL STK CMD BIND BINDCC MATCH RET END IN
 %token TUPPLE INJ CALL PROJ LEFT RIGHT YES NO THIS FIX WITH TRUE FALSE INT
 %token GOT_TOP GOT_ZERO
 %token BOX UNBOX LLINEAR AAFFINE EEXP
-%token UNIT FUN THUNK CLOSURE STAR AMPER
+%token UNIT FUN THUNK STAR AMPER
 %token DECL TYPE DATA COMPUT SORT
 %token <string> VAR
 %token <string> TCONS
@@ -117,7 +117,7 @@ delim_typ:
   | TTOP {top}
   | BBOTTOM {bottom}
   | CCLOSURE kind = boxkind content = delim_typ
-    {boxed ~loc:(position $symbolstartpos $endpos) (Qual kind) content}
+    {boxed ~loc:(position $symbolstartpos $endpos) (Some kind) content}
   | FFIX a = delim_typ {fix a}
    | TTHUNK a = delim_typ {thunk_t a}
   | var = tvar

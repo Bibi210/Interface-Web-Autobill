@@ -96,8 +96,7 @@ and sort_infer_type loc env typ = match typ with
       | Bottom -> aux sort_negtype Bottom
       | Fix -> aux sort_negtype Fix
       | Thunk -> aux (arr 1 sort_postype sort_negtype) Types.Thunk
-      | Closure -> aux (sort_arrow [sort_qual; sort_negtype] sort_postype) Types.Closure
-      | Qual q -> aux sort_qual (Qual q)
+      | Closure q -> aux (sort_arrow [sort_negtype] sort_postype) (Types.Closure q)
       | Prod n -> aux (arr n sort_postype sort_postype) (Prod n)
       | Sum n -> aux (arr n sort_postype sort_postype) (Sum n)
       | Fun n ->
@@ -215,7 +214,7 @@ let sort_check_one_item env item =
           idxs = new_idxs;
           args = new_args
         } in
-      let new_content = new_tag, new_cons, new_eqns in
+      let new_content = PosCons new_tag, new_cons, new_eqns in
       let cons_def = Consdef {
           typ_args = new_tyvars;
           constructor = new_cons;
@@ -274,7 +273,7 @@ let sort_check_one_item env item =
           args = new_args;
           cont = new_cont
         } in
-      let new_content = (new_tag, new_destr, new_eqns) in
+      let new_content = (NegCons new_tag, new_destr, new_eqns) in
       let destr_def = Destrdef {
           typ_args = new_tyvars;
           destructor = new_destr;

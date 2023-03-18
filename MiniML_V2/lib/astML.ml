@@ -95,6 +95,7 @@ and pre_expr =
       }
   | FunctionRec of
       { var : variable
+      ; arg : variable
       ; body : expr
       }
   | Match of

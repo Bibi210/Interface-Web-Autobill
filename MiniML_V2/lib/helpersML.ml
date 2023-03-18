@@ -2,7 +2,8 @@ open AstML
 
 (*For error messages*)
 
-let err msg pos =
+let err msg (pos : Autobill.Misc.position) =
+  let pos = pos.start_pos in
   failwith
     (Printf.sprintf
        "{\"line\": %d, \"text\": \"Error on line %d col %d: %s.\"}"
@@ -43,9 +44,11 @@ let func_curryfy args body =
 ;;
 
 let func_rec var args body =
-  { enode = FunctionRec { var; body = func_curryfy args body }; eloc = var.vloc }
+  match args with
+  | [] -> err "Recusive Function Without Arguments" var.vloc
+  | arg :: args ->
+    { enode = FunctionRec { var; arg; body = func_curryfy args body }; eloc = var.vloc }
 ;;
-
 
 let functype_curryfy args body =
   List.fold_right

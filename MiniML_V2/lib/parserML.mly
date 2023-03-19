@@ -146,6 +146,16 @@ expr:
   ; eloc = position $startpos(hd) $endpos(tail)
   }
 }
+| LOpenPar ; hd = expr ; LConsInfixe; tail = separated_nonempty_list(LConsInfixe,expr);LClosePar  {
+    let last,rem = list_getlast_rem tail in
+    List.fold_right
+    (fun elem acc ->
+      { enode = Construct { constructor_ident = "Cons"; to_group = [ elem; acc ] }
+      ; eloc = elem.eloc
+      }
+    )
+    (hd::rem) last
+}
 
  | LLeftAngleBraket ; togrp = separated_list(LSemiColon,expr) ; LRightAngleBraket  {
   List.fold_right

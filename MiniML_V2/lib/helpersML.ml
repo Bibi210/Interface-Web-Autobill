@@ -40,7 +40,6 @@ let func_curryfy args body =
     args
     body
 ;;
-
 let func_rec var args body =
   match args with
   | [] -> err "Recusive Function Without Arguments" var.vloc

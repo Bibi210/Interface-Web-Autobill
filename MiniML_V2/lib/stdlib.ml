@@ -1,35 +1,4 @@
-const billPrompts = { 'lists' : `data List (T : +) =
-| nil()
-| cons(T, List(T));
 
-let map = rec self is get
-
-| call(f,l) -> thunk(
-
-  match l with
-
-    | nil() -> nil()
-
-    | cons(h, t) -> {
-
-        open exp(ff) = f;
-        let hh = ff.call(h);
-        force thunk(hhh) = hh;
-
-        open exp(mapp) = self;
-        let tt = mapp.call(f,t);
-        force thunk(ttt) = tt;
-
-        return cons(hhh, ttt)
-      }
-
-  end)
-
-end;
-
-return map
-`,
-'playground' :`
 type 'a list = 
 | Cons of 'a *  ('a list)
 | Nil
@@ -38,6 +7,10 @@ type 'a option =
 | None
 | Some of 'a
 ;; 
+type 'a tree = 
+| Node of 'a * ('a tree) * ('a tree)
+| Empty
+;;
 let fastCons a b= (a::b) ;;
 let create = ([],[]);;
 let push  file elem = 
@@ -73,14 +46,6 @@ let pop file =
     | (hd::tail) -> ((Some(hd)),tail,fin ))
   )
 ;;
- let elems = [1;2;3;4;5;6;7];;
-let queue = (fold_left push create elems);;
-(pop queue)
-;; 
-type 'a tree = 
-| Node of 'a * ('a tree) * ('a tree)
-| Empty
-(* ;;
 let rec addToTree  tree  elem = (
   match tree with
   | Empty -> (Node(elem, Empty ,Empty))
@@ -97,29 +62,4 @@ let treeToList tree  =
 ;;
 let l = (fold_left addToTree Empty [3;2;1;5;7]);;
 let l = treeToList l;;
-*)
-`, 
-'equation' : `% Baking cakes for the school fete
 
-var 0..100: b; % no. of banana cakes
-var 0..100: c; % no. of chocolate cakes
-
-% flour
-constraint 250*b + 200*c <= 4000;
-% bananas
-constraint 2*b  <= 6;
-% sugar
-constraint 75*b + 150*c <= 2000;
-% butter
-constraint 100*b + 150*c <= 500;
-% cocoa
-constraint 75*c <= 500;
-
-% maximize our profit
-solve maximize 400*b + 450*c;
-
-output ["no. of banana cakes = \(b)","no. of chocolate cakes = \(c)"];
-`
-}
-
-export default billPrompts

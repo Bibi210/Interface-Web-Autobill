@@ -13,6 +13,7 @@ let trans_boolean = function
 
 let trans_var x = x.basic_ident, x.vloc
 let trans_var_ls = List.map trans_var
+let unPre pre pos = pre, pos
 
 let trans_litl = function
   | Integer i -> Expr_Int i
@@ -31,37 +32,37 @@ let rec make_unary_closure op loc =
   in
   e
 
-and make_binary_closure args op loc =
-  let arg1 = { basic_ident = HelpersML.generate_name (); vloc = loc } in
-  let expr_var1 = { enode = Variable arg1; eloc = loc } in
+and make_binary_closure args op eloc =
+  let arg1 = { basic_ident = HelpersML.generate_name (); vloc = eloc } in
+  let expr_var1 = { enode = Variable arg1; eloc } in
   let closure, _ =
     trans_expr
       (match args with
       | [] ->
-        let arg2 = { basic_ident = HelpersML.generate_name (); vloc = loc } in
-        let expr_var2 = { enode = Variable arg2; eloc = loc } in
+        let arg2 = { basic_ident = HelpersML.generate_name (); vloc = eloc } in
+        let expr_var2 = { enode = Variable arg2; eloc } in
         HelpersML.func_curryfy
           [ arg1; arg2 ]
-          { enode = CallBinary { args = [ expr_var1; expr_var2 ]; op }; eloc = loc }
+          { enode = CallBinary { args = [ expr_var1; expr_var2 ]; op }; eloc }
       | [ hd ] ->
         HelpersML.func_curryfy
           [ arg1 ]
-          { enode = CallBinary { args = [ expr_var1; hd ]; op }; eloc = loc }
-      | _ -> HelpersML.err "Unexpected number of arguments on binary closure" loc)
+          { enode = CallBinary { args = [ expr_var1; hd ]; op }; eloc }
+      | _ -> HelpersML.err "Unexpected number of arguments on binary closure" eloc)
   in
   closure
 
 and trans_expr e =
-  let e_loc = e.eloc in
-  ( (match e.enode with
+  unPre
+    (match e.enode with
     | Litteral l -> trans_litl l
     | Variable v -> Expr_Var (trans_var v)
     | Tuple tpl -> Expr_Constructor (Tuple, trans_expr_ls tpl)
     | CallUnary { op; arg = Some arg } -> Expr_Mon_Prim (op, trans_expr arg)
-    | CallUnary { op; arg = None } -> make_unary_closure op e_loc
+    | CallUnary { op; arg = None } -> make_unary_closure op e.eloc
     | CallBinary { op; args = first :: second :: _ } ->
       Expr_Bin_Prim (op, trans_expr first, trans_expr second)
-    | CallBinary { op; args } -> make_binary_closure args op e_loc
+    | CallBinary { op; args } -> make_binary_closure args op e.eloc
     | Construct construct ->
       Expr_Constructor
         (Cons_Named construct.constructor_ident, trans_expr_ls construct.to_group)
@@ -70,56 +71,61 @@ and trans_expr e =
         (Blk
            ( [ Ins_Let (trans_var bind.var, trans_expr bind.init), bind.var.vloc ]
            , trans_expr bind.content
-           , e_loc ))
+           , e.eloc ))
     | Match mat -> Expr_Match (trans_expr mat.to_match, trans_match_case_ls mat.cases)
     | Sequence expr_ls ->
       let last, rem = HelpersML.list_getlast_rem expr_ls in
       Expr_Block
         (Blk
            ( List.map
-               (fun e -> Ins_Let (generate_variable e.eloc, trans_expr e), e.eloc)
+               (fun e -> unPre (Ins_Let (generate_variable e.eloc, trans_expr e)) e.eloc)
                rem
            , trans_expr last
            , last.eloc ))
     | Call { func; arg } ->
-      let openvar = generate_variable e_loc in
-      let returnvar = generate_variable e_loc in
+      let openvar = generate_variable e.eloc in
+      let returnvar = generate_variable e.eloc in
       let call =
-        Expr_Method ((Expr_Var openvar, e_loc), (Call, e_loc), [ trans_expr arg ]), e_loc
+        unPre
+          (Expr_Method ((Expr_Var openvar, e.eloc), (Call, e.eloc), [ trans_expr arg ]))
+          e.eloc
       in
       Expr_Block
         (Blk
-           ( [ Ins_Open (openvar, Exp, trans_expr func), func.eloc
-             ; Ins_Force (returnvar, call), func.eloc
+           ( [ unPre (Ins_Open (openvar, Exp, trans_expr func)) func.eloc
+             ; unPre (Ins_Force (returnvar, call)) func.eloc
              ]
-           , (Expr_Var returnvar, e_loc)
-           , e_loc ))
+           , unPre (Expr_Var returnvar) e.eloc
+           , e.eloc ))
     | Lambda { arg; body } ->
       Expr_Closure
         ( Exp
-        , ( Expr_Get
-              [ GetPatTag
-                  ( (Call, e_loc)
-                  , [ trans_var arg ]
-                  , (Expr_Thunk (trans_expr body), body.eloc)
-                  , body.eloc )
-              ]
-          , e_loc ) )
+        , unPre
+            (Expr_Get
+               [ GetPatTag
+                   ( unPre Call e.eloc
+                   , [ trans_var arg ]
+                   , unPre (Expr_Thunk (trans_expr body)) body.eloc
+                   , body.eloc )
+               ])
+            e.eloc )
     | FunctionRec { var; arg; body } ->
       Expr_Closure
         ( Exp
-        , ( Expr_Rec
-              ( trans_var var
-              , ( Expr_Get
-                    [ GetPatTag
-                        ( (Call, e_loc)
-                        , [ trans_var arg ]
-                        , (Expr_Thunk (trans_expr body), body.eloc)
-                        , body.eloc )
-                    ]
-                , e_loc ) )
-          , e_loc ) ))
-  , e_loc )
+        , unPre
+            (Expr_Rec
+               ( trans_var var
+               , unPre
+                   (Expr_Get
+                      [ GetPatTag
+                          ( unPre Call e.eloc
+                          , [ trans_var arg ]
+                          , unPre (Expr_Thunk (trans_expr body)) body.eloc
+                          , body.eloc )
+                      ])
+                   e.eloc ))
+            e.eloc ))
+    e.eloc
 
 and trans_match_case case =
   let conseq = trans_expr case.consequence in
@@ -143,6 +149,7 @@ and getPatternVariable case =
   let step pt =
     match pt.pnode with
     | VarPattern x -> x, pt.ploc
+    | WildcardPattern -> generate_variable pt.ploc
     | _ ->
       HelpersML.err "DeepMatch Pattern Unhandled : Pattern Containig Non Variable" pt.ploc
   in

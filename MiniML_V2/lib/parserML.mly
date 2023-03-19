@@ -85,7 +85,7 @@ newconstructor_case:
   ; loc = position $startpos(constructor_ident) $endpos(constructor_ident)
   }
 }
-| constructor_ident = LConstructorIdent; LOf ; etype_ls = separated_nonempty_list(LMult,etype){
+| constructor_ident = LConstructorIdent; LOf ; etype_ls = separated_list(LMult,etype){
   { constructor_ident
   ; c_of = etype_ls
   ; loc = position $startpos(constructor_ident) $endpos(constructor_ident)
@@ -147,7 +147,7 @@ expr:
   }
 }
 
- | LLeftAngleBraket ; togrp = separated_nonempty_list(LSemiColon,expr) ; LRightAngleBraket  {
+ | LLeftAngleBraket ; togrp = separated_list(LSemiColon,expr) ; LRightAngleBraket  {
   List.fold_right
     (fun a acc ->
       { enode = Construct { constructor_ident = "Cons"; to_group = [ a; acc ] }
@@ -159,7 +159,7 @@ expr:
     }
 } 
 
-| constructor_ident =  LConstructorIdent; LOpenPar ; togrp = separated_nonempty_list(LTupleInfixe,expr);LClosePar {
+| constructor_ident =  LConstructorIdent; LOpenPar ; togrp = separated_list(LTupleInfixe,expr);LClosePar {
   { 
     enode = Construct { constructor_ident ; to_group = togrp }
   ; eloc = position $startpos(togrp) $endpos(togrp)
@@ -169,13 +169,6 @@ expr:
   {
     enode = Construct { constructor_ident ; to_group = [] }
   ; eloc = position $startpos(constructor_ident) $endpos(constructor_ident)
-  }
-}
-
-| LLeftAngleBraket;LRightAngleBraket  {
-  {
-    enode = Construct { constructor_ident = "Nil" ; to_group = [] }
-  ; eloc = position $startpos($1) $endpos($2)
   }
 }
 
@@ -224,16 +217,8 @@ pattern :
   ; ploc = position $startpos($1) $endpos($1)
   }
 }
-|  LLeftAngleBraket; LRightAngleBraket{
-  { pnode = ConstructorPattern
-      { constructor_ident = "Nil"
-      ; content = []
-      }
-  ; ploc = position $startpos($1) $endpos($2)
-  }
-}
 
-| LLeftAngleBraket ; togrp = separated_nonempty_list(LSemiColon,pattern) ; LRightAngleBraket  {
+| LLeftAngleBraket ; togrp = separated_list(LSemiColon,pattern) ; LRightAngleBraket  {
   List.fold_right
     (fun a acc ->
       { pnode = ConstructorPattern { constructor_ident = "Cons"; content = [ a; acc ] }
@@ -252,7 +237,7 @@ pattern :
   ; ploc = position $startpos(constructor_ident) $endpos(constructor_ident)
   }
 }
-| constructor_ident = LConstructorIdent; LOpenPar; togrp = separated_nonempty_list(LTupleInfixe,pattern);LClosePar {
+| constructor_ident = LConstructorIdent; LOpenPar; togrp = separated_list(LTupleInfixe,pattern);LClosePar {
   { pnode = ConstructorPattern
       { constructor_ident
       ; content = togrp
@@ -320,7 +305,7 @@ etype:
   }
 }
 | t = LBasicIdent {
-  { etype = TypeVar t
+  { etype = TypeDefined t
   ; tloc = position $startpos(t) $endpos(t)
   }
 } 

@@ -1,6 +1,7 @@
 (executable
  (public_name MiniML)
  (name main)
- (modes js native)
- (libraries MiniML))
+ (modes js exe)
+ (libraries MiniML js_of_ocaml js_of_ocaml-toplevel autobill)
+ (preprocess (pps js_of_ocaml-ppx)))
 

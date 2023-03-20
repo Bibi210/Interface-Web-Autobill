@@ -26,7 +26,7 @@ app.use(cors({ origin: 'http://localhost:5173' }));
 
 mongoose.set('strictQuery', true);
 
-app.listen(3001, () =>{
+app.listen(3002, () =>{
     console.log("running")
 })
 
@@ -141,22 +141,20 @@ app.post('/api/minizinc', (req, res) => {
   // Run the MiniZinc code using the minizinc executable
   const cmd = `minizinc --solver Gecode ${tmpFile}`;
   exec(cmd, (error, stdout, stderr) => {
-    // Check for errors
-    if (error) {
-      console.error(`exec error: ${error}`);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-    if (stderr) {
-      console.error(`stderr: ${stderr}`);
-      res.status(500).send('Internal Server Error');
-      return;
-    }
-
     fs.unlink('temp.mzn', (err) => {
       if (err) throw err;
       console.log('File deleted!');
     });
+    
+    // Check for errors afaire: test client full/client-server
+    if (error || stderr) {
+      const errorMsg = error ? error.message : stderr;
+      console.error(`exec error: ${errorMsg}`);
+      res.status(500).send(errorMsg);
+      return;
+    }
+
+    
     console.log(stdout);
     // Send the MiniZinc output back to the client
     res.send(JSON.stringify({ result: stdout }) );

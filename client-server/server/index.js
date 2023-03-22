@@ -5,7 +5,7 @@ const dotenv = require("dotenv");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cors = require('cors');
-const ocaml = require("../MiniML_V2/_build/default/bin/main.bc.js");
+const ocaml = require("../../MiniML_V2/_build/default/bin/main.bc.js");
 //const { lcbpv } = require("../language/mllike")
 //const billPrompts = require("../data/billPrompt")
 

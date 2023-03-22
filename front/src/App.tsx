@@ -105,15 +105,37 @@ function App() {
         })
           .then(res => res.json())
           .then(data => {
-            res = data.result.resultat;
-            setResponse(res)
-            console.log(res)
+            if (data.result) {
+              const res = data.result.resultat;
+              setResponse(res);
+              setError("");
+              console.log(res);
+            } else {
+              //console.error(data.error);
+              setError(data.error);
+              //console.log("error message:", data.error);
+              console.log(error);
+              setResponse("");
+            }
           })
-          .catch(error => {console.log("error detected");
-            console.error(error)});
-          console.log("recieved result");
+          .catch(error => {
+            console.log("error detected");
+            //console.error(error);
+            if (error.json) {
+              error.json().then((errorMessage: { error: string }) => {
+                //console.log(errorMessage.error);
+                setError(errorMessage.error);
+                setResponse("")
+              });
+            }
+          })
+          .finally(() => {
+            console.log("received result");
+          });
+        
           break
         }
+
         case "Minizinc":{
           console.log("ready to send");
           fetch('http://localhost:3002/api/minizinc', {
@@ -127,15 +149,16 @@ function App() {
           
           
           .then((data) => {
-            
-            setResponse(data.result);
-            setError('')
+            let res = data.result;
+            console.log(res);
+            setResponse(res);
+            setError('');
             
           })
           .catch((error) => {
             console.error('Error:', error);
-            setResponse('')
-            setError(error.message);
+            setResponse("unsatifable");
+
           });
           break
         }
@@ -204,14 +227,14 @@ function App() {
             : ''
           }
           {
-            error!=='' ? 
+            error ? 
             <pre className="error">
               {error}
             </pre>
             : ''
           }
           {
-            types ? 
+            types!== '' ? 
             <pre className="types" >
               {res}
             </pre>

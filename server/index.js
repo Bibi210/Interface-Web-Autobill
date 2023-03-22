@@ -5,7 +5,7 @@ const dotenv = require("dotenv");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cors = require('cors');
-const ocaml = require('../front/ocaml/main.js');
+const ocaml = require("../MiniML_V2/_build/default/bin/main.bc.js");
 //const { lcbpv } = require("../language/mllike")
 //const billPrompts = require("../data/billPrompt")
 
@@ -39,10 +39,22 @@ const MiniZinc = require('minizinc');
 
 app.post('/api/run-code', async (req, res) => {
   const code = req.body.code;
-  console.log(code);
   //const tempFile = './temp.ml';
   console.log("code get");
-  let evaluation = ocaml.ml.parse(code);
+  try {
+    let evaluation = {
+      resultat: "",
+      erreur: ""
+    }
+    evaluation = ocaml.ml.parse(code);
+    console.log("code traite");
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+    res.send(JSON.stringify({ result: evaluation }) );
+  }catch(err){
+    console.log(err.message);
+    res.status(400).send(JSON.stringify({ error: err.message }));
+  }
+
   /*const evalCode = (code) => {
     let topLevelResult = {
       types : "",
@@ -92,9 +104,7 @@ app.post('/api/run-code', async (req, res) => {
     });
   
   */
-  console.log("code traite");
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
-  res.send(JSON.stringify({ result: evaluation }) );
+  
 });
 
 app.post('/api/minizinc', (req, res) => {

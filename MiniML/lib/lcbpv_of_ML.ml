@@ -1,3 +1,7 @@
+(*TODO Creation d'operateurs infixes *)
+(*TODO Creation de records *)
+(*TODO Lazyness *)
+
 open AstML
 open Autobill.Lcbpv
 open Autobill.Misc
@@ -142,8 +146,7 @@ and trans_match_case case =
     MatchPatTag
       (Cons_Named ptt.constructor_ident, getPatternVariable case, conseq, conseq_loc)
   | VarPattern x -> MatchPatVar ((x, ptt_loc), conseq, conseq_loc)
-  | WildcardPattern ->
-    MatchPatVar ((HelpersML.generate_name (), ptt_loc), conseq, conseq_loc)
+  | WildcardPattern -> MatchPatVar (generate_variable ptt_loc, conseq, conseq_loc)
 
 and getPatternVariable case =
   let step pt =

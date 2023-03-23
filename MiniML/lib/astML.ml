@@ -118,7 +118,7 @@ and pattern =
 and pre_pattern =
   | LitteralPattern of litteral
   | VarPattern of string
-  | WildcardPattern (* Ok *)
+  | WildcardPattern 
   | TuplePattern of pattern list (* Pas Profond *)
   | ConstructorPattern of
       { constructor_ident : string

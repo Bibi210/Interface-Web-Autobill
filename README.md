@@ -41,14 +41,14 @@ Petit front-end d'un language fonctionnel (Ocaml-Like ou Lisp)
     - If
 
 ### TODO LIST 
-- [ ] LexerV1 (Ocamllex)
-- [ ] Parser (Menhir)
-- [ ] Traduction AST (Connection AutoBill)
-  - [ ] Compiler AutoBill
-- [ ] LexerV2 (HandMade) ?
+- [X] LexerV1 (Ocamllex)
+- [X] Parser (Menhir)
+- [X] Traduction AST (Connection AutoBill)
+  - [X] Compiler AutoBill
+- [ ] LexerV2 (HandMade) ? (Not Needed)
   - Si version full-client
   - Stream Txt -> Stream Token pour menhir
-- [ ] Testing
+- [ ] Testing (Yaml)
   - How ?
 
 ## Partie JavaScript ( React / Js_of_ocaml )

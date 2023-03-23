@@ -1,4 +1,4 @@
-
+(* 
 type 'a list = 
 | Cons of 'a *  ('a list)
 | Nil
@@ -6,7 +6,7 @@ type 'a list =
 type 'a option =
 | None
 | Some of 'a
-;; 
+;;  *)
 type 'a tree = 
 | Node of 'a * ('a tree) * ('a tree)
 | Empty

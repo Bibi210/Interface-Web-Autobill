@@ -187,6 +187,49 @@ let sort_check_one_item env item =
       {!(env.prelude) with tycons = TyConsVar.Env.add name typdef !(env.prelude).tycons};
     env
 
+  | Cst.Data_definition {name = "Bool" ; content; loc; args = []} ->
+
+    let new_name = Primitives.tycons_bool in
+
+    let go_one env (Raw_Cons cons, _) =
+      let tag = match cons.tag with
+        | Bool b -> string_of_bool b
+        | _ -> assert false in
+      let new_tag = ConsVar.of_string tag in
+      let new_cons = Raw_Cons {
+          tag = PosCons new_tag;
+          idxs =[];
+          args = []
+        } in
+      let new_content = PosCons new_tag, new_cons, [] in
+      let cons_def = Consdef {
+          typ_args = [];
+          constructor = new_cons;
+          equations = [];
+          resulting_type = typecons new_name []} in
+      env, (tag, new_tag, cons_def, new_content) in
+
+    let env, res = List.fold_left_map go_one env content in
+    let consdefs = List.map (fun (_,x,d,_) -> (x,d)) res in
+    let conses = List.map (fun (x,y,_,_) -> (x,y)) res in
+    let sort = sort_postype in
+    let env = {
+      env with
+      tycons_vars = StringEnv.add "Bool" new_name env.tycons_vars;
+      tycons_sort = TyConsVar.Env.add new_name sort env.tycons_sort;
+      conses = StringEnv.add_seq (List.to_seq conses) env.conses } in
+    let tyconsdef = {
+      sort;
+      loc;
+      args = [];
+      content = Data (List.map (fun (_,_,_,x) -> x) res)} in
+    env.prelude := {
+      !(env.prelude) with
+      tycons = TyConsVar.Env.add new_name tyconsdef !(env.prelude).tycons;
+      cons = ConsVar.Env.add_seq (List.to_seq consdefs) !(env.prelude).cons};
+    env
+
+
   | Cst.Data_definition {name; args; content; loc} ->
 
     let new_name = StringEnv.find name env.tycons_vars in

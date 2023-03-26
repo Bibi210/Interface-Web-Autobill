@@ -19,14 +19,6 @@ let internalize_prelude prog =
   let prog = List.filter is_not_prelude prog in
     (prog, env)
 
-let intern_prog env prog =
-  let go (prog, env, decl) item =
-    let decl, item, env = intern_definition env decl item in
-    (item :: prog, env, decl) in
-  let decl = StringEnv.empty in
-  let prog, env,_ = List.fold_left go ([],env,decl) prog in
-  List.rev prog, env
-
 let string_of_intern_ast prog =
   Intern_prettyPrinter.pp_program Format.str_formatter prog;
   Format.flush_str_formatter ()

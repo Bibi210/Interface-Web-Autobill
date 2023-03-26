@@ -37,6 +37,7 @@ module Ast (Params : AstParams) = struct
         val_typ : typ;
         loc : position;
       }
+
   and pre_value =
     | Var of Var.t
     | CoTop
@@ -68,6 +69,7 @@ module Ast (Params : AstParams) = struct
         cont_typ : typ;
         loc : position;
       }
+
   and pre_stack =
     | Ret of CoVar.t
     | CoZero
@@ -87,8 +89,8 @@ module Ast (Params : AstParams) = struct
         cases : (pattern * command) list;
         default : (val_bind * command) option;
       }
-  and command =
-      Command of {
+
+  and command = Command of {
         pol : polarity;
         valu : meta_value;
         stk : meta_stack;
@@ -108,16 +110,28 @@ module Ast (Params : AstParams) = struct
         loc : position;
         content : meta_value
       }
-    | Command_execution of {
-        name : Var.t;
-        pol : polarity;
-        conttyp : toplevel_bind_annot;
-        cont : CoVar.t;
-        loc : position;
-        content : command;
-      }
 
-  type program = prelude * prog_item list
+  type command_execution = Command_execution of {
+      name : Var.t;
+      pol : polarity;
+      conttyp : toplevel_bind_annot;
+      cont : CoVar.t;
+      loc : position;
+      content : command;
+    }
+
+  type goal = Goal of {
+    polynomial : TyConsVar.t;
+    args_number : int;
+    degree : int
+  }
+
+  type program = {
+    prelude : prelude;
+    declarations : prog_item list;
+    command : command_execution option;
+    goal : goal option
+  }
 
   let val_meta ?loc ?typ node =
     let loc = match loc with Some loc -> loc | None -> dummy_pos in

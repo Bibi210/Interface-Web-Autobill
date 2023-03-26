@@ -1,5 +1,6 @@
 open Primitives
 open Types
+open Constructors
 open Cst
 open Vars
 open Misc
@@ -59,7 +60,15 @@ let primitives_prelude = [
   declare_int_binpred op_leq;
   declare_int_binpred op_lt;
 
-  declare_tycons tycons_bool [] sort_postype;
+  Data_definition {
+    name = TyConsVar.to_string tycons_bool;
+    loc = dummy_pos;
+    args = [];
+    content = [
+      ( Raw_Cons {tag = Bool true; idxs = []; args = []}, []);
+      ( Raw_Cons {tag = Bool false; idxs = []; args = []}, []);
+    ]
+  };
   declare_bool_binop op_and;
   declare_bool_binop op_or;
   declare_bool_monop op_not

@@ -345,39 +345,39 @@ module Make
         (pp_print_list ~pp_sep pp_sort) args
 
   let pp_definition fmt def =
-    pp_open_vbox fmt 2;
-    begin
       match def with
       | Value_declaration {bind = (x,t); pol; _} ->
         if not (Var.is_primitive x) then
-          fprintf fmt "decl val%a %a : %a@."
+          fprintf fmt "@[<v 2>decl val%a %a : %a@]@."
             pp_pol_annot pol
             Var.pp x
             pp_toplevel_bind_annot t
 
       | Value_definition {bind; pol; content; _} ->
-        fprintf fmt "val%a %a =@ %a@."
+        fprintf fmt "@[<v 2>val%a %a =@ %a@]@."
           pp_pol_annot pol
           pp_bind  bind
           pp_value content
 
-      | Command_execution {name; pol; content; cont; conttyp; _} ->
-        fprintf fmt "cmd%a %a ret %a : %a =@ %a@."
-          pp_pol_annot pol
-          Var.pp name
-          CoVar.pp cont
-          pp_toplevel_bind_annot conttyp
-          pp_cmd content
-    end;
-    pp_close_box fmt ()
+  let pp_execution fmt exec = match exec with
+    | Command_execution {name; pol; content; cont; conttyp; _} ->
+      fprintf fmt "@[<v 2>cmd%a %a ret %a : %a =@ %a@]@."
+        pp_pol_annot pol
+        Var.pp name
+        CoVar.pp cont
+        pp_toplevel_bind_annot conttyp
+        pp_cmd content
 
-  let pp_program fmt ?debug:(debug=false) (prelude, prog) =
+  let pp_goal fmt (Goal {polynomial; degree; _}) =
+    fprintf fmt "goal %a degree %d@." TyConsVar.pp polynomial degree
+
+  let pp_program fmt ?debug:(debug=false) prog =
     let pp_print_list pp = pp_print_list ~pp_sep:(fun _ () -> ()) pp in
     pp_set_geometry ~max_indent:120 ~margin:150 fmt;
     pp_open_vbox fmt 0;
 
     let {sort_defs; tycons; cons; destr; sorts; relations;
-         vars = _; covars = _} = !prelude in
+         vars = _; covars = _} = !(prog.prelude) in
 
     let sort_defs = SortVar.Env.bindings sort_defs in
     pp_print_list pp_sort_def fmt sort_defs;
@@ -399,7 +399,9 @@ module Make
       pp_print_list pp_tyvar_sort fmt sorts;
     end;
 
-    pp_print_list pp_definition fmt prog;
+    pp_print_list pp_definition fmt prog.declarations;
+    pp_print_option pp_execution fmt prog.command;
+    pp_print_option pp_goal fmt prog.goal;
     pp_close_box fmt ()
 
 end

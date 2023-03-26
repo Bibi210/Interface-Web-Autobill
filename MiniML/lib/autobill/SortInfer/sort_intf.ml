@@ -1,18 +1,8 @@
 open Misc
-open Intern_common
 
-let polarity_inference ?trace:(trace=false) env prog =
-
-  let debug = if trace then Some Format.std_formatter else None in
-
-  let env =
-    List.fold_left (SortInfer.unify_def ?debug) env prog in
-  let rec aux env acc = function
-    | [] -> env.prelude, List.rev acc
-    | h::t ->
-      let def,env = Sort_export.export_ast env h in
-      aux env (def::acc) t in
-  aux env [] prog
+let polarity_inference env prog =
+  let env = SortInfer.unify_prog env prog in
+  Sort_export.export_ast env prog
 
 let intern_error_wrapper f =
   let wrap ?loc str = begin

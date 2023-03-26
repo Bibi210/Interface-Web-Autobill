@@ -2,10 +2,9 @@ open Misc
 open Vars
 open Types
 open Prelude
-open Intern_common
 open Intern_prettyPrinter
 open Format
-open InternAst
+open Intern_common
 
 
 let pos_uso = Litt (Base Positive)
@@ -68,7 +67,7 @@ let unify_uso env uso1 uso2 =
   finalize (Loc (loc, p))
 
 
-let unify_def ?debug env item =
+let unify_prog ?debug env prog =
 
   let prelude = env.prelude in
   let env = ref env in
@@ -274,9 +273,7 @@ let unify_def ?debug env item =
     unify_meta_stk cmd.pol cmd.stk;
     unify_typ cmd.pol cmd.mid_typ;
 
-  in
-
-  begin match item with
+ and unify_declaration item = begin match item with
     | Value_declaration item ->
       let (_, typ) = item.bind in
       unify_typ item.pol typ
@@ -284,20 +281,30 @@ let unify_def ?debug env item =
       let (_, typ) = item.bind in
       unify_typ item.pol typ;
       unify_meta_val item.pol item.content
-    | Command_execution item ->
-      let upol = Redirect (USortVar.fresh ()) in
-      unify_cobind upol (item.cont, item.conttyp) item.loc;
-      unify upol item.pol;
-      unify_cmd item.content
   end;
-
   begin match item with
     | Value_declaration {bind = (name, _); pol; loc; _}
     | Value_definition {bind = (name, _); pol; loc; _} ->
       let polvar = USortVar.fresh () in
       env := {!env with varsorts = Var.Env.add name polvar !env.varsorts};
       unify pol (Loc (loc, Redirect polvar));
-    | _ -> ()
   end;
 
+ and unify_execution exec = match exec with
+    | Command_execution item ->
+      let upol = Redirect (USortVar.fresh ()) in
+      unify_cobind upol (item.cont, item.conttyp) item.loc;
+      unify upol item.pol;
+      unify_cmd item.content
+
+ and unify_goal (Goal {polynomial; args_number; degree}) =
+   assert (degree >= 0);
+   let nat = sort_idx (Primitives.sort_nat) in
+   let sort = Types.sort_arrow (List.init args_number (fun _ -> nat)) nat in
+   unify_typecons (Litt sort) (Cons polynomial);
+  in
+
+  List.iter unify_declaration prog.declarations;
+  Option.iter unify_execution prog.command;
+  Option.iter unify_goal prog.goal;
   !env

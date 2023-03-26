@@ -77,9 +77,7 @@ let fail_box_kind_mistatch cmd = raise (Box_kind_mismatch cmd)
 
 
 let fail_malformed_program prog mess =
-  Format.print_string mess;
-  Format.print_newline ();
-  PrettyPrinter.PP.pp_cmd Format.err_formatter (curr prog);
+  Format.eprintf "%a@.%s@." PrettyPrinter.PP.pp_cmd (curr prog) mess;
   raise (Malformed_program prog)
 
 let fail_malformed_case prog =raise (Malformed_case prog)
@@ -160,8 +158,10 @@ let reduct_head_once ((env, Command cmd) as prog) : runtime_prog =
         (env_add env var cmd.valu, mcmd2)
     end
 
-  | (Fix {self = (x,_) as self; cmd = curr'; cont = (a,_) as cont}),
+  | (Fix _) as v,
     CoFix stk ->
+    let v = alpha_preval empty_renaming v in
+    let [@warning "-8"] Fix {self = (x,_) as self; cmd = curr'; cont = (a,_) as cont} = v in
     if env.always_reduce_fixpoints || not (env_is_reduced_fixpoint env x) then
       let env, self = build_fixpoint_self env self cont (Command cmd) in
       ((env_add (coenv_add (env_set_fixpoint env x) a stk) x self), curr')

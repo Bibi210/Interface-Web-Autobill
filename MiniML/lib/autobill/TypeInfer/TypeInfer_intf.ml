@@ -5,10 +5,9 @@ open FullAst
 open Format
 
 
-let constraint_as_string (prelude, items) =
-  let module P = struct let it = prelude end in
-  let open Elaborate.Make(P) in
-  let x,_ = elab_prog_items items in
+let constraint_as_string prog =
+  let open Elaborate.Make(struct let it = prog.prelude end) in
+  let x,_ = elab_prog prog in
   pp_set_geometry str_formatter ~max_indent:300 ~margin:400;
   pp_constraint str_formatter x;
   pp_print_newline str_formatter ();
@@ -16,33 +15,23 @@ let constraint_as_string (prelude, items) =
   pp_subst str_formatter !_state;
   flush_str_formatter ()
 
-let post_contraint_as_string (prelude, _, post) =
-  let module P = struct let it = prelude end in
-  let open Elaborate.Make(P) in
-  let post = FirstOrder.FullFOL.compress_logic ~remove_loc:true post in
-  let post = FirstOrder.FullFOL.compress_unification post in
-  let post = FirstOrder.FullFOL.compress_logic ~remove_loc:true post in
-  let post = FirstOrder.FullFOL.compress_unification post in
+let post_contraint_as_string (_, post) =
   let post = FirstOrder.FullFOL.compress_logic ~remove_loc:true post in
   pp_set_geometry str_formatter ~margin:180 ~max_indent:170;
   FirstOrder.FullFOL.pp_formula ~with_loc:true str_formatter post;
   pp_print_newline str_formatter ();
   flush_str_formatter ()
 
-let coq_term_as_string (prelude, _, post) =
-  let module P = struct let it = prelude end in
-  let open Elaborate.Make(P) in
-  let post = FirstOrder.FullFOL.compress_logic ~remove_loc:true post in
-  let post = FirstOrder.FullFOL.compress_unification post in
-  let post = FirstOrder.FullFOL.compress_logic ~remove_loc:true post in
+let aara_constraint_as_string (_, post) =
+  let post = AaraCompress.compress_unification post in
   pp_set_geometry str_formatter ~margin:180 ~max_indent:170;
-  CoqExport.export str_formatter post;
+  FirstOrder.FullFOL.pp_formula str_formatter post;
   pp_print_newline str_formatter ();
   flush_str_formatter ()
 
 
 
-let fill_out_types items =
+let fill_out_types prog =
 
   let vars = ref (Var.Env.empty) in
 
@@ -92,19 +81,23 @@ let fill_out_types items =
 
   let goitem = function
     | Value_declaration {bind; _} -> bind_var bind
-    | Value_definition {bind; content; _} -> goval content; bind_var bind
-    | Command_execution {content; _} -> gocmd content
+    | Value_definition {bind; content; _} -> goval content; bind_var bind in
+
+  let goexec = function
+    | Some (Command_execution {content; _}) -> gocmd content
+    | None -> ()
 
   in
-  List.iter goitem items;
+  List.iter goitem prog.declarations;
+  goexec prog.command;
   !vars, !covars
 
 
-let type_infer ~trace:trace (prelude, items) =
-  let module P = struct let it = prelude end in
+let type_infer ~trace:trace prog =
+  let module P = struct let it = prog.prelude end in
   let open Elaborate.Make (P) in
-  let items,post = go ~trace items in
-  let vars, covars = fill_out_types items in
-  prelude := {!prelude with vars; covars};
+  let prog, post = go ~trace prog in
+  let vars, covars = fill_out_types prog in
+  prog.prelude := {!(prog.prelude) with vars; covars};
   let post : FirstOrder.FullFOL.formula = Obj.magic post in
-  (prelude, items, post)
+  prog, post

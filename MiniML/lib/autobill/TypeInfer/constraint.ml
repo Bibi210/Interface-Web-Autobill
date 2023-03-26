@@ -15,14 +15,6 @@ module Make (U : Unifier_params) = struct
 
   type post = formula
 
-  type 'a model = {
-        typs : uvar list;
-        duty : uvar list;
-        inner : 'a;
-        accumulated : uvar list;
-        eqns : eqn list;
-      }
-
   type con =
     | CTrue
     | CFalse
@@ -85,15 +77,6 @@ module Make (U : Unifier_params) = struct
 
   let pp_uvars fmt vars =
     fprintf fmt "@[(%a)@]" (pp_print_list ~pp_sep:pp_print_space pp_uvar) vars
-
-  let pp_model tag pp fmt {duty; accumulated; typs; eqns; inner} =
-    fprintf fmt "@[<v 1>(:%s %a@ :got %a@ :goal %a@ :assume %a@ :then %a)@]"
-      tag
-      pp_uvars duty
-      pp_uvars accumulated
-      pp_uvars typs
-      pp_eqns eqns
-      pp inner
 
   let rec pp_constraint fmt = function
     | CTrue -> pp_print_string fmt ":true"

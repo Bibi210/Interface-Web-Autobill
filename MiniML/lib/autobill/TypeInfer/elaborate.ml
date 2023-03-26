@@ -120,9 +120,15 @@ module Make (P : Prelude) = struct
             cmd = gcmd env;
             cont = (a, gcont env)}
 
-    | Cons cons ->
-      let ccons, gcons = elab_cons u cons in
-      ccons >>> fun env -> Cons (gcons env)
+    | Cons (Raw_Cons cons) ->
+      begin match cons.tag with
+        | Int _ ->
+          let u', fvs = of_rank1_typ ~sort:sort_postype int in
+          exists fvs (eq u u') >>> fun _ -> Cons (Raw_Cons cons)
+        | _ ->
+          let ccons, gcons = elab_cons u (Raw_Cons cons) in
+          ccons >>> fun env -> Cons (gcons env)
+      end
 
     | Destr {default; cases; for_type} ->
       let {args; sort; content; _} = def_of_tycons P.it for_type in
@@ -195,6 +201,31 @@ module Make (P : Prelude) = struct
         cdestr >>> fun env -> CoDestr (gdestr env)
 
       | CoCons {cases; default; for_type} ->
+
+        match for_type with
+        | Cons v when v = Primitives.tycons_int ->
+          let ccases, gcases = List.split (cases |> List.map (fun (Raw_Cons patt, cmd) ->
+             assert (match patt.tag with Int _ -> true | _ -> false);
+             let ccmd, gcmd = elab_cmd cmd in
+             ccmd >>> fun env -> (Raw_Cons patt, gcmd env)
+            )) in
+          let cdefault, gdefault = match default with
+            | None -> CTrue, fun _ -> None
+            | Some ((x,t),cmd) ->
+              let u, fvs = of_rank1_typ ~sort:sort_postype t in
+              let u', fvs' = of_rank1_typ ~sort:sort_postype int in
+              let ccmd, gcmd = elab_cmd cmd in
+              exists (fvs@fvs') (CDef (Var.to_int x, Var.to_string x, u, eq u u' @+ ccmd))
+              >>> fun env -> Some ( (x, env.u u), gcmd env)
+          in CAnd ccases @+ cdefault
+          >>> fun env -> CoCons {
+            for_type;
+            default = gdefault env;
+            cases = List.map (fun f -> f env) gcases
+          }
+
+        | _ ->
+
         let {args; sort; content; _} = def_of_tycons P.it for_type in
         let sort = snd (unmk_arrow sort) in
         let defs = match content with Data defs -> defs | _ -> assert false in
@@ -325,6 +356,13 @@ module Make (P : Prelude) = struct
 
   and elab_patt ((Raw_Cons patt, cmd), (_, (Raw_Cons def : Prelude.cons_for_def), equations)) =
 
+
+    match patt.tag with
+    | Int _ ->
+      let ccmd, gcmd = elab_cmd cmd in
+      ccmd >>> fun env -> (Raw_Cons patt, gcmd env)
+    | _ ->
+
     (* let Consdef { typ_args; resulting_type; equations; constructor = Raw_Cons def} *)
     (*   = def_of_cons Prelude.it patt.tag in *)
 
@@ -427,7 +465,7 @@ module Make (P : Prelude) = struct
       }, gcmd env)
 
 
-  let elab_prog_items items =
+  let elab_prog_items (cexec, gexec) items =
 
     let go (con, gen) item = match item with
 
@@ -445,31 +483,42 @@ module Make (P : Prelude) = struct
         Value_definition {
           bind = (name, env.u u);
           pol; loc;
-          content = cgen env} :: gen env
-
-      | Command_execution {name; pol; cont; conttyp; loc; content} ->
-        let u, fvs = of_rank1_typ ~sort:(Base pol) conttyp in
-        let cc, cgen = elab_cmd content in
-        exists fvs (CDef (CoVar.to_int cont, CoVar.to_string cont, u, cc @+ con))
-        >>> fun env ->
-        Command_execution {
-          name; pol; loc;
-          cont = cont;
-          conttyp = env.u u;
           content = cgen env} :: gen env in
 
-    enter ();
-    let con, gen = List.fold_left go (CTrue, fun _ -> []) (List.rev items) in
-    leave ();
+    let con, gen = List.fold_left go (cexec, fun _ -> []) (List.rev items) in
     CExistsIdx {
       typs = [];
       inner = con;
       duty = [];
       accumulated = [];
       eqns = []
-    } >>> gen
+    } >>> fun env -> (gexec env, gen env)
 
 
-  let go ~trace:trace items = solve ~trace elab_prog_items items
+  let elab_exec exec = match exec with
+    | Some (Command_execution {name; pol; cont; conttyp; loc; content}) ->
+      let u, fvs = of_rank1_typ ~sort:(Base pol) conttyp in
+      let cc, cgen = elab_cmd content in
+      exists fvs (CDef (CoVar.to_int cont, CoVar.to_string cont, u, cc))
+      >>> fun env ->
+      Some (Command_execution {
+        name; pol; loc;
+        cont = cont;
+        conttyp = env.u u;
+        content = cgen env
+      } )
+    | None -> CTrue, fun _ -> None
+
+
+  let elab_prog prog =
+    enter ();
+    let c,g = elab_prog_items (elab_exec prog.command) prog.declarations in
+    leave ();
+    c >>> fun env ->
+    let command, declarations = g env in
+    {prog with declarations; command}
+
+  let go ~trace:trace prog =
+    solve ~trace elab_prog prog
 
 end

@@ -5,7 +5,7 @@ open Types
 open Ast
 open InternAst
 
-let export_ast env item =
+let export_ast env prog =
 
   let rec export_usort ?loc = function
     | Litt p -> p
@@ -142,25 +142,45 @@ let export_ast env item =
 
   in
 
-  let def = match item with
-    | InternAst.Value_declaration {bind = (name, typ); pol; loc} ->
-      FullAst.Value_declaration {
-        bind = (name, export_typ typ);
-        pol = export_upol ~loc pol;
-        loc}
-    | InternAst.Value_definition {bind = (name, typ); pol; content; loc} ->
-      FullAst.Value_definition {
-        loc;
-        bind = (name, export_typ typ);
-        pol = export_upol ~loc pol;
-        content = (export_meta_val content)}
-    | Command_execution {name; pol; content; cont; conttyp; loc} ->
-      Command_execution {
+  let export_def env item =
+    let def = match item with
+      | InternAst.Value_declaration {bind = (name, typ); pol; loc} ->
+        FullAst.Value_declaration {
+          bind = (name, export_typ typ);
+          pol = export_upol ~loc pol;
+          loc}
+      | InternAst.Value_definition {bind = (name, typ); pol; content; loc} ->
+        FullAst.Value_definition {
+          loc;
+          bind = (name, export_typ typ);
+          pol = export_upol ~loc pol;
+          content = (export_meta_val content)}
+    in env, def in
+
+  let export_exec env exec =
+    let exec = match exec with
+    | Some (Command_execution {name; pol; content; cont; conttyp; loc}) ->
+      Some (FullAst.Command_execution {
         pol = export_upol ~loc pol;
         content = export_cmd content;
         name;
         conttyp = export_typ conttyp;
-        cont; loc}
+        cont; loc})
+    | None -> None
+  in env, exec
+
   in
 
-  def, env
+  let env, declarations = List.fold_left_map export_def env prog.declarations in
+  let env, command = export_exec env prog.command in
+  let goal = match prog.goal with
+    | None -> None
+    | Some (Goal {polynomial; degree; args_number}) ->
+      Some FullAst.(Goal {polynomial; degree; args_number}) in
+
+  FullAst.{
+    declarations;
+    command;
+    goal;
+    prelude = env.prelude
+  }

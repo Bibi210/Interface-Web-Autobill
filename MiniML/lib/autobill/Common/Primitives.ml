@@ -8,7 +8,11 @@ let nat_zero = TyConsVar.of_primitive "Z"
 
 let nat_one = TyConsVar.of_primitive "One"
 
+let nat_large = TyConsVar.of_primitive "Large"
+
 let nat_add = TyConsVar.of_primitive "Add"
+
+let nat_mult = TyConsVar.of_primitive "Mult"
 
 let nat_leq = RelVar.of_primitive "leq"
 

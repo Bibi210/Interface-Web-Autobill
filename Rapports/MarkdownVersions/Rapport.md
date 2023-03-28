@@ -49,15 +49,20 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 
 - **CodeMirror** : C'est une librairie Javascript permettant d'intégrer un éditeur de code puissant, incluant le support de la coloration syntaxique, de l'auto-complétion ou encore la surlignage d'erreurs. Les fonctionnalités de l'éditeur sont grandement extensives et permettant même  la compatibilité avec un langage de programmation personnalité comme MiniML. Enfin, CodeMirror est disponible sous licence MIT.
 
-- **Js_of_ocaml** : 
-### Tâches réalisées : 
-  - Interlanguage Pb Rencontrée (Thread Block , Exception ... )
+- **Ocaml + Js_of_ocaml** :  Afin de manipuler la librairie d'Autobill, il est nécessaire de passer par du côté Ocaml pour traiter le code en entrée et en sortir des équations à résoudre ou des résultats d'interprétations. Pour faire le pont entre Javascript et Ocaml, on utilise Js_of_ocaml, une librairie contenant, entre autres, un compilateur qui transpile du bytecode Ocaml en Javascript et propose une grande variété primitives et de type pour manipuler des élements Javascript depuis Ocaml
 
-    - React : 
-    - 
-  - Description Js_Of_Ocaml 
-    - Neccesaire dans l'archi full client (Pourquoi)
-- Solveur (Web Assembly)
+### Tâches réalisées : 
+  - Intégration d'une IDE similaire aux Playground de [Ocaml](https://ocaml.org/play) et [Rescript](https://rescript-lang.org/try)
+  - Implémentation d'un éditeur de code supportant la syntaxe de MiniML
+  - Liaison entre le code Javascript et Ocaml à l'aide de Js_of_ocaml 
+  - Implémentation de plusieurs modes d'interprétation du code MiniML : 
+    - Vers AST 
+    - Vers AST de LCBPV
+    - Vers Equation
+    - Vers code Machine Autobill
+  - Remontée d'erreurs et affichage dynamique sur l'interface
+  - Implémentation du solveur d'équations MiniZinc côté client
+  - Solveur (Web Assembly)
 
 
 ## Archi Serveur + Client
@@ -79,7 +84,11 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
   - ?
   
 ## Client 
-  - ?
+  - Retouches esthétiques
+  - Affichage des erreurs sur plusieurs lignes
+  - Couverture d'erreurs à traiter la plus grande possible, afin d'éviter les blocages du client
+  - "Benchmark" la résolution d'équations plus complexes avec le MiniZinc client
+  - Proposer des programmes d'exemples à lancer, demandant des lourdes allocations mémoires.
   
 ## Tests
   - Comparaison Client vs Servers

@@ -1,6 +1,8 @@
 (*TODO Creation d'operateurs infixes *)
-(*TODO Creation de records *)
+(*TODO Creation de records ? *)
 (*TODO Lazyness *)
+(*TODO Recursion Mutuelle (Type et Fonction)  *)
+(*TODO Type Synonym *)
 
 open AstML
 open Autobill.Lcbpv

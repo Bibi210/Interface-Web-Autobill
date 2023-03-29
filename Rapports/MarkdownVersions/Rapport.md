@@ -66,6 +66,15 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 
 
 ## Archi Serveur + Client
+### Design du côté client
+Photo à ajouter...
+### Outils et Technologies utilisées
+#### Coté Client
+- **HTML / CSS / Javascript** 
+- **React.js**
+- **CodeMirror** 
+- **Ocaml + Js_of_ocaml** 
+
   - Design du server (Images ? Inspirations ?)
     -  Schema
         -  Montrer les echanges de données

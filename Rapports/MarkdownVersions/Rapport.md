@@ -67,7 +67,7 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 
 
 ## Archi Serveur + Client
-### Design du côté client
+### Schema de Communication
 Photo à ajouter...
 ### Outils et Technologies utilisées
   #### Coté Client
@@ -76,8 +76,7 @@ Photo à ajouter...
    - **CodeMirror** 
    - **Ocaml + Js_of_ocaml** 
   #### Coté Server
-   - **Javascript** :
-   - **NodeJS**:
+   - **NodeJS**: NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'avoir une grande efficacité et une utilisation optimale des ressources. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel. Enfin, la grande quantité de packages disponibles sur NPM (le gestionnaire de packages de NodeJS) permet de gagner beaucoup de temps de développement et de faciliter notre tâches. 
 
 ### Tâches réalisées : 
   - Intégration d'une IDE similaire aux Playground de [Ocaml](https://ocaml.org/play) et [Rescript](https://rescript-lang.org/try)
@@ -86,15 +85,9 @@ Photo à ajouter...
   - Implémentation de plusieurs modes d'interprétation du code MiniML : 
     - Vers Equation
   - Implémentation du solveur d'équations MiniZinc côté client
-  - Solveur (Web Assembly)
+  - Solveur 
 
-  - Design du server (Images ? Inspirations ?)
-    -  Schema
-        -  Montrer les echanges de données
-    - Pourquoi Node ? (Et pas ocaml par exemple)
-    - Tenter un lien PC3R ??
-  - Solveur
-
+  
 
 # Projections (Rapport Suivant)
 ## MiniML

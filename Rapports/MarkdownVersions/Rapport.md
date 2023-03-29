@@ -78,6 +78,14 @@ Photo à ajouter...
    - **Javascript** :
    - **NodeJS**:
 
+### Tâches réalisées : 
+  - Intégration d'une IDE similaire aux Playground de [Ocaml](https://ocaml.org/play) et [Rescript](https://rescript-lang.org/try)
+  - Implémentation d'un éditeur de code supportant la syntaxe de MiniML
+  - Liaison entre le code Javascript et Ocaml à l'aide de Js_of_ocaml 
+  - Implémentation de plusieurs modes d'interprétation du code MiniML : 
+    - Vers Equation
+  - Implémentation du solveur d'équations MiniZinc côté client
+  - Solveur (Web Assembly)
 
   - Design du server (Images ? Inspirations ?)
     -  Schema

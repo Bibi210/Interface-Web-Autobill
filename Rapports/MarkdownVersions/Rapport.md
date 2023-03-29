@@ -19,7 +19,7 @@ date: 23 mars, 2023
 # Contexte du projet
 
 ## Qu-est-ce qu'est Autobill ?
-  
+  Autobill est un projet universitaire soutenu par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans la cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme.Sur la base d'un langage de programmation fonctionnel-impératif nommé Call-By-Push-Value, Autobill permet de déduire des équations sur les contraintes mémoires du programme qu'on lui passe en entrée. Les équations prennent la forme de formules logiques que l'on peut résoudre grâce à des solveurs externes et en tirer les bornes minimums / variables permettant de satisfaire les contraintes.
   
 ## Comment on rentre dans ce projet ?
   Le sujet de notre Projet STL va donc être de soutenir l'effort de développement
@@ -30,7 +30,8 @@ date: 23 mars, 2023
 
   Néanmoins, le langage accepté d'Autobill étant Call-By-Push-Value, il est nécessaire de pouvoir traduire le langage camélien pour permettre l'évaluation des contraintes et de l'allocation mémoire du programme. Ainsi, un travail sur la compilation d'un langage à un autre va avoir lieu, passant par les étapes de construction d'AST camélien et par la traduction de ce dernier en un AST compréhensible par Autobill.
 
-
+  La charge de travail pour notre trinôme va donc se diviser autour de trois axes principaux : le traitement des entrées en miniML pour les convertir en LCBPV et le développement du client et du serveur Web. Pour ces deux derniers, un effort sera mis à comparer notamment les choix de conception orientés soit vers une architecture tout-client et une architecture client-serveur, les avantages et inconvénients de chacun.
+  
 # Avancement
 ## MiniML
   - Description du language

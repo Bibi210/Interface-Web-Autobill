@@ -69,11 +69,15 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 ### Design du côté client
 Photo à ajouter...
 ### Outils et Technologies utilisées
-#### Coté Client
-- **HTML / CSS / Javascript** 
-- **React.js**
-- **CodeMirror** 
-- **Ocaml + Js_of_ocaml** 
+  #### Coté Client
+   - **HTML / CSS / Javascript** 
+   - **React.js**
+   - **CodeMirror** 
+   - **Ocaml + Js_of_ocaml** 
+  #### Coté Server
+   - **Javascript** :
+   - **NodeJS**:
+
 
   - Design du server (Images ? Inspirations ?)
     -  Schema

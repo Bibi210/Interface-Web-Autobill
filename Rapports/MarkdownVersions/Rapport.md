@@ -104,7 +104,7 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 
 ### Schema de Communication
 
-Photo à ajouter...
+![](./MarkdownVersions/communication.png)
 
 ### Outils et Technologies utilisées
 
@@ -139,7 +139,9 @@ Photo à ajouter...
   - Bibliothéque de tests sous la forme de structure de donéees complexes
 
 ## Serveur
-  - ?
+  - Affichage des erruers
+  - Réalisation des autres services pour MiniML
+  - Réalisation de génération de solution depuis le code Autobill
   
 ## Client 
   - Retouches esthétiques

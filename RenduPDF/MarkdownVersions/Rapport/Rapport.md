@@ -35,14 +35,16 @@ date: 23 mars, 2023
 # Avancement
 ## MiniML
 
+Avant de pouvoir entrer dans le détail au sujet de MiniML une courte introduction au principe de **Call-By-Push-Value** est requise
+
 ### Call-By-Push-Value
-Le paradigme **Call-By-Push-Value** est utilisée par autobill avec un objectif pricipal permettre avec une seule semantique de traiter deux types de strategies d'evaluation differentes **Call By Value** utilisée par **Ocaml** par exemple et **Call By Name** ou utilisée par **Haskell** la differenciation entre ses deux types de strategies
+Le paradigme de traitement de language **Call-By-Push-Value** est utilisé par autobill avec un objectif principal permettre avec une seule semantique de traiter deux types de strategies d'evaluation differentes **Call By Value** utilisée par **Ocaml** par exemple et **Call By Name** ou utilisée par **Haskell** la differenciation entre ses deux types de strategies
 s'effecue lors de la traduction depuis le language d'origine.
 
 Pour ce faire **Call-By-Push-Value** effectue une profonde distinction entre les calcules et les valeurs
 
 ### Objectifs du language
-Pour utiliser ce paradigme **MiniML** a été mis en place dans le cadre de ce PSTL comme modeste subset d'ocaml dont l'objectif est double, faciliter l'utilisation d'**autobill** en offrant une abstraction simple et accessible au dessus de **Call-By-Push-Value**, et permettre de simplifier les comparaisons avec d'autres analyseur. 
+Pour utiliser ce paradigme **MiniML** a été mis en place dans le cadre de ce PSTL comme modeste subset d'ocaml dont l'objectif est double, faciliter l'utilisation d'**autobill** en offrant une abstraction simple et accessible de **Call-By-Push-Value**, et permettre de simplifier les comparaisons avec d'autres analyseurs. 
 En effet les programmes MiniML etant valides pour tout autre analyseur recevant ocaml en entrée.
 
 ### Description Rapide
@@ -50,7 +52,7 @@ En effet les programmes MiniML etant valides pour tout autre analyseur recevant 
 Il est possible de crée de nouveaux types a partir de ceux-ci.\
 MiniML pour l'instant est purement fonctionnelle et donc sans noyau impératif.
 
-### Contenu
+### Contenu Actuel
 
 - Listes
 - Files
@@ -61,18 +63,19 @@ MiniML pour l'instant est purement fonctionnelle et donc sans noyau impératif.
   
 ### Processus de Conception
 Lors de la conception de MiniML les contraintes était multiples.\ 
-La plus forte d'entre elle etait la necessité d'être soumis a un minimum de dependance possible afin de permettre la réutilisation de l'effort de developpement dans les deux architectures decrites et mise en place lors du PSTL et la seconde se trouvait au niveau de la traduction de MiniML vers **Call-By-Push-Value** le principe de stratégie d'évaluation étant tout nouveau pour nous.
+La plus forte d'entre elles etait la necessité d'être soumis à un minimum de dependance possible afin de permettre la réutilisation de l'effort de developpement dans les deux architectures decrites et mise en place lors du PSTL et la seconde se trouvait au niveau de la traduction de MiniML vers **Call-By-Push-Value** le principe de stratégie d'évaluation étant tout nouveau pour nous.
 
-Une fois ses contraintes établi nous avons decidé d'utiliser ocaml avec comme unique dependance **menhir**, ce choix nous a permis d' effectuer la traduction d'AST *MiniML* vers AST *Call-By-Push-Value*
-guidée pas à pas par nos tuteurs
+Une fois ses contraintes établies nous avons decidé d'utiliser ocaml avec comme unique dependance **menhir**, ce choix nous a permis d'effectuer la traduction d'AST *MiniML* vers AST *Call-By-Push-Value* guidée pas à pas par nos tuteurs car le language d'implementation est identique entre MiniML et Autobill
 
+### Diagramme
+![](./MarkdownVersions/Rapport/MiniML.png)
 
   
-## Archi Full Client
+## Architecture Full Client
 
 ### Design du client
 
-![](./MarkdownVersions/screen.png)
+![](./MarkdownVersions/Rapport/screen.png)
 
 ### Outils et Technologies utilisées
 
@@ -100,11 +103,11 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 
 \newpage
 
-## Archi Serveur + Client
+## Architecture Serveur + Client
 
 ### Schema de Communication
 
-![](./MarkdownVersions/communication.png)
+![](./MarkdownVersions/Rapport/communication.png)
 
 ### Outils et Technologies utilisées
 
@@ -115,7 +118,7 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
    - **CodeMirror** 
    - **Ocaml + Js_of_ocaml** 
   
-#### Coté Server
+#### Coté Serveur
 
    - **NodeJS**: NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'avoir une grande efficacité et une utilisation optimale des ressources. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel. Enfin, la grande quantité de packages disponibles sur NPM (le gestionnaire de packages de NodeJS) permet de gagner beaucoup de temps de développement et de faciliter notre tâches. 
 

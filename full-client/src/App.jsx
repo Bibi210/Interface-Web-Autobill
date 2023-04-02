@@ -14,10 +14,11 @@ import { Model } from "https://cdn.jsdelivr.net/npm/minizinc/dist/minizinc.mjs"
 function App() {
   const selectNode = useRef(null)
   const modeNode = useRef(null)
-  const [code, setCode] = useState(billPrompts.lists)
-  const [mode, setMode] = useState("LCBPV -> Equation")
+  const [code, setCode] = useState(billPrompts.playground)
+  const [mode, setMode] = useState("MiniML -> MiniML_AST")
   const [types, setTypes] = useState("")
   const [print, setPrint] = useState("")
+  const [ctrlPressed, setCtrl] = useState(false)
   const [dispatchSpec, setDispatchSpec] = useState(null)
   const editor = useRef(null)
   const addLineHighlight = StateEffect.define()
@@ -80,8 +81,27 @@ function App() {
     let val = selectNode.current?.value
     setCode(billPrompts[val])
   }
+  function handleKeyDown(e) {
+    console.log(e.code)
+    console.log(ctrlPressed && e.code == "Enter")
+    if(e.key == "Meta"){
+      setCtrl(true)
+    } else{
+      if(ctrlPressed && e.code == "Enter"){
+        console.log("Tac")
+        e.stopPropagation()
+        evalCode(e)
+      }
+    }
+  }
+  function handleKeyUp(e){
+    if(e.key =="Meta"){
+      setCtrl(false)
+    }
+  }
   const evalCode = async (e) => {
     e.preventDefault()
+    console.log("Ziak")
     try {
       let evaluation = {
         resultat: "",
@@ -96,10 +116,7 @@ function App() {
               solver: "gecode",
             },
           })
-          evaluation.resultat = solve.solution ? JSON.stringify(solve.solution.output.json) : "Insatisfiable"
-          break
-        case "LCBPV -> Equation":
-          evaluation = ml.parse(code)
+          evaluation.resultat = solve.solution.output.default
           break
         case "MiniML -> MiniML_AST":
           evaluation = ml.ast(code)
@@ -136,9 +153,11 @@ function App() {
           </div>
         </nav>
       </header>
-      <main>
+      <main
+        onKeyDown={(e) => handleKeyDown(e)}
+        onKeyUp={(e) => handleKeyUp(e)}>
         <section>
-          <div ref={editor} />
+          <div ref={editor} className="editor" />
           <footer>
             <div className="mode">
               <span>Mode</span>
@@ -148,9 +167,6 @@ function App() {
                 id=""
                 onChange={(e) => setMode(modeNode.current?.value)}
               >
-                <option value={"LCBPV -> Equation"}>
-                  {"LCPBV -> Equation"}
-                </option>
                 <option value={"MiniML -> MiniML_AST"}>
                   {"MiniML -> MiniML_AST"}
                 </option>

@@ -1,4 +1,3 @@
-exception Undefined_variable of string
 
 module IntM = Map.Make (struct
     type t = int
@@ -22,8 +21,8 @@ module type LocalVar = sig
   val is_primitive : t -> bool
   val fresh : unit -> t
   val to_int : t -> int
-  val to_string : t -> string
-  val pp : Format.formatter -> t -> unit
+  val to_string : ?debug:bool -> t -> string
+  val pp : ?debug:bool -> Format.formatter -> t -> unit
 end
 
 module LocalVar (Param : LocalVarParam) : LocalVar = struct
@@ -45,24 +44,32 @@ module LocalVar (Param : LocalVarParam) : LocalVar = struct
   let names : string IntM.t ref = ref IntM.empty
   let prim_strs : int StrM.t ref = ref StrM.empty
   let prims : unit IntM.t ref = ref IntM.empty
+  let defaults : bool IntM.t ref = ref IntM.empty
 
   let is_primitive v = IntM.mem v !prims
 
-  let to_string v =
+  let is_default v = Option.value ~default:false (IntM.find_opt v !defaults)
+
+  let to_string ?(debug = true) v =
     match IntM.find_opt v !names with
-    | None -> raise (Undefined_variable (string_of_int v))
-    | Some s -> s
+    | None ->
+      let mess = "Unregistered variable: " ^ string_of_int v in
+      Misc.fail_invariant_break mess
+    | Some s -> if (debug && not (is_primitive v)) || is_default v then
+        s ^ "__" ^ (string_of_int v)
+      else
+        s
 
   let to_int v = v
 
-  let _of_string s =
+  let _of_string ~is_default s =
     let v = Global_counter.fresh_int () in
-    let s = s ^ "__" ^ (string_of_int v) in
     names := IntM.add v s !names;
+    defaults := IntM.add v is_default !defaults;
     v
 
   let of_string s = match StrM.find_opt s !prim_strs with
-    | None -> _of_string s
+    | None -> _of_string ~is_default:false s
     | Some v -> v
 
   let of_primitive s =
@@ -70,12 +77,13 @@ module LocalVar (Param : LocalVarParam) : LocalVar = struct
     names := IntM.add v s !names;
     prim_strs := StrM.add s v !prim_strs;
     prims := IntM.add v () !prims;
+    defaults := IntM.add v false !defaults;
     v
 
 
-  let fresh () = of_string default_name
+  let fresh () = _of_string ~is_default:true default_name
 
-  let pp fmt v = Format.pp_print_string fmt (to_string v)
+  let pp ?(debug = true) fmt v = Format.pp_print_string fmt (to_string ~debug v)
 
   end
 

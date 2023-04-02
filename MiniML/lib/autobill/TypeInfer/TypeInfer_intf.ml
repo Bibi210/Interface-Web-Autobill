@@ -94,10 +94,15 @@ let fill_out_types prog =
 
 
 let type_infer ~trace:trace prog =
-  let module P = struct let it = prog.prelude end in
-  let open Elaborate.Make (P) in
-  let prog, post = go ~trace prog in
-  let vars, covars = fill_out_types prog in
-  prog.prelude := {!(prog.prelude) with vars; covars};
-  let post : FirstOrder.FullFOL.formula = Obj.magic post in
-  prog, post
+  try
+    let module P = struct let it = prog.prelude end in
+    let open Elaborate.Make (P) in
+    let prog, post = go ~trace prog in
+    let vars, covars = fill_out_types prog in
+    prog.prelude := {!(prog.prelude) with vars; covars};
+    let post : FirstOrder.FullFOL.formula = Obj.magic post in
+    prog, post
+  with
+
+  | Constraint.Type_error (info, loc) ->
+    Misc.fatal_error "Type inference" ?loc info

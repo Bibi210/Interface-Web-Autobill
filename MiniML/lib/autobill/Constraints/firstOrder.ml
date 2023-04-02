@@ -206,8 +206,10 @@ let rec compress_logic ?(remove_loc = true) c =
       | Neutral eqns, KForall (us, vs, eqns', ctx) -> KForall (us, vs, eqns @ eqns', ctx)
       | Neutral _, KLoc (loc, ctx) -> KLoc (loc, lift_quant vs ctx)
       | Neutral _, KAnd (cs, ctx, cs') -> KAnd (cs, lift_quant vs ctx, cs')
-      | Neutral _, KCases _ -> assert false
       | Neutral eqns, KEmpty -> KAnd ([PEqn eqns], KEmpty, [])
+      | Neutral _, KCases _ ->
+        Misc.fail_invariant_break
+          "A logical constraint contains a case disjunction without the required quantifiers"
   in
   let c = advance c KEmpty in
   if not !canary then
@@ -229,8 +231,8 @@ module FullFOL =  struct
       type rel = RelVar.t
       type term = typ
 
-      let pp_var = TyVar.pp
-      let pp_rel = RelVar.pp
+      let pp_var = TyVar.pp ~debug:true
+      let pp_rel = RelVar.pp ~debug:true
       let pp_sort = pp_sort SortVar.to_string
       let pp_term = pp_typ TyConsVar.pp TyVar.pp
     end)

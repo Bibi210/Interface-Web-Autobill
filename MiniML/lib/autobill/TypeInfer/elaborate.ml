@@ -52,7 +52,7 @@ module Make (P : Prelude) = struct
 
   and elab_metaval : uvar -> meta_value elaboration = fun u mval ->
     let MetaVal {node; val_typ; loc} = mval in
-    let cnode, gnode = elab_val u node in
+    let cnode, gnode = elab_val u node loc in
     let ctyp, gtyp = elab_typ u val_typ in
     CLoc (loc, cnode @+ ctyp )
     >>> fun env ->
@@ -62,7 +62,7 @@ module Make (P : Prelude) = struct
   and elab_metastack : uvar -> meta_stack elaboration =
     fun ucont mstk ->
     let MetaStack {node; cont_typ; loc} = mstk in
-    let cnode, gnode = elab_stack ucont node in
+    let cnode, gnode = elab_stack ucont node loc in
     let ccont, gcont = elab_typ ucont cont_typ in
     CLoc (loc, cnode @+ ccont) >>> fun env ->
     MetaStack {node = gnode env;
@@ -73,7 +73,7 @@ module Make (P : Prelude) = struct
 
   and elab_covar u var = cvar (CoVar.to_int var) u >>> fun _ -> var
 
-  and elab_val : uvar -> pre_value elaboration = fun u valu -> match valu with
+  and elab_val u valu loc = match valu with
 
     | Var x ->
       let con, gvar = elab_var u x in
@@ -133,7 +133,10 @@ module Make (P : Prelude) = struct
     | Destr {default; cases; for_type} ->
       let {args; sort; content; _} = def_of_tycons P.it for_type in
       let sort = snd (unmk_arrow sort) in
-      let defs = match content with Codata defs -> defs | _ -> assert false in
+      let defs = match content with
+        | Codata defs -> defs
+        | _ -> Misc.fail_invariant_break ~loc
+                 "This computation litteral has a non-computation type" in
       let u_typ_args = of_tvars args in
       let ures, fvs_res =
         of_rank1_typ ~sort (app (cons for_type) (List.map (fun (x,_) -> tvar x) args)) in
@@ -156,8 +159,7 @@ module Make (P : Prelude) = struct
                             for_type}
 
 
-  and elab_stack : uvar -> pre_stack elaboration =
-    fun ucont stk -> match stk with
+  and elab_stack ucont stk loc = match stk with
 
       (* TODO spectialize here *)
       | Ret a ->
@@ -205,7 +207,11 @@ module Make (P : Prelude) = struct
         match for_type with
         | Cons v when v = Primitives.tycons_int ->
           let ccases, gcases = List.split (cases |> List.map (fun (Raw_Cons patt, cmd) ->
-             assert (match patt.tag with Int _ -> true | _ -> false);
+             begin match patt.tag with
+               | Int _ -> ()
+               | _ -> Misc.fail_invariant_break ~loc
+                        "This pattern is not an integer, but was inferred to be"
+             end;
              let ccmd, gcmd = elab_cmd cmd in
              ccmd >>> fun env -> (Raw_Cons patt, gcmd env)
             )) in
@@ -228,7 +234,9 @@ module Make (P : Prelude) = struct
 
         let {args; sort; content; _} = def_of_tycons P.it for_type in
         let sort = snd (unmk_arrow sort) in
-        let defs = match content with Data defs -> defs | _ -> assert false in
+        let defs = match content with
+            Data defs -> defs
+          | _ -> Misc.fail_invariant_break ~loc "This datatype litteral has a non-data type" in
         let u_typ_args = of_tvars args in
         let ures, fvs_res =
           of_rank1_typ ~sort (app (cons for_type) (List.map (fun (x,_) -> tvar x) args)) in
@@ -352,26 +360,20 @@ module Make (P : Prelude) = struct
       cont = gfinal env
     }
 
-
+  and mk_model_eqns loc us defs binds = match (us, defs, binds) with
+    | x::xs, y::ys, (_,so)::sos -> Eq (x,y,so) :: mk_model_eqns loc xs ys sos
+    | [],[],[] -> []
+    | _ -> Misc.fail_invariant_break ~loc "Paramter equations are bad-sorted at type inference"
 
   and elab_patt ((Raw_Cons patt, cmd), (_, (Raw_Cons def : Prelude.cons_for_def), equations)) =
 
+    let Command {loc; _} = cmd in
 
     match patt.tag with
     | Int _ ->
       let ccmd, gcmd = elab_cmd cmd in
       ccmd >>> fun env -> (Raw_Cons patt, gcmd env)
     | _ ->
-
-    (* let Consdef { typ_args; resulting_type; equations; constructor = Raw_Cons def} *)
-    (*   = def_of_cons Prelude.it patt.tag in *)
-
-    (* let u_typ_args = of_tvars typ_args in *)
-
-
-    (* let so = match def.tag with Thunk -> sort_negtype | _ -> sort_postype in *)
-    (* let u_res, fvs_res = of_rank1_typ ~sort:so resulting_type in *)
-    (* let fvs_def = u_typ_args @ fvs_res in *)
 
     enter ();
     let u_idxs = of_tvars patt.idxs in
@@ -388,15 +390,11 @@ module Make (P : Prelude) = struct
     let fvs_args = List.concat (fvss @ fvss') in
     let ccmd, gcmd = elab_cmd cmd in
 
-    let rec mk_model_eqns us defs binds = match (us, defs, binds) with
-      | x::xs, y::ys, (_,so)::sos -> Eq (x,y,so) :: mk_model_eqns xs ys sos
-      | [],[],[] -> []
-      | _ -> assert false in
     let con = CUnivIdx {
         typs = u_args;
         duty =  List.filter (fun x -> (rank x) = !_rank) fvs_idxs;
         accumulated = [];
-        eqns = equations @ mk_model_eqns u_idxs u_def_idxs def.idxs;
+        eqns = equations @ mk_model_eqns loc u_idxs u_def_idxs def.idxs;
         inner = exists (fvs_idxs @ fvs_args) (cbinds (CAnd (List.map2 eq u_args u_def_args) @+ ccmd))
       } in
 
@@ -411,13 +409,7 @@ module Make (P : Prelude) = struct
 
   and elab_copatt ((Raw_Destr copatt, cmd), (_, (Raw_Destr def), equations)) =
 
-    (* let Destrdef { typ_args; resulting_type; equations; destructor = Raw_Destr def} *)
-    (*   = def_of_destr P.it copatt.tag in *)
-
-    (* let u_typ_args = of_tvars typ_args in *)
-    (* let so = match def.tag with Closure _ -> sort_postype | _ -> sort_negtype in *)
-    (* let u_res, fvs_res = of_rank1_typ ~sort:so resulting_type in *)
-    (* let fvs_def = u_typ_args @ fvs_res in *)
+    let Command {loc;_} = cmd in
 
     enter ();
     let u_idxs = of_tvars copatt.idxs in
@@ -442,15 +434,11 @@ module Make (P : Prelude) = struct
     let ccmd, gcmd = elab_cmd cmd in
 
     let fvs = fvs_idxs @ fvs_args @ fvs_final in
-    let rec mk_model_eqns us defs binds = match (us, defs, binds) with
-      | x::xs, y::ys, (_,so)::sos -> Eq (x,y,so) :: mk_model_eqns xs ys sos
-      | [],[],[] -> []
-      | _ -> assert false in
     let con = CUnivIdx {
         typs = u_args;
         duty = List.filter (fun x -> (rank x) = !_rank) fvs_idxs;
         accumulated = [];
-        eqns = equations @ mk_model_eqns u_idxs u_def_idxs def.idxs;
+        eqns = equations @ mk_model_eqns loc u_idxs u_def_idxs def.idxs;
         inner = exists fvs (cbinds (c_cont_bind
                                       (CAnd (List.map2 eq u_args u_def_args)
                                        @+ ccmd
@@ -511,12 +499,33 @@ module Make (P : Prelude) = struct
 
 
   let elab_prog prog =
-    enter ();
-    let c,g = elab_prog_items (elab_exec prog.command) prog.declarations in
-    leave ();
-    c >>> fun env ->
-    let command, declarations = g env in
-    {prog with declarations; command}
+    try
+      enter ();
+      let c,g = elab_prog_items (elab_exec prog.command) prog.declarations in
+      leave ();
+      c >>> fun env ->
+      let command, declarations = g env in
+      {prog with declarations; command}
+    with
+    | InvalidSort sort ->
+      Misc.fail_invariant_break ("this sort of type is unsupported and should \
+                                  already have been rejected " ^ sort)
+    | Constraints_params.Undefined_type_variable (info, loc) ->
+      Misc.fail_invariant_break ~loc ("Scoping was broken: " ^ info)
+    | Constraints_params.Unsupported_type_inference (info, loc) ->
+      raise (Type_error (info, Some loc))
+    | UnionFind.SortConflict (thing, sort, expected_sort) ->
+      let info = Printf.sprintf
+                   "the type %s has sort %s, but was used with sort %s"
+                   thing sort expected_sort in
+      raise (Type_error (info, None))
+    | UnionFind.Cycle u -> (*TODO*)
+      let info = "Found a cyclic type with identifier " ^ string_of_int u in
+      raise (Type_error (info, None))
+    | UnionFind.UnboundUVar u ->
+      Misc.fail_invariant_break ("unbound unification variable: " ^ string_of_int u)
+    | UnionFind.UnboundNVar n ->
+      Misc.fail_invariant_break ("unbound instanciation placeholder: " ^ string_of_int n)
 
   let go ~trace:trace prog =
     solve ~trace elab_prog prog

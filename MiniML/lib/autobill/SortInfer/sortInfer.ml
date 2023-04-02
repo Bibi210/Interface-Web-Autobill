@@ -2,9 +2,34 @@ open Misc
 open Vars
 open Types
 open Prelude
-open Intern_prettyPrinter
+open Preprocess_ast
 open Format
-open Intern_common
+
+
+type sort_check_env = {
+  prelude : prelude;
+  varsorts : USortVar.t Var.Env.t;
+  covarsorts : USortVar.t CoVar.Env.t;
+  tyvarsorts : usort TyVar.Env.t;
+  unifier : usort USortVar.Env.t;
+  }
+
+let initial_sort_check_env prelude = {
+  prelude;
+  varsorts = Var.Env.empty;
+  covarsorts = CoVar.Env.empty;
+  tyvarsorts = TyVar.Env.empty;
+  unifier = USortVar.Env.empty
+}
+
+exception Sort_mismatch of string * string * position * position
+
+let fail_polarity_mismatch upol1 upol2 pos1 pos2 =
+  raise (Sort_mismatch (string_of_usort upol1, string_of_usort upol2, pos1, pos2))
+
+exception Ambiguous_polarity of position
+
+let fail_ambiguous_sort loc = raise (Ambiguous_polarity loc)
 
 
 let pos_uso = Litt (Base Positive)
@@ -132,7 +157,8 @@ let unify_prog ?debug env prog =
     | Var v ->
       let polvar =
         try Var.Env.find v !env.varsorts
-        with Not_found -> fail_undefined_var (Var.to_string v) loc in
+        with Not_found ->
+          Misc.fail_invariant_break ~loc ("this variable is unbound" ^ Var.to_string v) in
       unify upol (Loc (loc, Redirect polvar))
     | CoTop -> unify upol (Loc (loc, neg_uso))
     | Bindcc {bind; pol; cmd} ->
@@ -164,7 +190,8 @@ let unify_prog ?debug env prog =
     | Ret a ->
       let polvar =
         try CoVar.Env.find a !env.covarsorts
-        with Not_found -> fail_undefined_var (CoVar.to_string a) loc in
+        with Not_found ->
+          Misc.fail_invariant_break ~loc ("this variable is unbound" ^ CoVar.to_string a) in
       unify upol (Loc (loc, Redirect polvar))
     | CoZero -> unify upol (Loc (loc, pos_uso))
     | CoBind {bind; pol; cmd} ->
@@ -238,7 +265,7 @@ let unify_prog ?debug env prog =
           pp_upol pol
           pp_typ val_typ
           pp_pre_value node;
-        dump_env std_formatter !env;
+        (* dump_env std_formatter !env; *)
         Format.pp_print_flush fmt ();
       | None -> ()
     end;
@@ -253,7 +280,7 @@ let unify_prog ?debug env prog =
           pp_typ cont_typ
           pp_upol cont_pol
           pp_pre_stack node;
-        dump_env std_formatter !env;
+        (* dump_env std_formatter !env; *)
         pp_print_flush fmt ()
       | None -> ()
     end ;
@@ -265,7 +292,7 @@ let unify_prog ?debug env prog =
     begin match debug with
       | Some fmt ->
         fprintf fmt "command %a@." pp_cmd (Command cmd);
-        dump_env std_formatter !env;
+        (* dump_env std_formatter !env; *)
         pp_print_flush fmt ();
       | None -> ()
     end ;
@@ -297,11 +324,8 @@ let unify_prog ?debug env prog =
       unify upol item.pol;
       unify_cmd item.content
 
- and unify_goal (Goal {polynomial; args_number; degree}) =
-   assert (degree >= 0);
-   let nat = sort_idx (Primitives.sort_nat) in
-   let sort = Types.sort_arrow (List.init args_number (fun _ -> nat)) nat in
-   unify_typecons (Litt sort) (Cons polynomial);
+ and unify_goal (Goal {polynomial; _}) =
+   unify_typecons (Litt (sort_idx (Primitives.sort_nat))) (Cons polynomial);
   in
 
   List.iter unify_declaration prog.declarations;

@@ -142,12 +142,28 @@ let interpreter_visitor
   cmd_nf env cmd
 
 
-let simplify_untyped_prog prog = visit_prog
+let error_wrapper name action =
+  let fail_runtime_error info loc =
+    Misc.fatal_error name ~loc ("while reducing a command, " ^ info) in
+  try
+    action ()
+  with
+  | Box_kind_mismatch (_, Command {loc; _}) ->
+    fail_runtime_error "cannot share a variable this way (box error)" loc
+  | Malformed_program (_, Command {loc; _})->
+    fail_runtime_error "malformed command (incompatible value and stack)" loc
+  | Malformed_case (_, Command {loc; _}) ->
+    fail_runtime_error "malformed case analysis (missing pattern)" loc
+
+let simplify_untyped_prog prog =
+  error_wrapper "Simplification" (fun () ->
+  visit_prog
     (normal_form_visitor
        ~reduce_commands:true
        ~reduce_fixpoints:false
        ~reduce_sharing:false)
-    prog
+    prog)
 
 let interpret_prog prog =
-  visit_prog (head_normal_form_visitor ~reduce_fixpoints:true ~reduce_sharing:true) prog
+  error_wrapper "Evaluation" (fun () ->
+      visit_prog (head_normal_form_visitor ~reduce_fixpoints:true ~reduce_sharing:true) prog)

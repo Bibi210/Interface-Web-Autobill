@@ -12,7 +12,7 @@ let pp_relvar fmt v = pp_print_string fmt (String.lowercase_ascii (RelVar.to_str
 
 let pp_tycons fmt c = match c with
   | Cons c -> pp_tyconsvar fmt c
-  | _ -> assert false
+  | _ -> Misc.fail_invariant_break "A parameter constructor is not a type constructor variable"
 
 let pp_list pp fmt l = pp_print_list ~pp_sep:pp_print_space pp fmt l
 
@@ -59,11 +59,17 @@ let rec pp_formula fmt (c : formula) = match c with
 | PForall (xs, ys, eqns, c) ->
   fprintf fmt "@[<v 0>(%a %a %a@,   -> %a)@]"
     (pp_binder "forall") (ys)
-    (pp_binder "exists") (xs)
+    (pp_binder "forall") (xs)
     pp_eqns eqns
     pp_formula c
 
 
-let nat_prelude = {||}
+let nat_prelude =
+{|Definition add x y := x+y.
+Definition one := 1.
+Definition z := 0.|}
 
-let export fmt c = fprintf fmt "%s%a" nat_prelude pp_formula c
+let export_as_coq_term c =
+  let open Format in
+  fprintf str_formatter "%s@.Goal %a.@." nat_prelude pp_formula c;
+  flush_str_formatter ()

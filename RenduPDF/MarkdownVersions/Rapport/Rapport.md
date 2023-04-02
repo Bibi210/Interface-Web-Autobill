@@ -158,4 +158,25 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
   - Comparaison **RAML** vs **Autobill**
 
 # Bibliographie 
-  - Reprendre le carnet de bord
+
+- Will Kurt. 2018. Get Programming with Haskell. Simon and Schuster. Chapitre 5,7
+
+- Pierce, Benjamin C. Types and Programming Languages. MIT Press, 2002
+
+- Levy, Paul Blain. “Call-by-Push-Value: A Subsuming Paradigm.” Lecture Notes in Computer Science. Berlin, Heidelberg: Springer Berlin Heidelberg, 1999. 228–243
+
+- Winskel, Glynn. The Formal Semantics of Programming Languages : an Introduction. Cambridge (Mass.) London: MIT Press, 1993
+
+- Compilers : Principles, Techniques, and Tools. 2nd ed. Boston (Mass.) San Francisco (Calif.) New York [etc: Pearson Addison Wesley, 2007]
+
+- Minsky, Anil Madhavapeddy, and Jason Hickey. 2013. Real World OCaml. O’Reilly Media.
+
+- Martin Avanzini and Ugo Dal Lago. 2017. Automating sized-type inference for complexity analysis. Proceedings of the ACM on Programming Languages 1, 1-29
+
+- Hoffmann, Jan, and Steffen Jost. “Two Decades of Automatic Amortized Resource Analysis.” Mathematical structures in computer science 32.6 (2022): 729–759
+
+- Dominic Orchard, Vilem-Benjamin Liepelt, and Harley Eades III. 2019. Quantitative program reasoning with graded modaltypes.Proceedings of the ACM on Programming Languages3, ICFP (2019)
+
+- Xavier Leroy. 2022 OCaml library. Ocaml Lazy Doc. Retrieved February 20, 2023 from https://v2.ocaml.org/api/index.html
+
+- Haskell - Wikibooks, open books for an open world. Doc Haskell. Retrieved February 17, 2023 from https://en.wikibooks.org/wiki/Haskell

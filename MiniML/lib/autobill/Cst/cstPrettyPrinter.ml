@@ -263,6 +263,9 @@ let pp_prog_item fmt item =
     | Type_definition {name; sort; args; content; _} ->
       fprintf fmt "type %a =@ %a" pp_typ_lhs (name, args, Some sort) pp_typ content
 
+    | Goal_selection {polynomial; degree; _} ->
+      fprintf fmt "goal %s degree %d" polynomial degree
+
     | Data_definition {name; args; content; _} ->
       fprintf fmt "@[<v 2>data %a =@,%a@]"
         pp_typ_lhs (name, args, None)

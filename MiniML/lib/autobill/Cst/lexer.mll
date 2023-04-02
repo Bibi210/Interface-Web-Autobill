@@ -87,6 +87,8 @@ rule token = parse
   | "val" {VAL}
   | "stk" {STK}
   | "cmd" {CMD}
+  | "goal" {GOAL}
+  | "degree" {DEGREE}
 
   | num {NUM (int_of_string (Lexing.lexeme lexbuf))}
   | name {VAR (Lexing.lexeme lexbuf)}

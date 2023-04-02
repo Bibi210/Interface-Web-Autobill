@@ -182,6 +182,12 @@ type program_item =
       loc : position
     }
 
+  | Goal_selection of {
+      polynomial : string;
+      degree : int;
+      loc : position;
+    }
+
   | Data_definition of {
       name : tyvar;
       args : (tyvar * sort) list;
@@ -236,7 +242,7 @@ let loc_of_item = function
   | Data_definition {loc;_} | Codata_definition {loc;_}
   | Term_definition {loc;_} | Term_declaration {loc;_}
   | Cmd_execution {loc;_} | Sort_declaration {loc;_}
-  | Rel_declaration {loc;_} ->
+  | Rel_declaration {loc;_} | Goal_selection {loc;_} ->
     loc
 
 let prim_type_int = cons (Cons (Vars.TyConsVar.to_string Primitives.tycons_int))

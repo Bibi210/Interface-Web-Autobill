@@ -1,10 +1,11 @@
 open Vars
 open Types
 open Constructors
+open Preprocess_ast
 open Intern_common
+open Intern_prelude
 open Prelude
 
-open InternAst
 
 
 let intern_type_annot env scope typ = match typ with
@@ -18,17 +19,19 @@ let rec visit_many_vars vars k = function
       let vars, t = visit_many_vars vars k t in
       vars, h :: t
 
-let fill_out_private_of_cons (env : sort_check_env ref) (Raw_Cons cons) mk =
+let fill_out_private_of_cons env (Raw_Cons cons) mk loc =
   let Consdef {constructor = Raw_Cons def; _} = def_of_cons !env.prelude cons.tag in
   let rec go priv typs = match priv, typs with
     | [], [] -> []
     | (_,so)::t, [] -> (mk so)::(go t [])
     | (_,so)::t, None::t' -> (mk so)::(go t t')
     | _::t, Some h::t' -> h :: (go t t')
-    | [], _::_ -> assert false in
+    | [], _::_ ->
+      fail_too_many_cons_parameters (List.length def.idxs) (List.length cons.idxs) cons.tag loc
+  in
   Raw_Cons {cons with idxs = go def.idxs cons.idxs}
 
-let fill_out_private_of_destr (env : sort_check_env ref) (Raw_Destr destr) mk =
+let fill_out_private_of_destr env (Raw_Destr destr) mk loc =
   let Destrdef {destructor = Raw_Destr def; _} =
     def_of_destr !env.prelude destr.tag in
   let rec go priv typs = match priv, typs with
@@ -36,7 +39,9 @@ let fill_out_private_of_destr (env : sort_check_env ref) (Raw_Destr destr) mk =
     | (_,so)::t, [] -> (mk so)::(go t [])
     | (_,so)::t, None::t' -> (mk so)::(go t t')
     | _::t, Some h::t' -> h :: (go t t')
-    | [], _::_ -> assert false in
+    | [], _::_ ->
+      fail_too_many_destr_parameters (List.length def.idxs) (List.length destr.idxs) destr.tag loc
+  in
   Raw_Destr { destr with idxs = go def.idxs destr.idxs}
 
 let visit_cons vars env loc kx ki (Raw_Cons cons) =
@@ -74,8 +79,8 @@ let intern_pol = function
   | Some p -> Litt (Base p)
   | None -> Redirect (USortVar.fresh ())
 
-let intern_sort env = function
-  | Some so -> Litt (intern_sort env so)
+let intern_sort env loc = function
+  | Some so -> Litt (intern_sort env loc so)
   | None -> Redirect (USortVar.fresh ())
 
 let rec intern_val env scope = function
@@ -245,12 +250,13 @@ and intern_stk env scope stk =
 
 and tycons_for_patts env patts =
   match patts with
-  | [] -> assert false
+  | [] -> Misc.fail_invariant_break "tried to guess a type constructor for an empty pattern"
   | (Raw_Cons cons, _) :: _ ->
     let Consdef consdef = def_of_cons !env.prelude cons.tag in
     match consdef.resulting_type with
     | TCons {node = c; _} | TApp {tfun = TCons {node = c; _}; _} -> c
-    | _ -> assert false
+    | _ -> Misc.fail_invariant_break
+             "A internalized datatype definition has no associated type constructor"
 
 and intern_cons env vars loc cons =
   let mk _ = tvar (TyVar.fresh ()) in
@@ -258,7 +264,7 @@ and intern_cons env vars loc cons =
       (fun vars valu -> (vars, intern_val env vars valu))
       (fun vars typ ->  vars, Some (intern_type_annot env vars typ))
       cons in
-  fill_out_private_of_cons env cons mk
+  fill_out_private_of_cons env cons mk loc
 
 and intern_patt env scope loc patt =
   let mk so = (TyVar.fresh (), Litt so) in
@@ -271,22 +277,23 @@ and intern_patt env scope loc patt =
     match bind with
     | None -> scope, None
     | Some (tvar, so) ->
-      let so = intern_sort !env so in
+      let so = intern_sort !env loc so in
       let scope = add_tyvar scope tvar in
       let new_var = get_tyvar scope tvar in
       (scope, Some (new_var, so)) in
   let scope, patt = visit_cons scope env loc kx kt patt in
-  scope, fill_out_private_of_cons env patt mk
+  scope, fill_out_private_of_cons env patt mk loc
 
 
 and tycons_for_copatts env copatts =
   match copatts with
-  | [] -> assert false
+  | [] ->  Misc.fail_invariant_break "tried to guess a type constructor for an empty pattern"
   | (Raw_Destr destr, _) :: _ ->
     let Destrdef destrdef = def_of_destr !env.prelude destr.tag in
     match destrdef.resulting_type with
     | TCons {node = c; _} | TApp {tfun = TCons {node = c; _}; _} -> c
-    | _ -> assert false
+    | _ ->  Misc.fail_invariant_break
+              "A internalized computation type definition has no associated type constructor"
 
 and intern_destr env scope loc destr =
   let mk _ = tvar (TyVar.fresh ()) in
@@ -295,7 +302,7 @@ and intern_destr env scope loc destr =
       (fun vars typ ->  vars, Some (intern_type_annot env vars typ))
       (fun vars stk -> (vars, intern_stk env vars stk))
       destr in
-  fill_out_private_of_destr env destr mk
+  fill_out_private_of_destr env destr mk loc
 
 and intern_copatt env scope loc copatt =
   let mk so = (TyVar.fresh (), Litt so) in
@@ -313,17 +320,18 @@ and intern_copatt env scope loc copatt =
     match bind with
     | None -> scope, None
     | Some (tvar, so) ->
-      let so = intern_sort !env so in
+      let so = intern_sort !env loc so in
       let scope = add_tyvar scope tvar in
       let new_var = get_tyvar scope tvar in
       (scope, Some (new_var, so)) in
   let scope, copatt = visit_destr scope env loc kx kt ka copatt in
-  scope, fill_out_private_of_destr env copatt mk
+  scope, fill_out_private_of_destr env copatt mk loc
 
 
 type intern_result =
   | Def of prog_item
   | Exec of command_execution
+  | Goal of TyConsVar.t * int * int
 
 let intern_decl env scope def =
   let env = ref env in
@@ -337,7 +345,7 @@ let intern_decl env scope def =
         loc;
         pol = Redirect (USortVar.fresh ())} in
     let scope = {scope with vars = StringEnv.add name var scope.vars} in
-    (scope, Def def, !env)
+    (scope, (Def def, loc), !env)
 
   | Cst.Term_definition {name; typ; content; loc} ->
     let var = Var.of_string name in
@@ -347,7 +355,7 @@ let intern_decl env scope def =
         loc;
         pol = Redirect (USortVar.fresh ())} in
     let scope = {scope with vars = StringEnv.add name var scope.vars} in
-    (scope, Def def, !env)
+    (scope, (Def def, loc), !env)
 
   | Cst.Cmd_execution {name; typ; content; loc; cont} ->
     let final_type = intern_type_annot env scope typ in
@@ -362,19 +370,39 @@ let intern_decl env scope def =
         content = intern_cmd env scope content;
         loc;
         pol = Redirect (USortVar.fresh ())} in
-    (scope, Exec exec, !env)
+    (scope, (Exec exec, loc) , !env)
 
-  | _ -> assert false
+  | Cst.Goal_selection {polynomial; degree; loc} ->
+    let polynomial = StringEnv.find polynomial !env.tycons_vars in
+    let sort = TyConsVar.Env.find polynomial !env.tycons_sort in
+    let args, ret = unmk_arrow sort in
+    let nat = Types.Index Primitives.sort_nat in
+    if not (ret = nat) && List.for_all ((=) nat) args then
+      fail_not_a_polynomial ()
+    else
+      (scope, (Goal (polynomial, degree, List.length args), loc), !env)
 
-let finalize_prog (env : sort_check_env) prog =
+  | def -> Misc.fail_invariant_break ~loc:(Cst.loc_of_item def)
+             "a prelude item was found among execution items during internalization "
+
+let finalize_prog env prog =
   let init = (env.prelude, [], None, None) in
-  let go (prelude, defs, exec, goal) item =
+  let go (prelude, defs, exec, goal) (item,loc) =
     match item with
     | Def d -> (prelude, d::defs, exec, goal)
-    | Exec e -> if exec <> None then assert false else
-        (prelude, defs, Some e, goal) in
+    | Exec e -> if exec <> None then
+        fail_double_def "program entrypoint" loc
+      else
+        (prelude, defs, Some e, goal)
+    | Goal (polynomial, degree, args_number) ->
+      if goal <> None then
+        fail_double_def "goal complexity for this file" loc
+      else
+        let goal = InternAst.Goal {polynomial; degree; args_number} in
+        (prelude, defs, exec, Some goal)
+  in
   let (prelude, defs, exec, goal) = List.fold_left go init prog in
-  {prelude; declarations = defs; goal; command = exec}, env
+  {prelude; declarations = defs; goal; command = exec}
 
 
 let intern_prog env prog =

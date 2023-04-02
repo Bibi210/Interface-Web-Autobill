@@ -3,7 +3,7 @@ open Format
 
 include UnionFind
 
-exception Invariant_break of string
+exception Type_error of string * position option
 
 module Make (U : Unifier_params) = struct
 
@@ -184,8 +184,7 @@ module Make (U : Unifier_params) = struct
 
   let rec lookup_scheme stack x = match stack with
     | KEmpty ->
-      raise (Failure ("Broken invariant: Unbound var during constraint solving: v"
-                      ^ string_of_int x))
+     fail_invariant_break ("Unbound var during constraint solving: v" ^ string_of_int x)
     | KAnd (_, ctx, _) | KCases (_, ctx, _) -> lookup_scheme ctx x
     | KLoc (_, ctx) -> lookup_scheme ctx x
     | KDef (y,_,a,ctx) -> if x = y then ([], a, []) else lookup_scheme ctx x
@@ -204,8 +203,10 @@ module Make (U : Unifier_params) = struct
       | KExistsIdx exists -> go (UFOL.S.diff fvs (UFOL.S.of_list exists.accumulated)) exists.inner in
     let fvs = go fvs stack in
       if fvs <> [] then begin
-      Format.printf "variables out of bound in eqns %a@." pp_eqns eqns;
-      assert false
+      let mess = Format.(
+            fprintf str_formatter "variables out of bound in eqns %a@." pp_eqns eqns;
+            flush_str_formatter ()) in
+      Misc.fail_invariant_break mess
     end
 
   let lift_exist us ?st:(eqns=[]) stack =
@@ -234,26 +235,19 @@ module Make (U : Unifier_params) = struct
     in
     go stack
 
-  let rec fail_unification ctx u v = match ctx with
-    | KLoc (loc, _) ->
-      let message = Printf.sprintf "unification failed around position %s between %d and %d"
-          (string_of_position loc)
-          u
-          v in
-      raise (Failure message)
-    | KEmpty ->
-      let message = Printf.sprintf "unification failed between %d and %d" u v in
-      raise (Failure message)
+  let rec fail_unification info ctx u v =
+    let mess = Printf.sprintf "unification failed between %d and %d: %s" u v info in
+    match ctx with
+    | KLoc (loc, _) -> raise (Type_error (mess, Some loc))
+    | KEmpty -> raise (Type_error (mess, None))
     | KAnd (_, ctx, _) | KDef (_, _, _, ctx) | KCases (_, ctx, _)
     | KUnivIdx {inner=ctx;_} | KExistsIdx {inner=ctx;_} ->
-      fail_unification ctx u v
+      fail_unification info ctx u v
 
   let unify_or_fail ctx u v =
-    try unify u v with Unify (u',v') -> fail_unification ctx u' v'
-
-  exception Done
-
-  exception Not_sufficiently_polymorphic of int list
+    try unify u v with
+    | UnifySort (u,v) -> fail_unification "different number of arguments" ctx u v
+    | Unify (u,v) -> fail_unification "different type constructors" ctx u v
 
   type 'a elaboration = 'a -> con * (output_env -> 'a)
 
@@ -280,7 +274,11 @@ module Make (U : Unifier_params) = struct
         advance (r+1) p ctx
 
     and backtrack r p ctx = match ctx with
-      | KEmpty -> assert (r = 0); p
+      | KEmpty ->
+        if r > 0 then
+          fail_invariant_break "During typechecking, ranking is out of sync with constraint"
+        else
+          p
       | KLoc (loc ,ctx) -> backtrack r (PLoc (loc, p)) ctx
       | KAnd (dones, ctx, []) -> backtrack r (PAnd (p::dones)) ctx
       | KCases (dones, ctx, []) -> backtrack r (PCases (p::dones)) ctx
@@ -297,20 +295,21 @@ module Make (U : Unifier_params) = struct
       let r_goal = rank v in
 
       let rec go r ctx = match ctx with
-      | KEmpty -> assert false
-      | KLoc (loc, ctx) -> KLoc (loc, go r ctx)
-      | KAnd (dones, ctx, todos) -> KAnd (dones, go r ctx, todos)
-      | KCases (dones, ctx, todos) -> KCases (dones, go r ctx, todos)
-      | KForall (xs, ys, eqns, ctx) ->
-        if r <= r_goal then
-          KForall (v :: xs, ys, eqns, ctx)
-        else
-          KForall (xs, ys, eqns, go (r-1) ctx)
-      | KExists (xs, ys, eqns, ctx) ->
-        if r <= r_goal then
-          KExists (v :: xs, ys, eqns, ctx)
-        else
-          KExists (xs, ys, eqns, go (r-1) ctx) in
+        | KEmpty ->
+          Misc.fail_invariant_break "Failed to lift type variable when creating logical constriant"
+        | KLoc (loc, ctx) -> KLoc (loc, go r ctx)
+        | KAnd (dones, ctx, todos) -> KAnd (dones, go r ctx, todos)
+        | KCases (dones, ctx, todos) -> KCases (dones, go r ctx, todos)
+        | KForall (xs, ys, eqns, ctx) ->
+          if r <= r_goal then
+            KForall (v :: xs, ys, eqns, ctx)
+          else
+            KForall (xs, ys, eqns, go (r-1) ctx)
+        | KExists (xs, ys, eqns, ctx) ->
+          if r <= r_goal then
+            KExists (v :: xs, ys, eqns, ctx)
+          else
+            KExists (xs, ys, eqns, go (r-1) ctx) in
 
       go r ctx
 

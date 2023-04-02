@@ -17,7 +17,7 @@
 %token GOT_TOP GOT_ZERO
 %token BOX UNBOX LLINEAR AAFFINE EEXP
 %token UNIT FUN THUNK STAR AMPER
-%token DECL TYPE DATA COMPUT SORT
+%token DECL TYPE DATA COMPUT SORT GOAL DEGREE
 %token <string> VAR
 %token <string> TCONS
 %token <int> NUM
@@ -343,3 +343,6 @@ prog_item:
 
   | DECL VAL pol_annot name = var COLUMN typ = typ
     { Term_declaration {name;typ;loc = position $symbolstartpos $endpos} }
+
+  | GOAL polynomial = tvar DEGREE degree = NUM
+    {Goal_selection {polynomial; degree; loc = position $symbolstartpos $endpos}}

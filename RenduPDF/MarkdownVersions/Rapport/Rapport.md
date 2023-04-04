@@ -120,6 +120,7 @@ Pour permettre cette double compatible **Call-By-Push-Value** effectue une profo
 La différenciation entre ses deux types de stratégies s'effectue lors de la traduction depuis le language d'origine.
 
 ## Description Rapide
+**MiniML** dans ce projet dispose d'une implémmentation écrite en **OCaml**.\
 **MiniML** possède deux types de base (Integer et Boolean).\
 Il est possible de créé de nouveaux types à partir de ceux-ci.\
 La syntaxe de MiniML est très proche de celle d'OCaml et parfaitement compatible avec un parseur OCaml

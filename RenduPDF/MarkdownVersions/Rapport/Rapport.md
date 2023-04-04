@@ -21,16 +21,15 @@ date: 23 mars, 2023
 ## Qu-est-ce qu'est Autobill ?
   **Autobill** est un projet universitaire soutenu par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans la cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
   L'analyse statique se réfère au domaine en informatique visant à déterminer des métriques et des comportements à l'exécution d'un programme sans l'exécuter réellement. Les programmes étant écrit dans des langages structurés par une syntaxe précise, en découle alors des sémantiques répondant à différentes problématiques, comme l'évaluation, le typage ou dans le cas de notre projet, l'occcupation de ressources par un programme.
+  
   On peut définir les ressources comme la quantité de mémoire ou de temps nécessaire à évaluer un programme. Autobill se base sur les travaux de Jan Hoffmann (voir Bibliographie) et l'idée que l'on peut déduire la consommation en ressources depuis des formules arithmétiques. Elles sont issues de l'analyse amortie par méthode de potentiel du coût moyen en ressources, que Autobill réalise à chacune des entrées en les traduisant vers un code machine propriétaire décrivant les contraites logiques du programme.
+
+  Le code machine d'Autobill est généré depuis un code en langage **Call-By-Push-Value**. Il utilise paradigme déjà éprouvé, décrit dans les papiers de Paul Blain Lévy (voir Bibliographie), qui utilise une stratégie d'évaluation faisant, entre autres, la distinction entre les expressions de valeurs et les expressions de calculs. On peut ainsi décrire les applications de calculs comme une pile de valeurs / opérandes sur lesquels vont être appliqué le calcul et Autobill utilise ce trait lors de l'analyse de ressource.
   
 ## Comment on s'inscrit dans ce projet ?
-  Le sujet de notre Projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des tiers. 
+  Le sujet de notre Projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des tiers à travers un environnement de développement sur navigateur. 
 
-  Notre approche vise donc à faciliter l'utilisation d'**Autobill** avec une interface Web qui prendrait la forme d'un "mini" environnement de développement, avec un éditeur de code et une sortie standard sur le côté. Aussi, pour le rendre le plus accesibble, en entrée, un langage avec un syntaxe similaire à OcamL sera disponible en entrée et pourra être utilisé pour écrire les programmes à tester. 
-
-  Néanmoins, le langage accepté d'**Autobill** étant **Call-By-Push-Value**, il est nécessaire de pouvoir traduire le langage camélien pour permettre l'évaluation des contraintes et de l'allocation mémoire du programme. Ainsi, un travail sur la compilation d'un langage à un autre va avoir lieu, passant par les étapes de construction d'AST camélien et par la traduction de ce dernier en un AST compréhensible par **Autobill**.
-
-  La charge de travail pour notre trinôme va donc se diviser autour de trois axes principaux : le traitement des entrées en **MiniML** pour les convertir en **Call-By-Push-Value** et le développement du client et du serveur Web.
+  Pour le rendre le plus accesibble, en entrée, un langage avec un syntaxe similaire à OcamL sera disponible en entrée et pourra être utilisé pour écrire les programmes à tester. Néanmoins, **Autobill** n'acceptant que des entrées en **Call-By-Push-Value**, il est nécessaire de pouvoir traduire le code camélien, qui plus vers une stratégie d'evaluation différente (*Call-By-Sharing et Call-Py-Push-Value*). Ainsi, un travail sur la compilation est nécessaire, en passant par les étapes de construction d'AST camélien et la traduction de ce dernier en un AST compréhensible par **Autobill**.
   
 # MiniML
 
@@ -70,7 +69,8 @@ Une fois ses contraintes établies nous avons decidé d'utiliser ocaml avec comm
 ![](./MarkdownVersions/Rapport/MiniML.png)
 
 # Architecture 
-  Dans l'optique de ne pas se restreindre dans un choix de conception, le groupe s'est orienté vers deux structures de projet différentes et indépendantes : l'une fonctionnant avec un client unique, la seconde avec un serveur dédié et un client qui expose ce serveur. L'avantage réside dans le fait que, lors du développement, si un nouvel outil est améné à être utilisé mais ne dispose de compatibilité sur navigateur Web, alors le serveur peut répondre à ce problème. C'est aussi un sujet de comparaison intéressant à présenter, que ce soit au niveau des performances que du déploiement de ces solutions.
+
+  Dans l'optique de ne pas se restreindre dans un choix de conception, le groupe s'est orienté vers deux structures de projet différentes et indépendantes : l'une fonctionnant avec un client unique, la seconde avec un serveur dédié et un client qui expose ce serveur. L'avantage réside dans le fait que, lors du développement, si un nouvel outil est améné à être utilisé mais ne dispose de compatibilité sur navigateur Web, alors le serveur peut répondre à ce problème. C'est aussi un sujet de comparaison intéressant à présenter par la suite, que ce soit au niveau des performances que du déploiement de ces solutions.
 
 ## Client uniquement
 

@@ -1,7 +1,0 @@
-# dune build
-# OCAMLPARAM: unset
-# Workspace root:
-# /home/yukhoi/projet_pstl/Interface-Web-Autobill-master/MiniML/Binding
-$ /usr/bin/nproc > /tmp/dune630edf.output 2> /dev/null
-# Auto-detected concurrency: 2
-# disable binary cache

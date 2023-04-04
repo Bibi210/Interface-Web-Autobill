@@ -19,7 +19,6 @@ let trans_boolean = function
 
 let trans_var x = x.basic_ident, x.vloc
 let trans_var_ls = List.map trans_var
-let unPre pre pos = pre, pos
 
 let trans_litl = function
   | Integer i -> Expr_Int i
@@ -59,8 +58,7 @@ and make_binary_closure args op eloc =
   closure
 
 and trans_expr e =
-  unPre
-    (match e.enode with
+  ( (match e.enode with
     | Litteral l -> trans_litl l
     | Variable v -> Expr_Var (trans_var v)
     | Tuple tpl -> Expr_Constructor (Tuple, trans_expr_ls tpl)
@@ -84,7 +82,7 @@ and trans_expr e =
       Expr_Block
         (Blk
            ( List.map
-               (fun e -> unPre (Ins_Let (generate_variable e.eloc, trans_expr e)) e.eloc)
+               (fun e -> Ins_Let (generate_variable e.eloc, trans_expr e), e.eloc)
                rem
            , trans_expr last
            , last.eloc ))
@@ -92,46 +90,42 @@ and trans_expr e =
       let openvar = generate_variable e.eloc in
       let returnvar = generate_variable e.eloc in
       let call =
-        unPre
-          (Expr_Method ((Expr_Var openvar, e.eloc), (Call, e.eloc), [ trans_expr arg ]))
-          e.eloc
+        ( Expr_Method ((Expr_Var openvar, e.eloc), (Call, e.eloc), [ trans_expr arg ])
+        , e.eloc )
       in
       Expr_Block
         (Blk
-           ( [ unPre (Ins_Open (openvar, Exp, trans_expr func)) func.eloc
-             ; unPre (Ins_Force (returnvar, call)) func.eloc
+           ( [ Ins_Open (openvar, Exp, trans_expr func), func.eloc
+             ; Ins_Force (returnvar, call), func.eloc
              ]
-           , unPre (Expr_Var returnvar) e.eloc
+           , (Expr_Var returnvar, e.eloc)
            , e.eloc ))
     | Lambda { arg; body } ->
       Expr_Closure
         ( Exp
-        , unPre
-            (Expr_Get
-               [ GetPatTag
-                   ( unPre Call e.eloc
-                   , [ trans_var arg ]
-                   , unPre (Expr_Thunk (trans_expr body)) body.eloc
-                   , body.eloc )
-               ])
-            e.eloc )
+        , ( Expr_Get
+              [ GetPatTag
+                  ( (Call, e.eloc)
+                  , [ trans_var arg ]
+                  , (Expr_Thunk (trans_expr body), body.eloc)
+                  , body.eloc )
+              ]
+          , e.eloc ) )
     | FunctionRec { var; arg; body } ->
       Expr_Closure
         ( Exp
-        , unPre
-            (Expr_Rec
-               ( trans_var var
-               , unPre
-                   (Expr_Get
-                      [ GetPatTag
-                          ( unPre Call e.eloc
-                          , [ trans_var arg ]
-                          , unPre (Expr_Thunk (trans_expr body)) body.eloc
-                          , body.eloc )
-                      ])
-                   e.eloc ))
-            e.eloc ))
-    e.eloc
+        , ( Expr_Rec
+              ( trans_var var
+              , ( Expr_Get
+                    [ GetPatTag
+                        ( (Call, e.eloc)
+                        , [ trans_var arg ]
+                        , (Expr_Thunk (trans_expr body), body.eloc)
+                        , body.eloc )
+                    ]
+                , e.eloc ) )
+          , e.eloc ) ))
+  , e.eloc )
 
 and trans_match_case case =
   let conseq = trans_expr case.consequence in

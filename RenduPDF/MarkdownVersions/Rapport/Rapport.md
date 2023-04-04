@@ -19,40 +19,39 @@ date: 23 mars, 2023
 # Contexte du projet
 
 ## Qu-est-ce qu'est Autobill ?
-  **Autobill** est un projet universitaire soutenu par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans la cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. Sur la base d'un langage de programmation fonctionnel-impératif nommé **Call-By-Push-Value**, **Autobill** permet de déduire des équations sur les contraintes mémoires du programme qu'on lui passe en entrée. Les équations prennent la forme de formules logiques que l'on peut résoudre grâce à des solveurs externes et en tirer les bornes minimums et variables permettant de satisfaire les contraintes.
+  **Autobill** est un projet universitaire soutenu par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans la cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
+  L'analyse statique se réfère au domaine en informatique visant à déterminer des métriques et des comportements à l'exécution d'un programme sans l'exécuter réellement. Les programmes étant écrit dans des langages structurés par une syntaxe précise, en découle alors des sémantiques répondant à différentes problématiques, comme l'évaluation, le typage ou dans le cas de notre projet, l'occcupation de ressources par un programme.
+  On peut définir les ressources comme la quantité de mémoire ou de temps nécessaire à évaluer un programme. Autobill se base sur les travaux de Jan Hoffmann (voir Bibliographie) et l'idée que l'on peut déduire la consommation en ressources grâce à des formules arithmétiques issues de l'analyse amortie par méthode de potentiel du coût moyen d'un programme.
   
 ## Comment on s'inscrit dans ce projet ?
-  Le sujet de notre Projet STL va donc être de soutenir l'effort de développement
-  en proposant une interface sur le Web permettant la libre manipulation de l'outil. En effet, il n'est pour l'heure uniquement utilisable via l'invite de commandes, en ayant au préalabe cloner le repertoire GitLab où il est hébergé, et suivi les étapes d'installation, nécessitant des utilitaires de paquetes comme opam et dune.
+  Le sujet de notre Projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des tiers. 
 
-  Notre approche vise donc à faciliter l'utilisation d'**Autobill** avec une interface Web qui prendrait la forme d'un "mini" environnement de développement, avec un 
-  éditeur de code et une sortie standard sur le côté. Aussi, pour le rendre le plus accesibble, en entrée, un langage avec un syntaxe similaire à OcamL sera disponible en entrée et pourra être utilisé pour écrire les programmes à tester. Plusieurs modes d'évaluation seront disponibles, comme la possibilité d'interpréter ou d'afficher l'occupation mémoire minimum du programme en entrée.
+  Notre approche vise donc à faciliter l'utilisation d'**Autobill** avec une interface Web qui prendrait la forme d'un "mini" environnement de développement, avec un éditeur de code et une sortie standard sur le côté. Aussi, pour le rendre le plus accesibble, en entrée, un langage avec un syntaxe similaire à OcamL sera disponible en entrée et pourra être utilisé pour écrire les programmes à tester. 
 
   Néanmoins, le langage accepté d'**Autobill** étant **Call-By-Push-Value**, il est nécessaire de pouvoir traduire le langage camélien pour permettre l'évaluation des contraintes et de l'allocation mémoire du programme. Ainsi, un travail sur la compilation d'un langage à un autre va avoir lieu, passant par les étapes de construction d'AST camélien et par la traduction de ce dernier en un AST compréhensible par **Autobill**.
 
-  La charge de travail pour notre trinôme va donc se diviser autour de trois axes principaux : le traitement des entrées en **MiniML** pour les convertir en **Call-By-Push-Value** et le développement du client et du serveur Web. Pour ces deux derniers, un effort sera mis à comparer notamment les choix de conception orientés soit vers une architecture tout-client et une architecture client-serveur, les avantages et inconvénients de chacun.
+  La charge de travail pour notre trinôme va donc se diviser autour de trois axes principaux : le traitement des entrées en **MiniML** pour les convertir en **Call-By-Push-Value** et le développement du client et du serveur Web.
   
-# Avancement
-## MiniML
+# MiniML
 
 Avant de pouvoir entrer dans le détail au sujet de MiniML une courte introduction au principe de **Call-By-Push-Value** est requise
 
-### Call-By-Push-Value
+## Call-By-Push-Value
 Le paradigme de traitement de language **Call-By-Push-Value** est utilisé par autobill avec un objectif principal permettre avec une seule semantique de traiter deux types de strategies d'evaluation differentes **Call By Value** utilisée par **Ocaml** par exemple et **Call By Name** ou utilisée par **Haskell** la differenciation entre ses deux types de strategies
 s'effecue lors de la traduction depuis le language d'origine.
 
 Pour ce faire **Call-By-Push-Value** effectue une profonde distinction entre les calcules et les valeurs
 
-### Objectifs du language
+## Objectifs du language
 Pour utiliser ce paradigme **MiniML** a été mis en place dans le cadre de ce PSTL comme modeste subset d'ocaml dont l'objectif est double, faciliter l'utilisation d'**autobill** en offrant une abstraction simple et accessible de **Call-By-Push-Value**, et permettre de simplifier les comparaisons avec d'autres analyseurs. 
 En effet les programmes MiniML etant valides pour tout autre analyseur recevant ocaml en entrée.
 
-### Description Rapide
+## Description Rapide
 **MiniML** posséde deux types de base (Int et Boolean).\
 Il est possible de crée de nouveaux types a partir de ceux-ci.\
 MiniML pour l'instant est purement fonctionnelle et donc sans noyau impératif.
 
-### Contenu Actuel
+## Contenu Actuel
 
 - Listes
 - Files
@@ -61,17 +60,19 @@ MiniML pour l'instant est purement fonctionnelle et donc sans noyau impératif.
 - Types Constructeurs
 - Variable Globales/Locales
   
-### Processus de Conception
+## Processus de Conception
 Lors de la conception de MiniML les contraintes était multiples.\ 
 La plus forte d'entre elles etait la necessité d'être soumis à un minimum de dependance possible afin de permettre la réutilisation de l'effort de developpement dans les deux architectures decrites et mise en place lors du PSTL et la seconde se trouvait au niveau de la traduction de MiniML vers **Call-By-Push-Value** le principe de stratégie d'évaluation étant tout nouveau pour nous.
 
 Une fois ses contraintes établies nous avons decidé d'utiliser ocaml avec comme unique dependance **menhir**, ce choix nous a permis d'effectuer la traduction d'AST *MiniML* vers AST *Call-By-Push-Value* guidée pas à pas par nos tuteurs car le language d'implementation est identique entre MiniML et Autobill
 
-### Diagramme
+## Diagramme
 ![](./MarkdownVersions/Rapport/MiniML.png)
 
-  
-## Architecture Full Client
+# Architecture 
+  Dans l'optique de ne pas se restreindre dans un choix de conception, le groupe s'est orienté vers deux structures de projet différentes et indépendantes : l'une fonctionnant avec un client unique, la seconde avec un serveur dédié et un client qui expose ce serveur. L'avantage réside dans le fait que, lors du développement, si un nouvel outil est améné à être utilisé mais ne dispose de compatibilité sur navigateur Web, alors le serveur peut répondre à ce problème. C'est aussi un sujet de comparaison intéressant à présenter, que ce soit au niveau des performances que du déploiement de ces solutions.
+
+## Client uniquement
 
 ### Design du client
 
@@ -103,7 +104,7 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 
 \newpage
 
-## Architecture Serveur + Client
+## Serveur + Client
 
 ### Schema de Communication
 

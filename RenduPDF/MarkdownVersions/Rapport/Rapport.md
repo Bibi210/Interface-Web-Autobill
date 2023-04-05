@@ -18,23 +18,28 @@ date: 23 mars, 2023
 
 # Contexte du projet
 
-## Qu-est-ce qu'est Autobill ?
-  **Autobill** est un projet universitaire soutenu par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans la cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
-  L'analyse statique se réfère au domaine en informatique visant à déterminer des métriques et des comportements à l'exécution d'un programme sans l'exécuter réellement. Les programmes étant écrit dans des langages structurés par une syntaxe précise, en découle alors des sémantiques répondant à différentes problématiques, comme l'évaluation, le typage ou dans le cas de notre projet, l'occupation de ressources par un programme.
-  
-  On peut définir les ressources comme la quantité de mémoire ou de temps nécessaire à évaluer un programme. Autobill se base sur les travaux de Jan Hoffmann (voir Bibliographie) et l'idée que l'on peut déduire la consommation en ressources depuis des formules arithmétiques. Elles sont issues de l'analyse amortie par méthode de potentiel du coût moyen en ressources, qu'Autobill réalise à chacune des entrées en les traduisant vers un code machine propriétaire décrivant les contraintes logiques du programme.
+## Qu-est-ce que Autobill ?
+  **Autobill** est un projet universitaire soutenu par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
 
-  Le code machine d'Autobill est généré depuis un code en langage **Call-By-Push-Value**. Il utilise paradigme déjà éprouvé, décrit dans les papiers de Paul Blain Lévy (voir Bibliographie), qui utilise une stratégie d'évaluation faisant, entre autres, la distinction entre les expressions de valeurs et les expressions de calculs. On peut ainsi décrire les applications de calculs comme une pile de valeurs / opérandes sur lesquels vont être appliqué le calcul et Autobill utilise ce trait lors de l'analyse de ressource.
+  L'analyse statique se réfère au domaine en informatique visant à déterminer des métriques et des comportements d'un programme. Pour un langage et une syntaxe donnée, on peut fixer des sémantiques d'évaluation, du typage ou dans le cas de notre problématique, la définition de l'occupation en ressources par un programme.
+
+  Ce sujet de recherche a déjà été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Hoffmann Jan et Stephen Jost sur l'analyse de consommation de ressources automatisé (AARA) [1]. Des solutions se basant sur ces théories existent, comme RAML, Resource Aware ML, un langage ML permettant ce type d'analyse.
+
+  La proposition d'Hector avec Autobill se différencie par un niveau d'analyse plus fin. D'abord, Autobill prend en entrée des programmes écrits soit en code machine propre à Autobill, soit en **Call-By-Push-Value**. 
   
-## Comment on s'inscrit dans ce projet ?
+  C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans les papiers de Paul Blain Lévy [2], qui utilise des stratégies d'évaluations spécifiques pour les valeurs et les fonctions. En CBPV, les opérations sont stockées dans une pile contenant les fonctions et les arguments auxquels elles sont attachés. Ainsi, on peut suivre de manière explicite et précise les quantités de mémoire allouées et libérées pour chaque valeur ou fonction qui est manipulée dans la pile.
+
+  <!-- Paragraphe sur le code interne d'Autobill et le résolution de contrainte -->
+## Objectifs du projet
+
   Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des tiers à travers un environnement de développement sur navigateur. 
 
   Pour le rendre le plus accessible, en entrée, un langage avec une syntaxe similaire à OCaml sera disponible en entrée et pourra être utilisé pour écrire les programmes à tester. Néanmoins, **Autobill** n'acceptant programmes en **Call-By-Push-Value**, il est nécessaire de traduire le code camélien, qui plus vers une stratégie d'évaluation différente (*Call-By-Sharing et Call-Py-Push-Value*). Ainsi, un travail sur la compilation est nécessaire, en passant par les étapes de construction d'AST camélien et la traduction de ce dernier en un AST compréhensible par **Autobill**.
 
 ## Processus de Conception
   Lors de la conception de l'interface les contraintes étaient multiples.\
-  La première était le language d'implementation en effet **Autobill** étant développé en **OCaml** il nous était obligatoire de trouver un moyen pour communiquer avec l'application.\
-  La seconde était qu'il fallait développer cette interface en simultané avec **Autobill** et d'ajuster notre travail en fonction des besoins courants de nos encadrant.\
+  La première était le langage d'implémentation en effet **Autobill** étant développé en **OCaml** il nous était obligatoire de trouver un moyen pour communiquer avec l'application.\
+  La seconde était qu'il fallait développer cette interface en simultané avec **Autobill** et d'ajuster notre travail en fonction des besoins courants de nos encadrants.\
   Mais la plus importante d'entre elles était le souhait de nos encadrants que l'application soit principalement côté client afin de simplifier son déploiement.\ 
 
   Une fois ses contraintes établies nous avons du tout au long de ce projet effectuer des choix que ce soit en matière de design ou de technologies.
@@ -42,7 +47,8 @@ date: 23 mars, 2023
   Nous tenons donc à travers ce rapport à mettre en lumière ces décisions tout en décrivant le travail qu'elles ont engendré.
 
 \newpage
-# Architecture 
+# Interface Web 
+
 
   Dans l'optique de ne pas se restreindre dans un choix de conception, le groupe s'est orienté vers deux structures de projets différentes et indépendantes : l'une fonctionnant avec un client unique, la seconde avec un serveur dédié et un client qui expose ce serveur. L'avantage réside dans le fait que, lors du développement, si un nouvel outil est amené à être utilisé mais ne dispose de compatibilité sur navigateur Web, alors le serveur peut répondre à ce problème. C'est aussi un sujet de comparaison intéressant à présenter par la suite, que ce soit au niveau des performances que du déploiement de ces solutions.
 
@@ -55,7 +61,8 @@ date: 23 mars, 2023
 ### Outils et Technologies utilisées
 
 - **HTML / CSS / Javascript** : 
-Il s'agit de la suite de langages principaux permettant de bâtir l'interface Web souhaitée. On a ainsi la main sur la structure de la page à l'aide des balises HTML, du style souhaité pour l'éditeur de code avec le CSS et on vient apporter l'interactivité et les fonctionnalités en les programmant avec Javascript, complété par la librarie React.
+Il s'agit de la suite de langages principaux permettant de bâtir l'interface Web souhaitée. On a ainsi la main sur la structure de la page à l'aide des balises HTML, du style souhaité pour l'éditeur de code avec le CSS et on vient apporter l'interactivité et les fonctionnalités en les programmant avec Javascript, complété par la librairie React.
+
 
 - **React.js** : React s'ajoute par-dessus la stack technique décrite plus haut pour proposer une expérience de programmation orientée composante sur le Web. C'est une librairie Javascript permettant de construire des applications web complexes tournant autour de composants / éléments possédant un état que l'on peut imbriquer entre eux pour former notre interface utilisateur et leur programmer des comportements et des fonctionnalités précises, sans se soucier de la manipulation du DOM de la page Web.
 
@@ -80,7 +87,9 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 
 ## Serveur + Client
 
-### Schema de Communication
+
+### Schéma de Communication
+
 
 ![](./MarkdownVersions/Rapport/communication.png)
 
@@ -112,25 +121,29 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 
 ## Pourquoi MiniML ?
 
-MiniML emerge de la volonté de créer un language fonctionnel simple, accessible et sans effets de bord pour les utilisateurs d'autobill car celui-ci requiert une connaissance approfondie de la théorie autour des différentes sémantiques d'évaluation a travers le paradigme **Call-By-Push-Value**.
+
+MiniML émerge de la volonté de créer un langage fonctionnel simple, accessible et sans effets de bord pour les utilisateurs d'autobill car celui-ci requiert une connaissance approfondie de la théorie autour des différentes sémantiques d'évaluation a travers le paradigme **Call-By-Push-Value**.
+
 
 ### Call-By-Push-Value
-Le paradigme de traitement de language **Call-By-Push-Value** utilisé par autobill permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'evaluation *Lazy*.\
-Pour permettre cette double compatible **Call-By-Push-Value** effectue une profonde distinction entre les calculs et les valeurs.\
-La différenciation entre ses deux types de stratégies s'effectue lors de la traduction depuis le language d'origine.
+Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par autobill permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.\
+Pour permettre cette double compatibilité, **Call-By-Push-Value** effectue une profonde distinction entre les calculs et les valeurs.\
+La différenciation entre ses deux types de stratégies s'effectue lors de la traduction depuis le langage d'origine.
+
 
 ## Description Rapide
-**MiniML** dans ce projet dispose d'une implémmentation écrite en **OCaml**.\
+**MiniML** dans ce projet dispose d'une implémentation écrite en **OCaml**.\
 **MiniML** possède deux types de base (Integer et Boolean).\
-Il est possible de créé de nouveaux types à partir de ceux-ci.\
-La syntaxe de MiniML est très proche de celle d'OCaml et parfaitement compatible avec un parseur OCaml
+Il est possible de créer de nouveaux types à partir de ceux-ci.\
+La syntaxe de MiniML est très proche de celle d'OCaml et parfaitement compatible avec un parser OCaml
+
 
 ## Contenu Actuel
 
 - Listes
 - Files
 - Fonction Recusives
-- Operateurs de Bases
+- Opérateurs de Bases
 - Construction de Types
 - Variables Globales/Locales
   
@@ -144,11 +157,12 @@ La syntaxe de MiniML est très proche de celle d'OCaml et parfaitement compatibl
 ## MiniML
   - Ajout de sucre syntaxique.
   - Ajout d'une librairie standard.
-  - Specification complete du language.
-  - Bibliothéque de tests sous la forme de structure de donéees complexes
+  - Spécification complète du langage.
+  - Bibliothèque de tests sous la forme de structure de données complexes
+
 
 ## Serveur
-  - Affichage des erruers
+  - Affichage des erreurs
   - Réalisation des autres services pour MiniML
   - Réalisation de génération de solution depuis le code Autobill
   
@@ -167,11 +181,14 @@ La syntaxe de MiniML est très proche de celle d'OCaml et parfaitement compatibl
 
 # Bibliographie 
 
+- [1] Hoffmann, Jan, and Steffen Jost. “Two Decades of Automatic Amortized Resource Analysis.” Mathematical structures in computer science 32.6 (2022): 729–759
+
+- [2] Levy, Paul Blain. “Call-by-Push-Value: A Subsuming Paradigm.” Lecture Notes in Computer Science. Berlin, Heidelberg: Springer Berlin Heidelberg, 1999. 228–243
+  
 - Will Kurt. 2018. Get Programming with Haskell. Simon and Schuster. Chapitre 5,7
 
 - Pierce, Benjamin C. Types and Programming Languages. MIT Press, 2002
 
-- Levy, Paul Blain. “Call-by-Push-Value: A Subsuming Paradigm.” Lecture Notes in Computer Science. Berlin, Heidelberg: Springer Berlin Heidelberg, 1999. 228–243
 
 - Winskel, Glynn. The Formal Semantics of Programming Languages : an Introduction. Cambridge (Mass.) London: MIT Press, 1993
 
@@ -180,8 +197,6 @@ La syntaxe de MiniML est très proche de celle d'OCaml et parfaitement compatibl
 - Minsky, Anil Madhavapeddy, and Jason Hickey. 2013. Real World OCaml. O’Reilly Media.
 
 - Martin Avanzini and Ugo Dal Lago. 2017. Automating sized-type inference for complexity analysis. Proceedings of the ACM on Programming Languages 1, 1-29
-
-- Hoffmann, Jan, and Steffen Jost. “Two Decades of Automatic Amortized Resource Analysis.” Mathematical structures in computer science 32.6 (2022): 729–759
 
 - Dominic Orchard, Vilem-Benjamin Liepelt, and Harley Eades III. 2019. Quantitative program reasoning with graded modaltypes.Proceedings of the ACM on Programming Languages3, ICFP (2019)
 

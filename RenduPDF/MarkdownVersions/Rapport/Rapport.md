@@ -18,24 +18,36 @@ date: 23 mars, 2023
 
 # Contexte du projet
 
-## Qu-est-ce que Autobill ?
+## Qu'est-ce que Autobill ?
   **Autobill** est un projet universitaire soutenu par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
 
-  L'analyse statique se réfère au domaine en informatique visant à déterminer des métriques et des comportements d'un programme. Pour un langage et une syntaxe donnée, on peut fixer des sémantiques d'évaluation, du typage ou dans le cas de notre problématique, la définition de l'occupation en ressources par un programme.
+  L'analyse statique se réfère au domaine en informatique visant à déterminer des métriques, des comportements ou des erreurs dans un code source. Pour un langage et une syntaxe donnée, on peut fixer des sémantiques d'évaluation, du typage ou, dans le cas de notre problématique, autour de la définition de l'occupation en ressources d'un programme.
 
-  Ce sujet de recherche a déjà été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Hoffmann Jan et Stephen Jost sur l'analyse de consommation de ressources automatisé (AARA) [1]. Des solutions se basant sur ces théories existent, comme RAML, Resource Aware ML, un langage ML permettant ce type d'analyse.
+  Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Hoffmann Jan et Stephen Jost sur l'analyse de consommation de ressources automatisé (AARA) [1]. Des solutions se basant sur ces théories existent, comme RAML [2], Resource Aware ML, un langage ML permettant ce type d'analyse.
 
-  La proposition d'Hector avec Autobill se différencie par un niveau d'analyse plus fin. D'abord, Autobill prend en entrée des programmes écrits soit en code machine propre à Autobill, soit en **Call-By-Push-Value**. 
+  La proposition d'Hector avec Autobill se différencie par un niveau d'analyse plus fin. D'abord, Autobill est codé en Ocaml et prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en **Call-By-Push-Value**. 
   
-  C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans les papiers de Paul Blain Lévy [2], qui utilise des stratégies d'évaluations spécifiques pour les valeurs et les fonctions. En CBPV, les opérations sont stockées dans une pile contenant les fonctions et les arguments auxquels elles sont attachés. Ainsi, on peut suivre de manière explicite et précise les quantités de mémoire allouées et libérées pour chaque valeur ou fonction qui est manipulée dans la pile.
+  C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans les papiers de Paul Blain Lévy [3]. CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite et précise les quantités de mémoire pour chaque valeur allouée / libérée ou fonction appelée / terminée. 
+  
+  Aussi, le langage permet d'exprimer des stratégies d'évaluation dans le code source : on retarde les évaluations jusqu'à ce que les expressions ou les résultats de calculs soient effectivement utilisées et on optimise ainsi la consommation de ressource du programme.
 
-  <!-- Paragraphe sur le code interne d'Autobill et le résolution de contrainte -->
+  À partir d'une entrée en CBPV, Autobill l'internalise et traduit le programme en un code machine, exprimant explicitement les contraintes matérielles qui s'appliquent sur l'entrée. Enfin, il retourne en sortie ces contraintes formalisées pour satisfaire le format d'entrée de différents solveurs et assistants de preuve, comme MiniZinc ou Coq, afin de prouver des propriétés de complexité temporelle et spatiale.
+
 ## Objectifs du projet
 
+  Notre démarche se rapproche de celle faite pour RAML [2] dans leur site officiel.
+
   Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des tiers à travers un environnement de développement sur navigateur. 
+  
+  On souhaite aussi faciliter l'utilisation de l'outil avec un langage fonctionnel pur en entrée plus accessible, un **MiniML**. Enfin, on se place aussi sur la sortie d'Autobill en traitant les expressions de contraintes qu'il génère avec des solveurs externes, afin d'en tirer des preuves de complexité et les afficher directement sur le client Web.
 
-  Pour le rendre le plus accessible, en entrée, un langage avec une syntaxe similaire à OCaml sera disponible en entrée et pourra être utilisé pour écrire les programmes à tester. Néanmoins, **Autobill** n'acceptant programmes en **Call-By-Push-Value**, il est nécessaire de traduire le code camélien, qui plus vers une stratégie d'évaluation différente (*Call-By-Sharing et Call-Py-Push-Value*). Ainsi, un travail sur la compilation est nécessaire, en passant par les étapes de construction d'AST camélien et la traduction de ce dernier en un AST compréhensible par **Autobill**.
-
+  Notre charge de travail doit se diviser en plusieurs tâches principales : 
+  - L'implémentation du langage MiniML et sa traduction vers LCBPV
+  - La mise en place d'un client et d'un serveur Web 
+  - La mise en relation entre l'interface Web et la machine Autobill
+  - Le traitement des contraintes d'Autobill par un solveur  
+  - Les tests de performances et comparaisons avec les solutions exitantes
+  
 ## Processus de Conception
   Lors de la conception de l'interface les contraintes étaient multiples.\
   La première était le langage d'implémentation en effet **Autobill** étant développé en **OCaml** il nous était obligatoire de trouver un moyen pour communiquer avec l'application.\

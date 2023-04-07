@@ -36,6 +36,8 @@ date: 23 mars, 2023
 
   À partir d'une entrée en CBPV, Autobill l'internalise et traduit le programme en un code machine, exprimant explicitement les contraintes matérielles qui s'appliquent sur l'entrée. Enfin, il retourne en sortie ces contraintes formalisées pour satisfaire le format d'entrée de différents solveurs et assistants de preuve, comme MiniZinc ou Coq, afin de prouver des propriétés de complexité temporelle et spatiale.
 
+  ![](./MarkdownVersions/Rapport/Schema_Autobill.png)
+
 ## Objectifs du projet
 
   Notre démarche se rapproche de celle faite pour RAML [2] dans leur site officiel.
@@ -45,27 +47,29 @@ date: 23 mars, 2023
   On souhaite aussi faciliter l'utilisation de l'outil avec un langage fonctionnel pur en entrée plus accessible, un **MiniML**. Enfin, on se place aussi sur la sortie d'Autobill en traitant les expressions de contraintes qu'il génère avec des solveurs externes, afin d'en tirer des preuves de complexité et les afficher directement sur le client Web.
 
   Notre charge de travail doit se diviser en plusieurs tâches principales : 
-  - L'implémentation du langage MiniML et sa traduction vers LCBPV
-  - La mise en place d'un client et d'un serveur Web 
-  - La mise en relation entre l'interface Web et la machine Autobill
-  - Le traitement des contraintes d'Autobill par un solveur  
-  - Les tests de performances et comparaisons avec les solutions exitantes
+
+- L'implémentation du langage MiniML et sa traduction vers LCBPV
+- La mise en place d'un client et d'un serveur Web 
+- La mise en relation entre l'interface Web et la machine Autobill
+- Le traitement des contraintes d'Autobill par un solveur externe
+- Les tests de performances et comparaisons avec les solutions existantes
+
+![](./MarkdownVersions/Rapport/Diagramme Haut Niveau PSTL.png)
   
 ## Processus de Conception
-  Lors de la conception de l'interface les contraintes étaient multiples.\
-  La première était le langage d'implémentation en effet **Autobill** étant développé en **OCaml** il nous était obligatoire de trouver un moyen pour communiquer avec l'application.\
+  Lors de la conception de l'interface, les contraintes étaient multiples.\
+  La première était le langage d'implémentation en effet **Autobill** étant développé en **OCaml**, il était nécessaire de trouver un moyen pour communiquer avec l'application.\
   La seconde était qu'il fallait développer cette interface en simultané avec **Autobill** et d'ajuster notre travail en fonction des besoins courants de nos encadrants.\
   Mais la plus importante d'entre elles était le souhait de nos encadrants que l'application soit principalement côté client afin de simplifier son déploiement.\ 
 
-  Une fois ses contraintes établies nous avons du tout au long de ce projet effectuer des choix que ce soit en matière de design ou de technologies.
+  Une fois ses contraintes établies, nous avons du tout au long de ce projet effectuer des choix que ce soit en matière de design ou de technologies.
 
   Nous tenons donc à travers ce rapport à mettre en lumière ces décisions tout en décrivant le travail qu'elles ont engendré.
 
 \newpage
 # Interface Web 
 
-
-  Dans l'optique de ne pas se restreindre dans un choix de conception, le groupe s'est orienté vers deux structures de projets différentes et indépendantes : l'une fonctionnant avec un client unique, la seconde avec un serveur dédié et un client qui expose ce serveur. L'avantage réside dans le fait que, lors du développement, si un nouvel outil est amené à être utilisé mais ne dispose de compatibilité sur navigateur Web, alors le serveur peut répondre à ce problème. C'est aussi un sujet de comparaison intéressant à présenter par la suite, que ce soit au niveau des performances que du déploiement de ces solutions.
+  Dans l'optique de ne pas se restreindre dans l'utilisation d'outils notamment au niveau du résolveur de contraintes, le groupe s'est orienté vers deux structures de projets différentes et indépendantes : l'une fonctionnant avec un client unique, la seconde avec un serveur dédié et un client qui expose ce serveur. L'avantage réside dans le fait que, lors du développement, si un nouvel outil est amené à être utilisé mais ne dispose de compatibilité sur navigateur Web, alors le serveur peut répondre à ce problème. C'est aussi un sujet de comparaison intéressant à présenter par la suite, que ce soit au niveau des performances que du déploiement de ces solutions.
 
 ## Client uniquement
 
@@ -73,15 +77,17 @@ date: 23 mars, 2023
 
 ![](./MarkdownVersions/Rapport/screen.png)
 
-### Outils et Technologies utilisées
+\newpage
+
+### Outils et Technologies utilisés
 
 - **HTML / CSS / Javascript** : 
 Il s'agit de la suite de langages principaux permettant de bâtir l'interface Web souhaitée. On a ainsi la main sur la structure de la page à l'aide des balises HTML, du style souhaité pour l'éditeur de code avec le CSS et on vient apporter l'interactivité et les fonctionnalités en les programmant avec Javascript, complété par la librairie React.
 
 
-- **React.js** : React s'ajoute par-dessus la stack technique décrite plus haut pour proposer une expérience de programmation orientée composante sur le Web. C'est une librairie Javascript permettant de construire des applications web complexes tournant autour de composants / éléments possédant un état que l'on peut imbriquer entre eux pour former notre interface utilisateur et leur programmer des comportements et des fonctionnalités précises, sans se soucier de la manipulation du DOM de la page Web.
+- **React.js** : React s'ajoute par-dessus les langages décrits plus haut pour proposer une expérience de programmation orientée composante sur le Web. C'est une librairie Javascript permettant de construire des applications web complexes tournant autour de composants / éléments possédant un état que l'on peut imbriquer entre eux pour former notre interface utilisateur et leur programmer des comportements et des fonctionnalités précises, sans se soucier de la manipulation du DOM de la page Web.
 
-- **CodeMirror** : C'est une librairie Javascript permettant d'intégrer un éditeur de code puissant, incluant le support de la coloration syntaxique, de l'auto-complétion ou encore le surlignage d'erreurs. Les fonctionnalités de l'éditeur sont grandement extensives et permettant même  la compatibilité avec un langage de programmation personnalité comme **MiniML**. Enfin, CodeMirror est disponible sous licence MIT.
+- **CodeMirror** : C'est une librairie Javascript permettant d'intégrer un éditeur de code puissant, incluant le support de la coloration syntaxique, de l'auto-complétion ou encore le surlignage d'erreurs. Les fonctionnalités de l'éditeur sont grandement extensives et permettant même la compatibilité avec un langage de programmation personnalité comme **MiniML**. Enfin, CodeMirror est disponible sous licence MIT.
 
 - **OCaml + Js_of_OCaml** :  Afin de manipuler la librairie d'**Autobill**, il est nécessaire de passer par du côté OCaml pour traiter le code en entrée et en sortir des équations à résoudre ou des résultats d'interprétations. Pour faire le pont entre Javascript et OCaml, on utilise Js_of_OCaml, une librairie contenant, entre autres, un compilateur qui transpile du bytecode OCaml en Javascript et propose une grande variété de primitive et de type pour manipuler des éléments Javascript depuis OCaml
 
@@ -89,14 +95,13 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
   - Intégration d'une IDE similaire aux Playground de [OCaml](https://OCaml.org/play) et [Rescript](https://rescript-lang.org/try)
   - Implémentation d'un éditeur de code supportant la syntaxe de **MiniML**
   - Liaison entre le code Javascript et OCaml à l'aide de Js_of_OCaml 
-  - Implémentation de plusieurs modes d'interprétation du code **MiniML** : 
-    - Vers AST 
-    - Vers AST de **Call-By-Push-Value**
-    - Vers Equation
-    - Vers code Machine **Autobill**
+  - Implémentation de plusieurs modes de traitement du code **MiniML** : 
+    - Affichage de l'AST MiniML
+    - Affichage de l'AST de **Call-By-Push-Value**
+    - Affichage de l'Equation résultant de l'anlyse statique
+    - Vers Representation Interne **Autobill**
   - Remontée d'erreurs et affichage dynamique sur l'interface
   - Implémentation du solveur d'équations MiniZinc côté client
-  - Solveur (Web Assembly)
 
 \newpage
 
@@ -105,10 +110,9 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 
 ### Schéma de Communication
 
-
 ![](./MarkdownVersions/Rapport/communication.png)
 
-### Outils et Technologies utilisées
+### Outils et Technologies utilisés
 
 #### Coté Client
 
@@ -126,23 +130,21 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
   - Intégration d'une IDE similaire aux Playground de [OCaml](https://OCaml.org/play) et [Rescript](https://rescript-lang.org/try)
   - Implémentation d'un éditeur de code supportant la syntaxe de **MiniML**
   - Liaison entre le code Javascript et OCaml à l'aide de Js_of_OCaml 
-  - Implémentation de plusieurs modes d'interprétation du code **MiniML** : 
-    - Vers Equation
+  - Implémentation de plusieurs modes de traitement du code **MiniML** : 
+     - Affichage de l'Equation résultant de l'anlyse statique
   - Implémentation du solveur d'équations MiniZinc côté client
-  - Solveur 
 
 \newpage
 # MiniML
 
 ## Pourquoi MiniML ?
 
-
-MiniML émerge de la volonté de créer un langage fonctionnel simple, accessible et sans effets de bord pour les utilisateurs d'autobill car celui-ci requiert une connaissance approfondie de la théorie autour des différentes sémantiques d'évaluation a travers le paradigme **Call-By-Push-Value**.
+MiniML émerge de la volonté de créer un langage fonctionnel simple, accessible et sans effets de bord pour les utilisateurs d'autobill car celui-ci requiert une connaissance approfondie de la théorie autour des différentes sémantiques d'évaluation afin de pouvoir manipuler son entrée en **Call-By-Push-Value**.
 
 
 ### Call-By-Push-Value
 Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par autobill permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.\
-Pour permettre cette double compatibilité, **Call-By-Push-Value** effectue une profonde distinction entre les calculs et les valeurs.\
+Pour permettre cette double compatibilité, **Call-By-Push-Value** effectue une profonde distinction entre les calculs qui font et les valeurs qui sont.\
 La différenciation entre ses deux types de stratégies s'effectue lors de la traduction depuis le langage d'origine.
 
 
@@ -150,31 +152,71 @@ La différenciation entre ses deux types de stratégies s'effectue lors de la tr
 **MiniML** dans ce projet dispose d'une implémentation écrite en **OCaml**.\
 **MiniML** possède deux types de base (Integer et Boolean).\
 Il est possible de créer de nouveaux types à partir de ceux-ci.\
-La syntaxe de MiniML est très proche de celle d'OCaml et parfaitement compatible avec un parser OCaml
+MiniML est un modeste sous set d'OCaml et parfaitement compatible avec un parseur ou compilateur **OCaml**
+
+### Dépendances
+
+- **Menhir** : *Menhir* est l'unique dépendance de l’implémentation de **MiniML**, Cette librarie permet la génération de parseurs LR(1) en OCaml.\
+*Menhir* est disponible sous une licence GNU GENERAL PUBLIC.
+
 
 
 ## Contenu Actuel
 
 - Listes
-- Files
 - Fonction Recusives
 - Opérateurs de Bases
 - Construction de Types
 - Variables Globales/Locales
-  
-
-## Diagramme
-![](./MarkdownVersions/Rapport/MiniML.png)
+- Files
 
 \newpage
 
-# Projections (Rapport Suivant)
+## Un exemple de code MiniML
+
+```OCaml
+  type 'a option =
+  | None
+  | Some of 'a
+  ;;
+
+  let createFile = ([],[]);;
+
+  let push file elem = 
+  (match file with
+  | (a,b) -> (a,(elem::b)))
+  ;;
+
+  let pop file =
+    (match file with
+    | (debut, fin) -> 
+      (match debut with
+      | [] -> (
+                match (rev fin) with
+                | [] -> (None,debut,fin)
+                | (hd :: tail) -> ((Some(hd)), tail ,[])
+              )
+      | (hd::tail) -> ((Some(hd)),tail,fin ))
+    )
+  ;;
+
+  let elems = [1;2;3;4;5;6;7];;
+  let queue = (fold_left push createFile elems);;
+  (pop queue)
+
+```
+
+Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple pour décrire, avec des schémas de traduction comment l'on passe d'un AST **MiniML** a un AST **Call-By-Push-Value** compatible pour **Autobill**.
+
+\newpage
+
+# Tâches à réaliser
 ## MiniML
-  - Ajout de sucre syntaxique.
+  - Ajout de sucre syntaxique. (Records, Operateurs Infixes, ...)
   - Ajout d'une librairie standard.
   - Spécification complète du langage.
-  - Bibliothèque de tests sous la forme de structure de données complexes
-
+  - Bibliothèque de structures de données complexes
+  - Schemas de compilation d'une structure *FIFO* vers **Autobill**
 
 ## Serveur
   - Affichage des erreurs
@@ -200,9 +242,9 @@ La syntaxe de MiniML est très proche de celle d'OCaml et parfaitement compatibl
 
 - [2] Levy, Paul Blain. “Call-by-Push-Value: A Subsuming Paradigm.” Lecture Notes in Computer Science. Berlin, Heidelberg: Springer Berlin Heidelberg, 1999. 228–243
 
-- [3] Hoffman, Jan. Resource Aware ML, Web, (URL)[https://www.raml.co/]
+- [3] Hoffman, Jan. Resource Aware ML, Web, [URL](https://www.raml.co/)
   
-- Will Kurt. 2018. Get Programming with Haskell. Manning Publications. Chapitre 5,7
+- Will Kurt. 2018. Get Programming with Haskell. Manning Publications.
 
 - Pierce, Benjamin C. Types and Programming Languages. MIT Press, 2002
 

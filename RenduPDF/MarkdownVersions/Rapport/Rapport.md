@@ -32,7 +32,7 @@ date: 23 mars, 2023
   
   C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de Paul Blain Lévy [3]. CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite et précise les quantités de mémoire pour chaque valeur introduite / éliminée ou fonction appelée / terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : on fixe quand les évaluations se déroulent et on peut mieux prédire la consommation de mémoire à chaque étape du programme.
 
-  À partir d'une entrée en CBPV, Autobill l'internalise et traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Enfin, il retourne en sortie ces contraintes formalisées pour satisfaire le format d'entrée de différents outils de recherche d'optimisations et assistants de preuve, comme MiniZinc ou Coq, afin de prouver des propriétés de complexité temporelle ou spatiale.
+  À partir d'une entrée en CBPV, Autobill l'internalise et traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Enfin, il retourne en sortie ces contraintes formalisées pour satisfaire le format d'entrée de différents outils de recherche d'optimisations et assistants de preuve, comme [MiniZinc](https://www.minizinc.org/) ou [Coq](https://coq.inria.fr/), afin de prouver des propriétés de complexité temporelle ou spatiale.
 
   ![](./MarkdownVersions/Rapport/Schema_Autobill.png)
 
@@ -123,7 +123,10 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
   
 #### Coté Serveur
 
-   - **NodeJS**: NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'avoir une grande efficacité et une utilisation optimale des ressources. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel. Enfin, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de Node Js) permet de gagner beaucoup de temps de développement et de faciliter notre tâche.
+   - **NodeJS**: NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'avoir une grande efficacité et une utilisation optimale des ressources. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel. Enfin, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de Node Js) permet de gagner beaucoup de temps de développement et de faciliter notre tâche. Par example, le module ["Child Processes"](https://nodejs.org/api/child_process.html) nous permet de éxecuter le code MiniZinc en passant les commandes directement. Cela nous permet d'éviter les restrictions en côté full-client au niveau de  du résolveur de contraintes.
+
+#### Solveur
+    - **MiniZinc**: Nous utilisons MiniZinc pour calculer les bornes mémoires minimums pour satisfaire les contraintes mémoires du programme. MiniZinc est un langage de modélisation de contraintes de haut niveau utilisé pour la résolution de problèmes de satisfaction de contraintes. Il prend en charge une large gamme de solveurs, permettant aux utilisateurs de choisir le solveur le mieux adapté à leur problème et de passer facilement d'un solveur à l'autre. Ainsi, il dispose d'une grande communauté d'utilisateurs et de contributeurs, ce qui nous permet de trouver nombreuses ressources disponibles pour l'apprentissage et le dépannage.
 
 ### Tâches réalisées
 
@@ -132,7 +135,7 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
   - Liaison entre le code Javascript et OCaml à l'aide de Js_of_OCaml 
   - Implémentation de plusieurs modes de traitement du code **MiniML** : 
      - Affichage de l'Equation résultant de l'anlyse statique
-  - Implémentation du solveur d'équations MiniZinc côté client
+  - Implémentation du solveur d'équations MiniZinc côté client et server
 
 \newpage
 # MiniML

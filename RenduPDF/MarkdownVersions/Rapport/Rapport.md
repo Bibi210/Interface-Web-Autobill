@@ -18,23 +18,21 @@ date: 23 mars, 2023
 
 # Contexte du projet
 
-## Historique
+## Historique et définitions
 
-  **Autobill** est un projet universitaire soutenu par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
+  **Autobill** est un projet universitaire développé par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
 
-  L'analyse statique se réfère au domaine en informatique visant à déterminer des métriques, des comportements ou des erreurs dans un code source. Pour un langage et une syntaxe donnée, on peut fixer des sémantiques d'évaluation, du typage ou, dans le cas de notre problématique, autour de la définition de l'occupation en ressources d'un programme.
+  L'analyse statique se réfère au domaine de l'informatique visant à déterminer des métriques, des comportements ou des erreurs dans un programme par la lecture de son code source. Pour un langage donnée, on peut fixer des sémantiques d'évaluation et du typage. Dans le cas de notre problématique, on s'intéresse à l'occupation en mémoire d'un programme.
   
-  Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Hoffmann Jan et Stephen Jost sur l'analyse de consommation de ressources automatisé (AARA) [1]. Des solutions se basant sur ces théories existent, comme RAML [2], Resource Aware ML, un langage ML permettant ce type d'analyse.
+  Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann et Stephen Jost sur l'analyse de consommation de ressources automatisé (AARA) [1]. Des solutions se basant sur ces théories existent, comme RAML [2] (Resource Aware ML), un langage ML permettant ce type d'analyse.
 
 ## Qu'est-ce que Autobill ?
 
-  La proposition d'Hector avec Autobill se différencie par un niveau d'analyse plus fin. D'abord, Autobill est codé en Ocaml et prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en **Call-By-Push-Value**. 
+  La proposition d'Hector avec Autobill se différencie par un niveau d'analyse plus précis sur les fermetures et les arguments fonctionnelles d'un programme. D'abord, Autobill prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en **Call-By-Push-Value** (CBPV), avec ou sans continuation explicite. 
   
-  C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans les papiers de Paul Blain Lévy [3]. CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite et précise les quantités de mémoire pour chaque valeur allouée / libérée ou fonction appelée / terminée. 
-  
-  Aussi, le langage permet d'exprimer des stratégies d'évaluation dans le code source : on retarde les évaluations jusqu'à ce que les expressions ou les résultats de calculs soient effectivement utilisées et on optimise ainsi la consommation de ressource du programme.
+  C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de Paul Blain Lévy [3]. CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite et précise les quantités de mémoire pour chaque valeur introduite / éliminée ou fonction appelée / terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : on fixe quand les évaluations se déroulent et on peut mieux prédire la consommation de mémoire à chaque étape du programme.
 
-  À partir d'une entrée en CBPV, Autobill l'internalise et traduit le programme en un code machine, exprimant explicitement les contraintes matérielles qui s'appliquent sur l'entrée. Enfin, il retourne en sortie ces contraintes formalisées pour satisfaire le format d'entrée de différents solveurs et assistants de preuve, comme MiniZinc ou Coq, afin de prouver des propriétés de complexité temporelle et spatiale.
+  À partir d'une entrée en CBPV, Autobill l'internalise et traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Enfin, il retourne en sortie ces contraintes formalisées pour satisfaire le format d'entrée de différents outils de recherche d'optimisations et assistants de preuve, comme MiniZinc ou Coq, afin de prouver des propriétés de complexité temporelle ou spatiale.
 
   ![](./MarkdownVersions/Rapport/Schema_Autobill.png)
 
@@ -42,9 +40,9 @@ date: 23 mars, 2023
 
   Notre démarche se rapproche de celle faite pour RAML [2] dans leur site officiel.
 
-  Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des tiers à travers un environnement de développement sur navigateur. 
+  Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des utilisateurs à travers un environnement de développement sur navigateur. 
   
-  On souhaite aussi faciliter l'utilisation de l'outil avec un langage fonctionnel pur en entrée plus accessible, un **MiniML**. Enfin, on se place aussi sur la sortie d'Autobill en traitant les expressions de contraintes qu'il génère avec des solveurs externes, afin d'en tirer des preuves de complexité et les afficher directement sur le client Web.
+  On souhaite aussi faciliter l'utilisation de l'outil avec un langage fonctionnel pur en entrée plus accessible, un **MiniML**. Cela nous contraint donc à adapter cette nouvelle entrée pour qu'elle soit compatible avec Autobill. Enfin, on se place aussi sur la sortie d'Autobill en traitant les expressions de contraintes qu'il génère avec des solutions externes, afin d'en tirer des preuves de complexité et les afficher directement sur le client Web.
 
   Notre charge de travail doit se diviser en plusieurs tâches principales : 
 
@@ -58,18 +56,20 @@ date: 23 mars, 2023
   
 ## Processus de Conception
   Lors de la conception de l'interface, les contraintes étaient multiples.\
-  La première était le langage d'implémentation en effet **Autobill** étant développé en **OCaml**, il était nécessaire de trouver un moyen pour communiquer avec l'application.\
-  La seconde était qu'il fallait développer cette interface en simultané avec **Autobill** et d'ajuster notre travail en fonction des besoins courants de nos encadrants.\
-  Mais la plus importante d'entre elles était le souhait de nos encadrants que l'application soit principalement côté client afin de simplifier son déploiement.\ 
+  La première était l'interopérabilité des technologies du projet. En effet **Autobill** étant développé en **OCaml**, il était nécessaire de trouver des moyens pour l'adapter à un environnement Web.\
+  La seconde était qu'il fallait développer cette interface en simultané avec **Autobill** et ajuster notre travail en fonction des besoins courants de nos encadrants.\
+  Mais la plus importante d'entre elles était le souhait de nos encadrants que l'application soit principalement côté client afin de simplifier son déploiement dans les infrastructures de la faculté .\ 
 
-  Une fois ses contraintes établies, nous avons du tout au long de ce projet effectuer des choix que ce soit en matière de design ou de technologies.
+  Une fois ces contraintes établies, nous avons dû,tout au long de ce projet, effectuer des choix, que ce soit en matière de design ou de technologies.
 
-  Nous tenons donc à travers ce rapport à mettre en lumière ces décisions tout en décrivant le travail qu'elles ont engendré.
+  Nous tenons donc à travers ce rapport à mettre en lumière ces décisions, tout en décrivant le travail qu'elles ont engendré.
 
 \newpage
 # Interface Web 
 
-  Dans l'optique de ne pas se restreindre dans l'utilisation d'outils notamment au niveau du résolveur de contraintes, le groupe s'est orienté vers deux structures de projets différentes et indépendantes : l'une fonctionnant avec un client unique, la seconde avec un serveur dédié et un client qui expose ce serveur. L'avantage réside dans le fait que, lors du développement, si un nouvel outil est amené à être utilisé mais ne dispose de compatibilité sur navigateur Web, alors le serveur peut répondre à ce problème. C'est aussi un sujet de comparaison intéressant à présenter par la suite, que ce soit au niveau des performances que du déploiement de ces solutions.
+  Dans l'optique de ne pas se restreindre dans l'utilisation d'outils notamment au niveau du résolveur de contraintes, le groupe s'est orienté vers deux structures de projets différentes et indépendantes : l'une fonctionnant avec un client unique, la seconde avec un serveur dédié et un client qui expose ce serveur. 
+  
+  L'avantage réside dans le fait que, lors du développement, si un nouvel outil est amené à être utilisé mais ne dispose de compatibilité sur navigateur Web, alors le serveur peut répondre à ce problème. C'est aussi un sujet de comparaison intéressant à présenter par la suite, que ce soit au niveau des performances que du déploiement de ces solutions.
 
 ## Client uniquement
 
@@ -210,7 +210,13 @@ Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple
 
 \newpage
 
-# Tâches à réaliser
+# Conclusion et Tâches à réaliser
+
+## Conclusion
+  La réalisation de cette interface a fait intervenir un large panel de sujets en lien avec la formation du Master d'informatique STL et mis à profit les connaissances acquises lors de ce semestre. Le projet est à un stade d'avancement satisfaisant. Autobill étant encore en phase expérimentale, celui-ci ajoute contiuellement des nouveautés et corrections que l'on doit intégrer.
+
+  La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de RAML [3], cités en section 1.
+
 ## MiniML
   - Ajout de sucre syntaxique. (Records, Operateurs Infixes, ...)
   - Ajout d'une librairie standard.

@@ -19,7 +19,6 @@ numbersections: true
 toc: true
 tableofcontents: true
 ---
- <!--pandoc --lua-filter ./MarkdownVersions/color-text.lua  ./MarkdownVersions/Rapport/Rapport.md  -o Rapport.tex -->
 
 # Contexte du projet
 

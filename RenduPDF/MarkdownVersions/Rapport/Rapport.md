@@ -24,17 +24,27 @@ tableofcontents: true
 
 [**Autobill**](https://gitlab.lip6.fr/suzanneh/autobill) est un projet universitaire développé par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
 
-L'analyse statique se réfère au domaine de l'informatique visant à déterminer des métriques, des comportements ou des erreurs dans un programme par la lecture de son code source. Pour un langage donnée, on peut fixer des sémantiques d'évaluation et du typage. Dans le cas de notre problématique, on s'intéresse à l'occupation en mémoire d'un programme.
+L'analyse statique est un domaine de l'informatique qui consiste à mesureer et détecter automatiquement les comportements ou erreurs dans un programme en examinant son code source. Pour effectuer cette analyse sur un langage de programmation donné, il est possible de définir des règles d'évaluation et de typage. Dans notre situation spécifique, nous sommes particulièrement intéressés par l'occupation de la mémoire d'un programme.
 
-Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann et Stephen Jost sur l'analyse de consommation de ressources automatisé (AARA) [[1]](#biblio). Des solutions se basant sur ces théories existent, comme RAML [[2]](#biblio) (Resource Aware ML), un langage ML permettant ce type d'analyse.
+Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann sur l'analyse de consommation de ressources automatisé (AARA) [[1]](#biblio). Des solutions se basant sur ces théories existent, comme RAML [[2]](#biblio) (Resource Aware ML), un langage *à la ML* permettant ce type d'analyse, créé par Jan Hoffman et Stephen Jost.
+
+## Qu'est-ce qu'Autobill ?
+
+La proposition d'Hector Suzanne avec Autobill se différencie par un niveau d'analyse plus précis sur les fermetures et les arguments fonctionnels d'un programme. D'abord, Autobill prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en **Call-By-Push-Value** (CBPV), avec ou sans continuation explicite. 
+
+C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de Paul Blain Lévy [[3]](#biblio). CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite les quantités de mémoire pour chaque valeur introduite/éliminée ou fonction appelée/terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : on fixe quand les évaluations se déroulent, afin de mieux prédire la consommation de mémoire à chaque étape du programme.
+
+À partir d'une entrée en CBPV, Autobill traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Il l'internalise, c'est à dire construit l'arbre syntaxique abstrait (AST) de ce programme. Ensuite, Autobill infère dans l'AST le typage de ses expressions ainsi que leurs polarités. Enfin, il en tire en sortie les contraintes dans des formats d'entrées supportés par différents outils de recherche opérationnelles et assistants de preuve, comme [MiniZinc](https://www.minizinc.org/) ou [Coq](https://coq.inria.fr/), afin de prouver des propriétés de complexité temporelle ou spatiale.
+
+![](./MarkdownVersions/Rapport/Schema_Autobill.png)
 
 ## Objectifs du projet
 
-Notre démarche se rapproche de celle faite pour RAML [[2]](#biblio) dans leur site officiel.
+Notre démarche se rapproche de celle de RAML [[2]](#biblio) dans leur site officiel.
 
 Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des utilisateurs à travers un environnement de développement sur navigateur. 
 
-On souhaite aussi faciliter l'utilisation de l'outil avec un langage fonctionnel pur en entrée plus accessible, un **MiniML**. Cela nous contraint donc à adapter cette nouvelle entrée pour qu'elle soit compatible avec Autobill. Enfin, on se place aussi sur la sortie d'Autobill en traitant les expressions de contraintes qu'il génère avec des solutions externes, afin d'en tirer des preuves de complexité et les afficher directement sur le client Web.
+On souhaite aussi faciliter l'utilisation de l'outil avec un langage fonctionnel pur en entrée plus accessible, un **MiniML**. Cela nous contraint donc à adapter cette nouvelle entrée pour qu'elle soit compatible avec Autobill. Enfin, on se charge aussi de traiter les différentes sorties standards et d'erreurs d'Autobill, notamment les expressions de contraintes, afin de les passer à des solveurs externes, en tirer des preuves de complexité et les afficher directement sur le client Web.
 
 Notre charge de travail doit se diviser en plusieurs tâches principales : 
 
@@ -46,41 +56,20 @@ Notre charge de travail doit se diviser en plusieurs tâches principales :
 
 ![](./MarkdownVersions/Rapport/Diagramme Haut Niveau PSTL.png)
 
-## Qu'est-ce que Autobill ?
+## Processus de conception
+Lors de la conception de l'interface, les contraintes étaient multiples. La première était l'interopérabilité des technologies du projet. En effet **Autobill** étant développé en **OCaml**, il était nécessaire de trouver des moyens pour l'adapter à un environnement Web.La seconde était qu'il fallait développer cette interface en simultané avec **Autobill** et ajuster notre travail en fonction des besoins courants de nos encadrants.Mais la plus importante d'entre elles était le souhait de nos encadrants que l'application soit principalement côté client afin de simplifier son déploiement dans les infrastructures de la faculté.
 
-La proposition d'Hector avec Autobill se différencie par un niveau d'analyse plus précis sur les fermetures et les arguments fonctionnelles d'un programme. D'abord, Autobill prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en **Call-By-Push-Value** (CBPV), avec ou sans continuation explicite. 
-
-C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de Paul Blain Lévy [[3]](#biblio). CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite et précise les quantités de mémoire pour chaque valeur introduite / éliminée ou fonction appelée / terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : on fixe quand les évaluations se déroulent et on peut mieux prédire la consommation de mémoire à chaque étape du programme.
-
-À partir d'une entrée en CBPV, Autobill l'internalise et traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Enfin, il retourne en sortie ces contraintes formalisées pour satisfaire le format d'entrée de différents outils de recherche d'optimisations et assistants de preuve, comme [MiniZinc](https://www.minizinc.org/) ou [Coq](https://coq.inria.fr/), afin de prouver des propriétés de complexité temporelle ou spatiale.
-
-![](./MarkdownVersions/Rapport/Schema_Autobill.png)
-  
-## Processus de Conception
-Lors de la conception de l'interface, les contraintes étaient multiples.\
-La première était l'interopérabilité des technologies du projet.\
-En effet **Autobill** étant développé en **OCaml**, il était nécessaire de trouver des moyens pour l'adapter à un environnement Web.\
-La seconde était qu'il fallait développer cette interface en simultané avec **Autobill** et ajuster notre travail en fonction des besoins courants de nos encadrants.\
-Mais la plus importante d'entre elles était le souhait de nos encadrants que l'application soit principalement côté client afin de simplifier son déploiement dans les infrastructures de la faculté .\ 
-
-Une fois ces contraintes établies, nous avons dû,tout au long de ce projet, effectuer des choix, que ce soit en matière de design ou de technologies.
-
-Nous tenons donc à travers ce rapport à mettre en lumière ces décisions, tout en décrivant le travail qu'elles ont engendré.
+Une fois ces contraintes établies, nous avons dû,tout au long de ce projet, effectuer des choix, que ce soit en matière de design ou de technologies.Nous tenons donc à travers ce rapport à mettre en lumière ces décisions, tout en décrivant le travail qu'elles ont engendré.
 
 \newpage
 
-# Interface Web 
+# Interface web 
 
 Dans l'optique de ne pas se restreindre dans l'utilisation d'outils notamment au niveau du résolveur de contraintes, le groupe s'est orienté vers deux structures de projets différentes et indépendantes : l'une fonctionnant avec un client unique, la seconde avec un serveur dédié et un client qui expose ce serveur. 
 
 L'avantage réside dans le fait que, lors du développement, si un nouvel outil est amené à être utilisé mais ne dispose de compatibilité sur navigateur Web, alors le serveur peut répondre à ce problème. C'est aussi un sujet de comparaison intéressant à présenter par la suite, que ce soit au niveau des performances que du déploiement de ces solutions.
 
 ## Client uniquement
-
-### Design du client
-
-![](./MarkdownVersions/Rapport/screen.png)
-
 
 ### Outils et Technologies utilisés
 
@@ -117,6 +106,9 @@ Son API prend en charge une large gamme de solveurs. Aussi, il dispose d'une gra
 
 Sa librairie est codée en C++ mais il reste utilisable dans notre interface Web grâce à Web Assembly. C'est un format binaire de code exécutable qui permet de porter des applications codées dans des langages de programmation sur le Web. Grâce à des compilateurs vers Web Assembly, comme Emscripten pour C/C++, on peut lancer des tâches intensives de résolution de contraintes, avec des performances proches du natif, depuis n'importe quel navigateur Web moderne.
 
+### Aperçu de l'interface graphique
+
+![](./MarkdownVersions/Rapport/screen.png)
 
   
 ### Tâches réalisées 
@@ -133,16 +125,16 @@ Sa librairie est codée en C++ mais il reste utilisable dans notre interface Web
 - Implémentation du solveur d'équations MiniZinc côté client
 
 
-## Serveur + Client
+## Serveur + client
 
 
-### Schéma de Communication
+### Schéma de communication
 
 ![](./MarkdownVersions/Rapport/communication.png)
 
-### Outils et Technologies utilisés
+### Outils et technologies utilisés
 
-#### Coté Client
+#### Coté client
 
    - **HTML / CSS / Javascript** 
    - **React.js**
@@ -150,7 +142,7 @@ Sa librairie est codée en C++ mais il reste utilisable dans notre interface Web
    - **OCaml + Js_of_OCaml** 
    - **MiniZinc**
   
-#### Coté Serveur
+#### Coté serveur
 
 - **NodeJS**: NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'avoir une grande efficacité et une utilisation optimale des ressources. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel. Enfin, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de Node Js) permet de gagner beaucoup de temps de développement et de faciliter notre tâche. Par example, le module ["Child Processes"](https://nodejs.org/api/child_process.html) nous permet de éxecuter le code MiniZinc en passant les commandes directement. Cela nous permet d'éviter les restrictions en côté full-client au niveau de  du résolveur de contraintes.
 
@@ -177,7 +169,7 @@ Pour permettre cette double compatibilité, **Call-By-Push-Value** effectue une 
 La différenciation entre ces deux types de stratégies s'effectue lors de la traduction depuis le langage d'origine.
 
 
-## Description Rapide
+## Description rapide
 **MiniML** dans ce projet dispose d'une implémentation écrite en **OCaml**.\
 **MiniML** possède deux types de base (Integer et Boolean).\
 Il est possible de créer de nouveaux types à partir de ceux-ci.\
@@ -190,7 +182,7 @@ MiniML est parfaitement compatible avec un parseur ou compilateur **OCaml**
 
 
 
-## Contenu Actuel
+## Contenu actuel
 
 - Listes
 - Fonction Récusives
@@ -208,7 +200,7 @@ MiniML est parfaitement compatible avec un parseur ou compilateur **OCaml**
   | Some of 'a
   ;;
 
-  let createFile = ([],[]);;
+  let createQueue = ([],[]);;
 
   let push file elem = 
   (match file with
@@ -237,12 +229,12 @@ MiniML est parfaitement compatible avec un parseur ou compilateur **OCaml**
 Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple pour décrire, avec des schémas de traduction comment l'on passe d'un AST **MiniML** à un AST **Call-By-Push-Value** compatible pour **Autobill**.
 
 
-# Conclusion et Tâches à réaliser
+# Conclusion et tâches à réaliser
 
 ## Conclusion
   La réalisation de cette interface a fait intervenir un large panel de sujets en lien avec la formation du Master d'informatique STL et mis à profit les connaissances acquises lors de ce semestre. Le projet est à un stade d'avancement satisfaisant. Autobill étant encore en phase expérimentale, celui-ci ajoute contiuellement des nouveautés et corrections que l'on doit intégrer.
 
-  La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de RAML [3], mentionner en section 1.
+  La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de RAML [3], mentionnée en section 1.
 
 ## MiniML
   - Ajout de sucre syntaxique. (Records, Operateurs Infixes, ...)

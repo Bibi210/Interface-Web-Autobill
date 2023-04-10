@@ -1,44 +1,39 @@
 ---
 title: "PSTL : Interface Web Autobill"
-output: 
-  html_document: 
-    pandoc_args: ["--lua-filter=color-text.lua"]
-  pdf_document: 
-    pandoc_args: ["--lua-filter=color-text.lua"]
-    keep_tex: true
-subtitle: 
+subtitle: "Pré-Rapport"
 author:  
   - Fazazi Zeid
   - Luo Yukai 
   - Brahima Dibassi
-date: 23 mars, 2023
+date: 9 avril, 2023
+lang: fr
+geometry:
+  - margin = 1.2in
+mainfont: Palatino
+sansfont: Helvetica
+monofont: Menlo
+fontsize: 12pt
+version: 2.0
+urlcolor: NavyBlue
+numbersections: true
+toc: true
+tableofcontents: true
 ---
- <!--pandoc --lua-filter ./MarkdownVersions/color-text.lua  -N --variable "geometry=margin=1.2in" --variable mainfont="Palatino" --variable sansfont="Helvetica" --variable monofont="Menlo" --variable fontsize=12pt --variable version=2.0 ./MarkdownVersions/Rapport/Rapport.md  --pdf-engine=xelatex --toc -o Rapport.pdf  -->
-\newpage
+ <!--pandoc --lua-filter ./MarkdownVersions/color-text.lua  ./MarkdownVersions/Rapport/Rapport.md  -o Rapport.tex -->
 
 # Contexte du projet
 
 ## Historique et définitions
 
-  **Autobill** est un projet universitaire développé par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
+  [**Autobill**](https://gitlab.lip6.fr/suzanneh/autobill) est un projet universitaire développé par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
 
   L'analyse statique se réfère au domaine de l'informatique visant à déterminer des métriques, des comportements ou des erreurs dans un programme par la lecture de son code source. Pour un langage donnée, on peut fixer des sémantiques d'évaluation et du typage. Dans le cas de notre problématique, on s'intéresse à l'occupation en mémoire d'un programme.
   
-  Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann et Stephen Jost sur l'analyse de consommation de ressources automatisé (AARA) [1]. Des solutions se basant sur ces théories existent, comme RAML [2] (Resource Aware ML), un langage ML permettant ce type d'analyse.
-
-## Qu'est-ce que Autobill ?
-
-  La proposition d'Hector avec Autobill se différencie par un niveau d'analyse plus précis sur les fermetures et les arguments fonctionnelles d'un programme. D'abord, Autobill prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en **Call-By-Push-Value** (CBPV), avec ou sans continuation explicite. 
-  
-  C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de Paul Blain Lévy [3]. CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite et précise les quantités de mémoire pour chaque valeur introduite / éliminée ou fonction appelée / terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : on fixe quand les évaluations se déroulent et on peut mieux prédire la consommation de mémoire à chaque étape du programme.
-
-  À partir d'une entrée en CBPV, Autobill l'internalise et traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Enfin, il retourne en sortie ces contraintes formalisées pour satisfaire le format d'entrée de différents outils de recherche d'optimisations et assistants de preuve, comme [MiniZinc](https://www.minizinc.org/) ou [Coq](https://coq.inria.fr/), afin de prouver des propriétés de complexité temporelle ou spatiale.
-
-  ![](./MarkdownVersions/Rapport/Schema_Autobill.png)
+  Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann et Stephen Jost sur l'analyse de consommation de ressources automatisé (AARA) [[1]](#biblio). Des solutions se basant sur ces théories existent, comme RAML [[2]](#biblio) (Resource Aware ML), un langage ML permettant ce type d'analyse.
 
 ## Objectifs du projet
 
-  Notre démarche se rapproche de celle faite pour RAML [2] dans leur site officiel.
+  Notre démarche se rapproche de celle faite pour RAML [[2]](#biblio) dans leur site officiel.
 
   Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des utilisateurs à travers un environnement de développement sur navigateur. 
   
@@ -53,10 +48,21 @@ date: 23 mars, 2023
 - Les tests de performances et comparaisons avec les solutions existantes
 
 ![](./MarkdownVersions/Rapport/Diagramme Haut Niveau PSTL.png)
+
+## Qu'est-ce que Autobill ?
+
+  La proposition d'Hector avec Autobill se différencie par un niveau d'analyse plus précis sur les fermetures et les arguments fonctionnelles d'un programme. D'abord, Autobill prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en **Call-By-Push-Value** (CBPV), avec ou sans continuation explicite. 
+  
+  C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de Paul Blain Lévy [[3]](#biblio). CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite et précise les quantités de mémoire pour chaque valeur introduite / éliminée ou fonction appelée / terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : on fixe quand les évaluations se déroulent et on peut mieux prédire la consommation de mémoire à chaque étape du programme.
+
+  À partir d'une entrée en CBPV, Autobill l'internalise et traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Enfin, il retourne en sortie ces contraintes formalisées pour satisfaire le format d'entrée de différents outils de recherche d'optimisations et assistants de preuve, comme [MiniZinc](https://www.minizinc.org/) ou [Coq](https://coq.inria.fr/), afin de prouver des propriétés de complexité temporelle ou spatiale.
+
+  ![](./MarkdownVersions/Rapport/Schema_Autobill.png)
   
 ## Processus de Conception
   Lors de la conception de l'interface, les contraintes étaient multiples.\
-  La première était l'interopérabilité des technologies du projet. En effet **Autobill** étant développé en **OCaml**, il était nécessaire de trouver des moyens pour l'adapter à un environnement Web.\
+  La première était l'interopérabilité des technologies du projet.\
+  En effet **Autobill** étant développé en **OCaml**, il était nécessaire de trouver des moyens pour l'adapter à un environnement Web.\
   La seconde était qu'il fallait développer cette interface en simultané avec **Autobill** et ajuster notre travail en fonction des besoins courants de nos encadrants.\
   Mais la plus importante d'entre elles était le souhait de nos encadrants que l'application soit principalement côté client afin de simplifier son déploiement dans les infrastructures de la faculté .\ 
 
@@ -64,7 +70,6 @@ date: 23 mars, 2023
 
   Nous tenons donc à travers ce rapport à mettre en lumière ces décisions, tout en décrivant le travail qu'elles ont engendré.
 
-\newpage
 # Interface Web 
 
   Dans l'optique de ne pas se restreindre dans l'utilisation d'outils notamment au niveau du résolveur de contraintes, le groupe s'est orienté vers deux structures de projets différentes et indépendantes : l'une fonctionnant avec un client unique, la seconde avec un serveur dédié et un client qui expose ce serveur. 
@@ -77,7 +82,6 @@ date: 23 mars, 2023
 
 ![](./MarkdownVersions/Rapport/screen.png)
 
-\newpage
 
 ### Outils et Technologies utilisés
 
@@ -120,18 +124,18 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 
   
 ### Tâches réalisées 
-  - Intégration d'un IDE similaire aux *Playground* de [OCaml](https://OCaml.org/play) et [Rescript](https://rescript-lang.org/try)
-  - Implémentation d'un éditeur de code supportant la syntaxe de **MiniML**
-  - Liaison entre le code Javascript et OCaml à l'aide de Js_of_OCaml 
-  - Implémentation de plusieurs modes de traitement du code **MiniML** : 
-    - Affichage de l'AST MiniML
-    - Affichage de l'AST de **Call-By-Push-Value**
-    - Affichage de l'Equation résultant de l'anlyse statique
-    - Vers Representation Interne **Autobill**
-  - Remontée d'erreurs et affichage dynamique sur l'interface
-  - Implémentation du solveur d'équations MiniZinc côté client
+- Intégration d'un IDE similaire aux *Playground* de [OCaml](https://OCaml.org/play) et [Rescript](https://rescript-lang.org/try)
+- Implémentation d'un éditeur de code supportant la syntaxe de **MiniML**
+- Liaison entre le code Javascript et OCaml à l'aide de Js_of_OCaml 
+- Implémentation de plusieurs modes de traitement du code **MiniML** : 
+  - Affichage de l'AST MiniML
+  - Affichage de l'AST de **Call-By-Push-Value**
+  - Affichage de l'équation résultant de l'analyse statique
+  - Vers Représentation Interne **Autobill**
+  
+- Remontée d'erreurs et affichage dynamique sur l'interface
+- Implémentation du solveur d'équations MiniZinc côté client
 
-\newpage
 
 ## Serveur + Client
 
@@ -161,32 +165,31 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
   - Implémentation d'un éditeur de code supportant la syntaxe de **MiniML**
   - Liaison entre le code Javascript et OCaml à l'aide de Js_of_OCaml 
   - Implémentation de plusieurs modes de traitement du code **MiniML** : 
-     - Affichage de l'Equation résultant de l'anlyse statique
+     - Affichage de l'équation résultant de l'anlyse statique
   - Implémentation du solveur d'équations MiniZinc côté client et server
 
-\newpage
 # MiniML
 
 ## Pourquoi MiniML ?
 
-MiniML émerge de la volonté de créer un langage fonctionnel simple, accessible et sans effets de bord pour les utilisateurs d'autobill car celui-ci requiert une connaissance approfondie de la théorie autour des différentes sémantiques d'évaluation afin de pouvoir manipuler son entrée en **Call-By-Push-Value**.
+MiniML émerge de la volonté de créer un langage fonctionnel simple, accessible et sans effets de bord pour les utilisateurs d'**Autobill** car celui-ci requiert une connaissance approfondie de la théorie autour des différentes sémantiques d'évaluation afin de pouvoir manipuler son entrée en **Call-By-Push-Value**.
 
 
 ### Call-By-Push-Value
-Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par autobill permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.\
-Pour permettre cette double compatibilité, **Call-By-Push-Value** effectue une profonde distinction entre les calculs qui font et les valeurs qui sont.\
-La différenciation entre ses deux types de stratégies s'effectue lors de la traduction depuis le langage d'origine.
+Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par **Autobill** permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.\
+Pour permettre cette double compatibilité, **Call-By-Push-Value** effectue une profonde distinction entre les calculs et les valeurs.\
+La différenciation entre ces deux types de stratégies s'effectue lors de la traduction depuis le langage d'origine.
 
 
 ## Description Rapide
 **MiniML** dans ce projet dispose d'une implémentation écrite en **OCaml**.\
 **MiniML** possède deux types de base (Integer et Boolean).\
 Il est possible de créer de nouveaux types à partir de ceux-ci.\
-MiniML est un modeste sous set d'OCaml et parfaitement compatible avec un parseur ou compilateur **OCaml**
+MiniML est parfaitement compatible avec un parseur ou compilateur **OCaml**
 
 ### Dépendances
 
-- **Menhir** : *Menhir* est l'unique dépendance de l’implémentation de **MiniML**, Cette librarie permet la génération de parseurs LR(1) en OCaml.\
+- **Menhir** : [*Menhir*](http://gallium.inria.fr/~fpottier/menhir/) est l'unique dépendance de l’implémentation de **MiniML**, Cette librairie permet la génération d'analyseurs syntaxiques en OCaml.\
 *Menhir* est disponible sous une licence GNU GENERAL PUBLIC.
 
 
@@ -194,13 +197,12 @@ MiniML est un modeste sous set d'OCaml et parfaitement compatible avec un parseu
 ## Contenu Actuel
 
 - Listes
-- Fonction Recusives
+- Fonction Récusives
 - Opérateurs de Bases
 - Construction de Types
 - Variables Globales/Locales
 - Files
 
-\newpage
 
 ## Un exemple de code MiniML
 
@@ -236,16 +238,15 @@ MiniML est un modeste sous set d'OCaml et parfaitement compatible avec un parseu
 
 ```
 
-Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple pour décrire, avec des schémas de traduction comment l'on passe d'un AST **MiniML** a un AST **Call-By-Push-Value** compatible pour **Autobill**.
+Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple pour décrire, avec des schémas de traduction comment l'on passe d'un AST **MiniML** à un AST **Call-By-Push-Value** compatible pour **Autobill**.
 
-\newpage
 
 # Conclusion et Tâches à réaliser
 
 ## Conclusion
   La réalisation de cette interface a fait intervenir un large panel de sujets en lien avec la formation du Master d'informatique STL et mis à profit les connaissances acquises lors de ce semestre. Le projet est à un stade d'avancement satisfaisant. Autobill étant encore en phase expérimentale, celui-ci ajoute contiuellement des nouveautés et corrections que l'on doit intégrer.
 
-  La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de RAML [3], cités en section 1.
+  La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de RAML [3], mentionner en section 1.
 
 ## MiniML
   - Ajout de sucre syntaxique. (Records, Operateurs Infixes, ...)
@@ -270,11 +271,9 @@ Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple
   - Comparaison d'architectures Full-Client vs Client-Serveur
   - Comparaison **RAML** vs **Autobill**
 
-\newpage
 
-# Bibliographie 
-
-- [1] Hoffmann, Jan, and Steffen Jost. “Two Decades of Automatic Amortized Resource Analysis.” Mathematical structures in computer science 32.6 (2022): 729–759
+# Bibliographie {#biblio}
+- [1] Hoffmann, Jan, and Steffen Jost. “Two Decades of Automatic Amortized Resource Analysis.” Mathematical structures in computer science 32.6 (2022): 729–759 
 
 - [2] Levy, Paul Blain. “Call-by-Push-Value: A Subsuming Paradigm.” Lecture Notes in Computer Science. Berlin, Heidelberg: Springer Berlin Heidelberg, 1999. 228–243
 
@@ -294,9 +293,9 @@ Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple
 
 - Dominic Orchard, Vilem-Benjamin Liepelt, and Harley Eades III. 2019. Quantitative program reasoning with graded modaltypes.Proceedings of the ACM on Programming Languages3, Volume 3, Issue ICFP, Article No.: 110, pp 1–30 (2019)
 
-- Xavier Leroy. 2022 OCaml library. OCaml Lazy Doc. Retrieved February 20, 2023 [**Link**](https://v2.OCaml.org/api/index.html)
+- Xavier Leroy. 2022 OCaml library. OCaml Lazy Doc. Retrieved February 20, 2023 [**URL**](https://v2.OCaml.org/api/index.html)
 
-- Haskell - Wikibooks, open books for an open world. Doc Haskell. Retrieved February 17, 2023 [**Link**](https://en.wikibooks.org/wiki/Haskell)
+- Haskell - Wikibooks, open books for an open world. Doc Haskell. Retrieved February 17, 2023 [**URL**](https://en.wikibooks.org/wiki/Haskell)
 
 - Emmanuel Chailloux,  Pascal Manoury, Bruno Pagano. Développement d’applications avec Objective Caml. Paris Cambridge [etc: O’Reilly, 2000],[**URL**](https://www-apr.lip6.fr/~chaillou/Public/DA-OCAML/) 
 

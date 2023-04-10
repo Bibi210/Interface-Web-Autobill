@@ -13,32 +13,30 @@ mainfont: Palatino
 sansfont: Helvetica
 monofont: Menlo
 fontsize: 12pt
-version: 2.0
 urlcolor: NavyBlue
 numbersections: true
 toc: true
 tableofcontents: true
 ---
-
 # Contexte du projet
 
 ## Historique et définitions
 
-  [**Autobill**](https://gitlab.lip6.fr/suzanneh/autobill) est un projet universitaire développé par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
+[**Autobill**](https://gitlab.lip6.fr/suzanneh/autobill) est un projet universitaire développé par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
 
-  L'analyse statique se réfère au domaine de l'informatique visant à déterminer des métriques, des comportements ou des erreurs dans un programme par la lecture de son code source. Pour un langage donnée, on peut fixer des sémantiques d'évaluation et du typage. Dans le cas de notre problématique, on s'intéresse à l'occupation en mémoire d'un programme.
-  
-  Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann et Stephen Jost sur l'analyse de consommation de ressources automatisé (AARA) [[1]](#biblio). Des solutions se basant sur ces théories existent, comme RAML [[2]](#biblio) (Resource Aware ML), un langage ML permettant ce type d'analyse.
+L'analyse statique se réfère au domaine de l'informatique visant à déterminer des métriques, des comportements ou des erreurs dans un programme par la lecture de son code source. Pour un langage donnée, on peut fixer des sémantiques d'évaluation et du typage. Dans le cas de notre problématique, on s'intéresse à l'occupation en mémoire d'un programme.
+
+Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann et Stephen Jost sur l'analyse de consommation de ressources automatisé (AARA) [[1]](#biblio). Des solutions se basant sur ces théories existent, comme RAML [[2]](#biblio) (Resource Aware ML), un langage ML permettant ce type d'analyse.
 
 ## Objectifs du projet
 
-  Notre démarche se rapproche de celle faite pour RAML [[2]](#biblio) dans leur site officiel.
+Notre démarche se rapproche de celle faite pour RAML [[2]](#biblio) dans leur site officiel.
 
-  Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des utilisateurs à travers un environnement de développement sur navigateur. 
-  
-  On souhaite aussi faciliter l'utilisation de l'outil avec un langage fonctionnel pur en entrée plus accessible, un **MiniML**. Cela nous contraint donc à adapter cette nouvelle entrée pour qu'elle soit compatible avec Autobill. Enfin, on se place aussi sur la sortie d'Autobill en traitant les expressions de contraintes qu'il génère avec des solutions externes, afin d'en tirer des preuves de complexité et les afficher directement sur le client Web.
+Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des utilisateurs à travers un environnement de développement sur navigateur. 
 
-  Notre charge de travail doit se diviser en plusieurs tâches principales : 
+On souhaite aussi faciliter l'utilisation de l'outil avec un langage fonctionnel pur en entrée plus accessible, un **MiniML**. Cela nous contraint donc à adapter cette nouvelle entrée pour qu'elle soit compatible avec Autobill. Enfin, on se place aussi sur la sortie d'Autobill en traitant les expressions de contraintes qu'il génère avec des solutions externes, afin d'en tirer des preuves de complexité et les afficher directement sur le client Web.
+
+Notre charge de travail doit se diviser en plusieurs tâches principales : 
 
 - L'implémentation du langage MiniML et sa traduction vers LCBPV
 - La mise en place d'un client et d'un serveur Web 
@@ -50,30 +48,32 @@ tableofcontents: true
 
 ## Qu'est-ce que Autobill ?
 
-  La proposition d'Hector avec Autobill se différencie par un niveau d'analyse plus précis sur les fermetures et les arguments fonctionnelles d'un programme. D'abord, Autobill prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en **Call-By-Push-Value** (CBPV), avec ou sans continuation explicite. 
-  
-  C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de Paul Blain Lévy [[3]](#biblio). CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite et précise les quantités de mémoire pour chaque valeur introduite / éliminée ou fonction appelée / terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : on fixe quand les évaluations se déroulent et on peut mieux prédire la consommation de mémoire à chaque étape du programme.
+La proposition d'Hector avec Autobill se différencie par un niveau d'analyse plus précis sur les fermetures et les arguments fonctionnelles d'un programme. D'abord, Autobill prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en **Call-By-Push-Value** (CBPV), avec ou sans continuation explicite. 
 
-  À partir d'une entrée en CBPV, Autobill l'internalise et traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Enfin, il retourne en sortie ces contraintes formalisées pour satisfaire le format d'entrée de différents outils de recherche d'optimisations et assistants de preuve, comme [MiniZinc](https://www.minizinc.org/) ou [Coq](https://coq.inria.fr/), afin de prouver des propriétés de complexité temporelle ou spatiale.
+C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de Paul Blain Lévy [[3]](#biblio). CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite et précise les quantités de mémoire pour chaque valeur introduite / éliminée ou fonction appelée / terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : on fixe quand les évaluations se déroulent et on peut mieux prédire la consommation de mémoire à chaque étape du programme.
 
-  ![](./MarkdownVersions/Rapport/Schema_Autobill.png)
+À partir d'une entrée en CBPV, Autobill l'internalise et traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Enfin, il retourne en sortie ces contraintes formalisées pour satisfaire le format d'entrée de différents outils de recherche d'optimisations et assistants de preuve, comme [MiniZinc](https://www.minizinc.org/) ou [Coq](https://coq.inria.fr/), afin de prouver des propriétés de complexité temporelle ou spatiale.
+
+![](./MarkdownVersions/Rapport/Schema_Autobill.png)
   
 ## Processus de Conception
-  Lors de la conception de l'interface, les contraintes étaient multiples.\
-  La première était l'interopérabilité des technologies du projet.\
-  En effet **Autobill** étant développé en **OCaml**, il était nécessaire de trouver des moyens pour l'adapter à un environnement Web.\
-  La seconde était qu'il fallait développer cette interface en simultané avec **Autobill** et ajuster notre travail en fonction des besoins courants de nos encadrants.\
-  Mais la plus importante d'entre elles était le souhait de nos encadrants que l'application soit principalement côté client afin de simplifier son déploiement dans les infrastructures de la faculté .\ 
+Lors de la conception de l'interface, les contraintes étaient multiples.\
+La première était l'interopérabilité des technologies du projet.\
+En effet **Autobill** étant développé en **OCaml**, il était nécessaire de trouver des moyens pour l'adapter à un environnement Web.\
+La seconde était qu'il fallait développer cette interface en simultané avec **Autobill** et ajuster notre travail en fonction des besoins courants de nos encadrants.\
+Mais la plus importante d'entre elles était le souhait de nos encadrants que l'application soit principalement côté client afin de simplifier son déploiement dans les infrastructures de la faculté .\ 
 
-  Une fois ces contraintes établies, nous avons dû,tout au long de ce projet, effectuer des choix, que ce soit en matière de design ou de technologies.
+Une fois ces contraintes établies, nous avons dû,tout au long de ce projet, effectuer des choix, que ce soit en matière de design ou de technologies.
 
-  Nous tenons donc à travers ce rapport à mettre en lumière ces décisions, tout en décrivant le travail qu'elles ont engendré.
+Nous tenons donc à travers ce rapport à mettre en lumière ces décisions, tout en décrivant le travail qu'elles ont engendré.
+
+\newpage
 
 # Interface Web 
 
-  Dans l'optique de ne pas se restreindre dans l'utilisation d'outils notamment au niveau du résolveur de contraintes, le groupe s'est orienté vers deux structures de projets différentes et indépendantes : l'une fonctionnant avec un client unique, la seconde avec un serveur dédié et un client qui expose ce serveur. 
-  
-  L'avantage réside dans le fait que, lors du développement, si un nouvel outil est amené à être utilisé mais ne dispose de compatibilité sur navigateur Web, alors le serveur peut répondre à ce problème. C'est aussi un sujet de comparaison intéressant à présenter par la suite, que ce soit au niveau des performances que du déploiement de ces solutions.
+Dans l'optique de ne pas se restreindre dans l'utilisation d'outils notamment au niveau du résolveur de contraintes, le groupe s'est orienté vers deux structures de projets différentes et indépendantes : l'une fonctionnant avec un client unique, la seconde avec un serveur dédié et un client qui expose ce serveur. 
+
+L'avantage réside dans le fait que, lors du développement, si un nouvel outil est amené à être utilisé mais ne dispose de compatibilité sur navigateur Web, alors le serveur peut répondre à ce problème. C'est aussi un sujet de comparaison intéressant à présenter par la suite, que ce soit au niveau des performances que du déploiement de ces solutions.
 
 ## Client uniquement
 
@@ -91,34 +91,31 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 - **React.js** : React.js est une bibliothèque JavaScript open-source pour la création d'interfaces utilisateur,utilisée pour la création d'applications web modernes et interactives.
 
 
-  Parmi les avantages de cette technologie, il y a l'utilisation du Virtual DOM (Document Object Model) qui permet une mise à jour plus efficace et rapide des éléments d'une page. Le Virtual DOM est une représentation virtuelle d'un arbre DOM qui est stockée en mémoire et mise à jour en temps réel en fonction des interactions de l'utilisateur avec l'interface. On modifie seulement les éléments impactés, et non l'ensemble du DOM de la page, ce qui se traduit par des temps de réponse plus rapides et des meilleures performances.
+Parmi les avantages de cette technologie, il y a l'utilisation du Virtual DOM (Document Object Model) qui permet une mise à jour plus efficace et rapide des éléments d'une page. Le Virtual DOM est une représentation virtuelle d'un arbre DOM qui est stockée en mémoire et mise à jour en temps réel en fonction des interactions de l'utilisateur avec l'interface. On modifie seulement les éléments impactés, et non l'ensemble du DOM de la page, ce qui se traduit par des temps de réponse plus rapides et des meilleures performances.
 
 
-  Aussi, React est basé sur la programmation orientée composant. L'interface utilisateur est décomposée en petits composants réutilisables, chacun étant responsable de l'affichage d'une partie spécifique de l'interface. Chaque composant est construit de manière indépendante et peut être utilisé à plusieurs endroits dans une application. Cette approche modulaire rend l'interface plus flexible et maintenable.
+Aussi, React est basé sur la programmation orientée composant. L'interface utilisateur est décomposée en petits composants réutilisables, chacun étant responsable de l'affichage d'une partie spécifique de l'interface. Chaque composant est construit de manière indépendante et peut être utilisé à plusieurs endroits dans une application. Cette approche modulaire rend l'interface plus flexible et maintenable.
 
 
 - **CodeMirror** : C'est une librairie Javascript permettant d'intégrer un éditeur de code puissant, incluant le support de la coloration syntaxique, de l'autocomplétion ou encore le surlignage d'erreurs. Les fonctionnalités de l'éditeur sont grandement extensives et permettant même la compatibilité avec un langage de programmation personnalisé comme **MiniML**. Enfin, CodeMirror est disponible sous licence MIT, libre de droits.
 
 
 - **OCaml + Js_of_OCaml** :  Afin de manipuler la librairie d'**Autobill**, il est nécessaire de passer par du côté OCaml pour traiter le code en entrée et en sortir des équations à résoudre ou des résultats d'interprétations. Pour faire le pont entre Javascript et OCaml, on utilise Js_of_OCaml, une librairie contenant, entre autres, un compilateur qui transpile du bytecode OCaml en Javascript et propose une grande variété de primitive et de type pour manipuler des éléments Javascript depuis OCaml. L'API de Js_of_Ocaml est suffisamment fournie pour développer entièrement des applications web complètes et fonctionnelles. 
+Pour ce projet, il sert surtout pour interagir avec Autobill et la librairie de MiniML depuis le client Web. Dans un fichier `main.ml`, on exporte un objet Javascript contenant plusieurs méthodes correspondant chacune à un mode d'exécution différent d'Autobill. Chaque méthode prend en entrée le code MiniML à traiter et réalise les transformations nécessaires pour générer la sortie demandée. 
 
 
-  Pour ce projet, il sert surtout pour interagir avec Autobill et la librairie de MiniML depuis le client Web. Dans un fichier `main.ml`, on exporte un objet Javascript contenant plusieurs méthodes correspondant chacune à un mode d'exécution différent d'Autobill. Chaque méthode prend en entrée le code MiniML à traiter et réalise les transformations nécessaires pour générer la sortie demandée. 
-
-
-  Néanmoins, en l'absence de sortie standard ou d'erreurs, les messages d'exceptions d'Ocaml, par exemple, n'apparaissent que dans la console Javascript du navigateur. Js_of_ocaml met à notre disposition un module `Sys_js` qui offre des primitives permettant de capturer les possibles messages sur les sorties et les rediriger dans des buffers. Ces buffers peuvent être convertis en chaînes de caractères et retournés au client par la suite.
+Néanmoins, en l'absence de sortie standard ou d'erreurs, les messages d'exceptions d'Ocaml, par exemple, n'apparaissent que dans la console Javascript du navigateur. Js_of_ocaml met à notre disposition un module `Sys_js` qui offre des primitives permettant de capturer les possibles messages sur les sorties et les rediriger dans des buffers. Ces buffers peuvent être convertis en chaînes de caractères et retournés au client par la suite.
 
 
 - **MiniZinc**: À la génération des expressions de contraintes, Autobill retourne une sortie au format MiniZinc.
 
-
-  Ce langage permet de décrire des problèmes de manière déclarative à l'aide de contraintes logiques et d'exprimer des objectifs à atteindre. Le but est de calculer les bornes mémoires minimums pour satisfaire les contraintes mémoires du programme et d'afficher, sous forme d'équation, le résultat dans la sortie de notre IDE. 
-
-
-  Son API prend en charge une large gamme de solveurs. Aussi, il dispose d'une grande communauté d'utilisateurs et de contributeurs, ce qui nous permet de trouver nombreuses ressources disponibles pour l'apprentissage et le dépannage.
+Ce langage permet de décrire des problèmes de manière déclarative à l'aide de contraintes logiques et d'exprimer des objectifs à atteindre. Le but est de calculer les bornes mémoires minimums pour satisfaire les contraintes mémoires du programme et d'afficher, sous forme d'équation, le résultat dans la sortie de notre IDE. 
 
 
-  Sa librairie est codée en C++ mais il reste utilisable dans notre interface Web grâce à Web Assembly. C'est un format binaire de code exécutable qui permet de porter des applications codées dans des langages de programmation sur le Web. Grâce à des compilateurs vers Web Assembly, comme Emscripten pour C/C++, on peut lancer des tâches intensives de résolution de contraintes, avec des performances proches du natif, depuis n'importe quel navigateur Web moderne.
+Son API prend en charge une large gamme de solveurs. Aussi, il dispose d'une grande communauté d'utilisateurs et de contributeurs, ce qui nous permet de trouver nombreuses ressources disponibles pour l'apprentissage et le dépannage.
+
+
+Sa librairie est codée en C++ mais il reste utilisable dans notre interface Web grâce à Web Assembly. C'est un format binaire de code exécutable qui permet de porter des applications codées dans des langages de programmation sur le Web. Grâce à des compilateurs vers Web Assembly, comme Emscripten pour C/C++, on peut lancer des tâches intensives de résolution de contraintes, avec des performances proches du natif, depuis n'importe quel navigateur Web moderne.
 
 
   
@@ -155,17 +152,17 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
   
 #### Coté Serveur
 
-   - **NodeJS**: NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'avoir une grande efficacité et une utilisation optimale des ressources. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel. Enfin, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de Node Js) permet de gagner beaucoup de temps de développement et de faciliter notre tâche. Par example, le module ["Child Processes"](https://nodejs.org/api/child_process.html) nous permet de éxecuter le code MiniZinc en passant les commandes directement. Cela nous permet d'éviter les restrictions en côté full-client au niveau de  du résolveur de contraintes.
+- **NodeJS**: NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'avoir une grande efficacité et une utilisation optimale des ressources. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel. Enfin, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de Node Js) permet de gagner beaucoup de temps de développement et de faciliter notre tâche. Par example, le module ["Child Processes"](https://nodejs.org/api/child_process.html) nous permet de éxecuter le code MiniZinc en passant les commandes directement. Cela nous permet d'éviter les restrictions en côté full-client au niveau de  du résolveur de contraintes.
 
 
 ### Tâches réalisées
 
-  - Intégration d'une IDE similaire aux Playground de [OCaml](https://OCaml.org/play) et [Rescript](https://rescript-lang.org/try)
-  - Implémentation d'un éditeur de code supportant la syntaxe de **MiniML**
-  - Liaison entre le code Javascript et OCaml à l'aide de Js_of_OCaml 
-  - Implémentation de plusieurs modes de traitement du code **MiniML** : 
-     - Affichage de l'équation résultant de l'anlyse statique
-  - Implémentation du solveur d'équations MiniZinc côté client et server
+- Intégration d'une IDE similaire aux Playground de [OCaml](https://OCaml.org/play) et [Rescript](https://rescript-lang.org/try)
+- Implémentation d'un éditeur de code supportant la syntaxe de **MiniML**
+- Liaison entre le code Javascript et OCaml à l'aide de Js_of_OCaml 
+- Implémentation de plusieurs modes de traitement du code **MiniML** : 
+    - Affichage de l'équation résultant de l'anlyse statique
+- Implémentation du solveur d'équations MiniZinc côté client et server
 
 # MiniML
 

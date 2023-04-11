@@ -5,7 +5,6 @@ author:
   - Fazazi Zeid
   - Luo Yukai 
   - Dibassi Brahima 
-date: 9 avril, 2023
 lang: fr
 geometry:
   - margin = 1.2in
@@ -14,10 +13,23 @@ sansfont: Helvetica
 monofont: Menlo
 fontsize: 12pt
 urlcolor: NavyBlue
-numbersections: true
-toc: true
-tableofcontents: true
+numbersections: true # Numéros de sections
+toc: true # Table des matières
+tableofcontents: true # Table des matières
+include-before: | # Texte avant la table des matières
+    **Encadrants : Hector Suzanne, Emmanuel Chailloux**
+    \newpage
+# Citation
+reference-section-title: Bibliographie 
+bibliography : MarkdownVersions/Rapport/biblio.bib 
+# csl: MarkdownVersions/Rapport/mla.csl # Style de citation
+nocite: '@*' # Mettre toutes les références dans la bibliographie
 ---
+<!-- 
+pandoc  MarkdownVersions/Rapport/Rapport.md --citeproc --standalone -V date="$(date +%Y-%m-%d%n)"  -o Rapport.pdf
+-->
+
+\newpage
 
 # Contexte du projet
 
@@ -85,6 +97,7 @@ Aussi, React est basé sur la programmation orientée composant. L'interface uti
 
 - **CodeMirror** : C'est une librairie Javascript permettant d'intégrer un éditeur de code puissant, incluant le support de la coloration syntaxique, de l'autocomplétion ou encore le surlignage d'erreurs. Les fonctionnalités de l'éditeur sont grandement extensives et permettant même la compatibilité avec un langage de programmation personnalisé comme **MiniML**. Enfin, CodeMirror est disponible sous licence MIT, libre de droits.
 
+\newpage
 
 - **OCaml + Js_of_OCaml** :  Afin de manipuler la librairie d'**Autobill**, il est nécessaire de passer par du côté OCaml pour traiter le code en entrée et en sortir des équations à résoudre ou des résultats d'interprétations. Pour faire le pont entre Javascript et OCaml, on utilise Js_of_OCaml, une librairie contenant, entre autres, un compilateur qui transpile du bytecode OCaml en Javascript et propose une grande variété de primitive et de type pour manipuler des éléments Javascript depuis OCaml. L'API de Js_of_Ocaml est suffisamment fournie pour développer entièrement des applications web complètes et fonctionnelles. 
 Pour ce projet, il sert surtout pour interagir avec Autobill et la librairie de MiniML depuis le client Web. Dans un fichier `main.ml`, on exporte un objet Javascript contenant plusieurs méthodes correspondant chacune à un mode d'exécution différent d'Autobill. Chaque méthode prend en entrée le code MiniML à traiter et réalise les transformations nécessaires pour générer la sortie demandée. 
@@ -251,8 +264,9 @@ La suite consistera surtout à consolider les bases établies sur tous les aspec
   - Comparaison d'architectures Full-Client vs Client-Serveur
   - Comparaison **RAML** vs **Autobill**
 
+\newpage
 
-# Bibliographie {#biblio}
+<!-- # Bibliographie {#biblio}
 - [1] Hoffmann, Jan, and Steffen Jost. “Two Decades of Automatic Amortized Resource Analysis.” Mathematical structures in computer science 32.6 (2022): 729–759 
 
 - [2] Levy, Paul Blain. “Call-by-Push-Value: A Subsuming Paradigm.” Lecture Notes in Computer Science. Berlin, Heidelberg: Springer Berlin Heidelberg, 1999. 228–243
@@ -279,4 +293,4 @@ La suite consistera surtout à consolider les bases établies sur tous les aspec
 
 - Emmanuel Chailloux,  Pascal Manoury, Bruno Pagano. Développement d’applications avec Objective Caml. Paris Cambridge [etc: O’Reilly, 2000],[**URL**](https://www-apr.lip6.fr/~chaillou/Public/DA-OCAML/) 
 
-- Hector Suzanne. Autobill, 2023, GitLab, [**URL**](https://gitlab.lip6.fr/suzanneh/autobill)
+- Hector Suzanne. Autobill, 2023, GitLab, [**URL**](https://gitlab.lip6.fr/suzanneh/autobill) -->

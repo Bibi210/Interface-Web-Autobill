@@ -4,7 +4,7 @@ subtitle: "Pré-Rapport"
 author:  
   - Fazazi Zeid
   - Luo Yukai 
-  - Brahima Dibassi
+  - Dibassi Brahima 
 date: 9 avril, 2023
 lang: fr
 geometry:
@@ -18,6 +18,7 @@ numbersections: true
 toc: true
 tableofcontents: true
 ---
+
 # Contexte du projet
 
 ## Historique et définitions
@@ -49,7 +50,7 @@ On souhaite aussi faciliter l'utilisation de l'outil avec un langage fonctionnel
 Notre charge de travail doit se diviser en plusieurs tâches principales : 
 
 - L'implémentation du langage MiniML et sa traduction vers LCBPV
-- La mise en place d'un client et d'un serveur Web 
+- La mise en place d'une interface Web 
 - La mise en relation entre l'interface Web et la machine Autobill
 - Le traitement des contraintes d'Autobill par un solveur externe
 - Les tests de performances et comparaisons avec les solutions existantes
@@ -78,11 +79,7 @@ Il s'agit de la suite de langages principaux permettant de bâtir l'interface We
 
 
 - **React.js** : React.js est une bibliothèque JavaScript open-source pour la création d'interfaces utilisateur,utilisée pour la création d'applications web modernes et interactives.
-
-
 Parmi les avantages de cette technologie, il y a l'utilisation du Virtual DOM (Document Object Model) qui permet une mise à jour plus efficace et rapide des éléments d'une page. Le Virtual DOM est une représentation virtuelle d'un arbre DOM qui est stockée en mémoire et mise à jour en temps réel en fonction des interactions de l'utilisateur avec l'interface. On modifie seulement les éléments impactés, et non l'ensemble du DOM de la page, ce qui se traduit par des temps de réponse plus rapides et des meilleures performances.
-
-
 Aussi, React est basé sur la programmation orientée composant. L'interface utilisateur est décomposée en petits composants réutilisables, chacun étant responsable de l'affichage d'une partie spécifique de l'interface. Chaque composant est construit de manière indépendante et peut être utilisé à plusieurs endroits dans une application. Cette approche modulaire rend l'interface plus flexible et maintenable.
 
 
@@ -91,19 +88,12 @@ Aussi, React est basé sur la programmation orientée composant. L'interface uti
 
 - **OCaml + Js_of_OCaml** :  Afin de manipuler la librairie d'**Autobill**, il est nécessaire de passer par du côté OCaml pour traiter le code en entrée et en sortir des équations à résoudre ou des résultats d'interprétations. Pour faire le pont entre Javascript et OCaml, on utilise Js_of_OCaml, une librairie contenant, entre autres, un compilateur qui transpile du bytecode OCaml en Javascript et propose une grande variété de primitive et de type pour manipuler des éléments Javascript depuis OCaml. L'API de Js_of_Ocaml est suffisamment fournie pour développer entièrement des applications web complètes et fonctionnelles. 
 Pour ce projet, il sert surtout pour interagir avec Autobill et la librairie de MiniML depuis le client Web. Dans un fichier `main.ml`, on exporte un objet Javascript contenant plusieurs méthodes correspondant chacune à un mode d'exécution différent d'Autobill. Chaque méthode prend en entrée le code MiniML à traiter et réalise les transformations nécessaires pour générer la sortie demandée. 
-
-
 Néanmoins, en l'absence de sortie standard ou d'erreurs, les messages d'exceptions d'Ocaml, par exemple, n'apparaissent que dans la console Javascript du navigateur. Js_of_ocaml met à notre disposition un module `Sys_js` qui offre des primitives permettant de capturer les possibles messages sur les sorties et les rediriger dans des buffers. Ces buffers peuvent être convertis en chaînes de caractères et retournés au client par la suite.
 
 
 - **MiniZinc**: À la génération des expressions de contraintes, Autobill retourne une sortie au format MiniZinc.
-
-Ce langage permet de décrire des problèmes de manière déclarative à l'aide de contraintes logiques et d'exprimer des objectifs à atteindre. Le but est de calculer les bornes mémoires minimums pour satisfaire les contraintes mémoires du programme et d'afficher, sous forme d'équation, le résultat dans la sortie de notre IDE. 
-
-
+Ce langage permet de décrire des problèmes de manière déclarative à l'aide de contraintes logiques. L'objectif avec MiniZinc est de calculer les bornes mémoires minimums pour satisfaire les contraintes mémoires du programme et d'afficher, sous forme d'équation, le résultat dans la sortie de notre IDE. 
 Son API prend en charge une large gamme de solveurs. Aussi, il dispose d'une grande communauté d'utilisateurs et de contributeurs, ce qui nous permet de trouver nombreuses ressources disponibles pour l'apprentissage et le dépannage.
-
-
 Sa librairie est codée en C++ mais il reste utilisable dans notre interface Web grâce à Web Assembly. C'est un format binaire de code exécutable qui permet de porter des applications codées dans des langages de programmation sur le Web. Grâce à des compilateurs vers Web Assembly, comme Emscripten pour C/C++, on peut lancer des tâches intensives de résolution de contraintes, avec des performances proches du natif, depuis n'importe quel navigateur Web moderne.
 
 ### Aperçu de l'interface graphique
@@ -144,7 +134,7 @@ Sa librairie est codée en C++ mais il reste utilisable dans notre interface Web
   
 #### Coté serveur
 
-- **NodeJS**: NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'avoir une grande efficacité et une utilisation optimale des ressources. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel. Enfin, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de Node Js) permet de gagner beaucoup de temps de développement et de faciliter notre tâche. Par example, le module ["Child Processes"](https://nodejs.org/api/child_process.html) nous permet de éxecuter le code MiniZinc en passant les commandes directement. Cela nous permet d'éviter les restrictions en côté full-client au niveau de  du résolveur de contraintes.
+- **NodeJS**: NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'avoir une grande efficacité et une utilisation optimale des ressources. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel. Enfin, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de Node Js) permet de gagner beaucoup de temps de développement et de faciliter notre tâche. Par example, le module ["Child Processes"](https://nodejs.org/api/child_process.html) nous permet d'éxecuter des binaires en passant par le systeme d'exploitation. Cela nous permet de lever toutes les restrictions sur les outils qui découlent d'une architecture client uniquement.
 
 
 ### Tâches réalisées
@@ -164,35 +154,35 @@ MiniML émerge de la volonté de créer un langage fonctionnel simple, accessibl
 
 
 ### Call-By-Push-Value
-Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par **Autobill** permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.\
-Pour permettre cette double compatibilité, **Call-By-Push-Value** effectue une profonde distinction entre les calculs et les valeurs.\
+Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par **Autobill** permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.
 La différenciation entre ces deux types de stratégies s'effectue lors de la traduction depuis le langage d'origine.
 
 
 ## Description rapide
-**MiniML** dans ce projet dispose d'une implémentation écrite en **OCaml**.\
-**MiniML** possède deux types de base (Integer et Boolean).\
-Il est possible de créer de nouveaux types à partir de ceux-ci.\
-MiniML est parfaitement compatible avec un parseur ou compilateur **OCaml**
+**MiniML** dans ce projet dispose d'une implémentation écrite en **OCaml**.
+De plus tout code **MiniML** est parfaitement compatible avec un parseur ou compilateur **OCaml**.
 
-### Dépendances
-
-- **Menhir** : [*Menhir*](http://gallium.inria.fr/~fpottier/menhir/) est l'unique dépendance de l’implémentation de **MiniML**, Cette librairie permet la génération d'analyseurs syntaxiques en OCaml.\
-*Menhir* est disponible sous une licence GNU GENERAL PUBLIC.
-
-
-
-## Contenu actuel
-
+### Contenu actuel
+- Integer
+- Boolean
 - Listes
 - Fonction Récusives
 - Opérateurs de Bases
-- Construction de Types
+- Construction de Types de Données
+- Types de Données Paramétrés
+- Types de Données Récursifs
 - Variables Globales/Locales
-- Files
+- Files *(FIFO)*
+
+### Dépendances
+- **Menhir** : [*Menhir*](http://gallium.inria.fr/~fpottier/menhir/) est l'unique dépendance de l’implémentation de **MiniML**, Cette librairie permet la génération d'analyseurs syntaxiques en OCaml nous permettant d'éviter le développement d'un analyseur syntaxique rigide.
+Cette décision compatible avec les deux architectures du projet, nous a permis d'économiser en temps de développement et gagné en flexibilité.\
+Menhir est disponible sous licence GPL
 
 
 ## Un exemple de code MiniML
+
+Cet exemple de code **MiniML** est une implémentation possible d'une file d'attente sans effet de bord en **MiniML**.
 
 ```OCaml
   type 'a option =
@@ -225,23 +215,25 @@ MiniML est parfaitement compatible avec un parseur ou compilateur **OCaml**
   (pop queue)
 
 ```
+### Schema de traduction
 
-Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple pour décrire, avec des schémas de traduction comment l'on passe d'un AST **MiniML** à un AST **Call-By-Push-Value** compatible pour **Autobill**.
+Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple pour décrire, avec des schémas de traduction comment l'on passe de **MiniML** à **Call-By-Push-Value** compatible pour **Autobill**.
 
 
 # Conclusion et tâches à réaliser
 
 ## Conclusion
-  La réalisation de cette interface a fait intervenir un large panel de sujets en lien avec la formation du Master d'informatique STL et mis à profit les connaissances acquises lors de ce semestre. Le projet est à un stade d'avancement satisfaisant. Autobill étant encore en phase expérimentale, celui-ci ajoute contiuellement des nouveautés et corrections que l'on doit intégrer.
+La réalisation de cette interface a fait intervenir un large panel de sujets en lien avec la formation du Master d'informatique STL et mis à profit les connaissances acquises lors de ce semestre. Le projet est à un stade d'avancement satisfaisant. Autobill étant encore en phase expérimentale, celui-ci ajoute contiuellement des nouveautés et corrections que l'on doit intégrer.
 
-  La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de RAML [3], mentionnée en section 1.
+La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de RAML [3], mentionnée en section 1.
 
 ## MiniML
   - Ajout de sucre syntaxique. (Records, Operateurs Infixes, ...)
   - Ajout d'une librairie standard.
   - Spécification complète du langage.
   - Bibliothèque de structures de données complexes
-  - Schemas de compilation d'une structure *FIFO* vers **Autobill**
+  - Régles de traduction de **MiniML** vers **Autobill**
+  - Schemas de traduction d'une structure *FIFO* vers **Autobill**
 
 ## Serveur
   - Affichage des erreurs

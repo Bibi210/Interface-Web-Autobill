@@ -24,6 +24,8 @@ reference-section-title: Bibliographie
 bibliography : MarkdownVersions/Rapport/biblio.bib 
 # csl: MarkdownVersions/Rapport/mla.csl # Style de citation
 # nocite: '@*' # Mettre toutes les références dans la bibliographie
+link-citations: true # Lien vers les références
+citation-style : MarkdownVersions/Rapport/ieee.csl
 ---
 <!-- 
 pandoc  MarkdownVersions/Rapport/Rapport.md --citeproc --standalone -V date="$(date +%Y-%m-%d%n)"  -o Rapport.pdf
@@ -35,25 +37,25 @@ pandoc  MarkdownVersions/Rapport/Rapport.md --citeproc --standalone -V date="$(d
 
 ## Historique et définitions
 
-[**Autobill**](https://gitlab.lip6.fr/suzanneh/autobill) est un projet universitaire développé par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
+[**Autobill** @autobill] est un projet universitaire développé par notre tuteur de projet Hector Suzanne, au sein de l'équipe APR du LIP6, dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme. 
 
 L'analyse statique est un domaine de l'informatique qui consiste à mesureer et détecter automatiquement les comportements ou erreurs dans un programme en examinant son code source. Pour effectuer cette analyse sur un langage de programmation donné, il est possible de définir des règles d'évaluation et de typage. Dans notre situation spécifique, nous sommes particulièrement intéressés par l'occupation de la mémoire d'un programme.
 
-Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann sur l'analyse de consommation de ressources automatisé (AARA) [[1]](#biblio). Des solutions se basant sur ces théories existent, comme RAML [[2]](#biblio) (Resource Aware ML), un langage *à la ML* permettant ce type d'analyse, créé par Jan Hoffman et Stephen Jost.
+Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann sur l'analyse de consommation de ressources automatisé [AARA @Hoffmann]. Des solutions se basant sur ces théories existent, comme [Resource Aware ML @RAML], un langage *à la ML* permettant ce type d'analyse, créé par Jan Hoffman et Stephen Jost.
 
 ## Qu'est-ce qu'Autobill ?
 
-La proposition d'Hector Suzanne avec Autobill se différencie par un niveau d'analyse plus précis sur les fermetures et les arguments fonctionnels d'un programme. D'abord, Autobill prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en **Call-By-Push-Value** (CBPV), avec ou sans continuation explicite. 
+La proposition d'Hector Suzanne avec Autobill se différencie par un niveau d'analyse plus précis sur les fermetures et les arguments fonctionnels d'un programme. D'abord, Autobill prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en [**Call-By-Push-Value** (CBPV) @Levy], avec ou sans continuation explicite. 
 
-C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de Paul Blain Lévy [[3]](#biblio). CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite les quantités de mémoire pour chaque valeur introduite/éliminée ou fonction appelée/terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : on fixe quand les évaluations se déroulent, afin de mieux prédire la consommation de mémoire à chaque étape du programme.
+C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de [Paul Blain Lévy @Levy]. CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite les quantités de mémoire pour chaque valeur introduite/éliminée ou fonction appelée/terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : on fixe quand les évaluations se déroulent, afin de mieux prédire la consommation de mémoire à chaque étape du programme.
 
-À partir d'une entrée en CBPV, Autobill traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Il l'internalise, c'est à dire construit l'arbre syntaxique abstrait (AST) de ce programme. Ensuite, Autobill infère dans l'AST le typage de ses expressions ainsi que leurs polarités. Enfin, il en tire en sortie les contraintes dans des formats d'entrées supportés par différents outils de recherche opérationnelles et assistants de preuve, comme [MiniZinc](https://www.minizinc.org/) ou [Coq](https://coq.inria.fr/), afin de prouver des propriétés de complexité temporelle ou spatiale.
+À partir d'une entrée en CBPV, Autobill traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Il l'internalise, c'est à dire construit l'arbre syntaxique abstrait (AST) de ce programme. Ensuite, Autobill infère dans l'AST le typage de ses expressions ainsi que leurs polarités. Enfin, il en tire en sortie les contraintes dans des formats d'entrées supportés par différents outils de recherche opérationnelles et assistants de preuve, comme [MiniZinc @minizinc] ou [Coq @coq], afin de prouver des propriétés de complexité temporelle ou spatiale.
 
-![](./MarkdownVersions/Rapport/Schema_Autobill.png)
+![Représentation simplifiée d'Autobill](./MarkdownVersions/Rapport/Schema_Autobill.png)
 
 ## Objectifs du projet
 
-Notre démarche se rapproche de celle de RAML [[2]](#biblio) dans leur site officiel.
+Notre démarche se rapproche de celle de [RAML @RAML]  dans leur site officiel.
 
 Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des utilisateurs à travers un environnement de développement sur navigateur. 
 
@@ -67,7 +69,7 @@ Notre charge de travail doit se diviser en plusieurs tâches principales :
 - Le traitement des contraintes d'Autobill par un solveur externe
 - Les tests de performances et comparaisons avec les solutions existantes
 
-![](./MarkdownVersions/Rapport/Diagramme Haut Niveau PSTL.png)
+![Répresentation du systéme cible](./MarkdownVersions/Rapport/Diagramme Haut Niveau PSTL.png)
 
 ## Processus de conception
 Lors de la conception de l'interface, les contraintes étaient multiples. La première était l'interopérabilité des technologies du projet. En effet **Autobill** étant développé en **OCaml**, il était nécessaire de trouver des moyens pour l'adapter à un environnement Web.La seconde était qu'il fallait développer cette interface en simultané avec **Autobill** et ajuster notre travail en fonction des besoins courants de nos encadrants.Mais la plus importante d'entre elles était le souhait de nos encadrants que l'application soit principalement côté client afin de simplifier son déploiement dans les infrastructures de la faculté.

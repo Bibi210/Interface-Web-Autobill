@@ -55,7 +55,7 @@ C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thè
 
 ## Objectifs du projet
 
-Notre démarche se rapproche de celle de [RAML @RAML]  dans leur site officiel.
+Notre démarche se rapproche de celle de [RAML @RAML] dans leur site officiel.
 
 Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des utilisateurs à travers un environnement de développement sur navigateur. 
 
@@ -165,17 +165,16 @@ Sa librairie est codée en C++ mais il reste utilisable dans notre interface Web
 
 ## Pourquoi MiniML ?
 
-MiniML émerge de la volonté de créer un langage fonctionnel simple, accessible et sans effets de bord pour les utilisateurs d'**Autobill** car celui-ci requiert une connaissance approfondie de la théorie autour des différentes sémantiques d'évaluation afin de pouvoir manipuler son entrée en **Call-By-Push-Value**.
+**MiniML** émerge de la volonté de nos encadrants de créer un langage fonctionnel simple et accessible pour les utilisateurs d'**Autobill** servant d'abstraction à **LCBPV**.
+Dans le cadre de ce projet **MiniML**, dispose d'une implémentation écrite en **OCaml**.
+Nous avons pris la décision de rendre la syntaxe **MiniML** parfaitement compatible **OCaml** simplifiant les comparaisons avec [RAML @RAML].
 
+Le développement de **MiniML** suivant les besoins de nos encadrants celui-ci est pour l'instant sans effets de bords.
 
 ### Call-By-Push-Value
 Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par **Autobill** permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.
-La différenciation entre ces deux types de stratégies s'effectue lors de la traduction depuis le langage d'origine.
-
-
-## Description rapide
-**MiniML** dans ce projet dispose d'une implémentation écrite en **OCaml**.
-De plus tout code **MiniML** est parfaitement compatible avec un parseur ou compilateur **OCaml**.
+Dans LCBPV, une distinction a lieu entre les calculs et les valeurs permettant de décider en détail comment ceux-ci sont évalué.
+Nous permettant lors de la traduction depuis un autre langage choisir le type de stratégie utilisé
 
 ### Contenu actuel
 - Integer
@@ -191,13 +190,13 @@ De plus tout code **MiniML** est parfaitement compatible avec un parseur ou comp
 
 ### Dépendances
 - **Menhir** : [*Menhir*](http://gallium.inria.fr/~fpottier/menhir/) est l'unique dépendance de l’implémentation de **MiniML**, Cette librairie permet la génération d'analyseurs syntaxiques en OCaml nous permettant d'éviter le développement d'un analyseur syntaxique rigide.
-Cette décision compatible avec les deux architectures du projet, nous a permis d'économiser en temps de développement et gagné en flexibilité.\
+Notre décision d'utiliser *menhir* contrairement à un analyseur syntaxique développer par nos soins reste nous a permis d'économiser en temps de développement et de gagné en flexibilité.\
 Menhir est disponible sous licence GPL
 
 
 ## Un exemple de code MiniML
 
-Cet exemple de code **MiniML** est une implémentation possible d'une file d'attente sans effet de bord en **MiniML**.
+Cet exemple est une implémentation possible d'une file d'attente en **MiniML**.
 
 ```OCaml
   type 'a option =

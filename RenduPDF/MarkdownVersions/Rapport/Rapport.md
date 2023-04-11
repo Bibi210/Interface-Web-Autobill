@@ -23,7 +23,7 @@ include-before: | # Texte avant la table des matières
 reference-section-title: Bibliographie 
 bibliography : MarkdownVersions/Rapport/biblio.bib 
 # csl: MarkdownVersions/Rapport/mla.csl # Style de citation
-nocite: '@*' # Mettre toutes les références dans la bibliographie
+# nocite: '@*' # Mettre toutes les références dans la bibliographie
 ---
 <!-- 
 pandoc  MarkdownVersions/Rapport/Rapport.md --citeproc --standalone -V date="$(date +%Y-%m-%d%n)"  -o Rapport.pdf
@@ -265,32 +265,3 @@ La suite consistera surtout à consolider les bases établies sur tous les aspec
   - Comparaison **RAML** vs **Autobill**
 
 \newpage
-
-<!-- # Bibliographie {#biblio}
-- [1] Hoffmann, Jan, and Steffen Jost. “Two Decades of Automatic Amortized Resource Analysis.” Mathematical structures in computer science 32.6 (2022): 729–759 
-
-- [2] Levy, Paul Blain. “Call-by-Push-Value: A Subsuming Paradigm.” Lecture Notes in Computer Science. Berlin, Heidelberg: Springer Berlin Heidelberg, 1999. 228–243
-
-- [3] Hoffman, Jan. Resource Aware ML, Web, [URL](https://www.raml.co/)
-  
-- Will Kurt. 2018. Get Programming with Haskell. Manning Publications.
-
-- Pierce, Benjamin C. Types and Programming Languages. MIT Press, 2002
-
-- Winskel, Glynn. The Formal Semantics of Programming Languages : an Introduction. Cambridge (Mass.) London: MIT Press, 1993
-
-- Alfred V. Aho, Monica S. Lam, Ravi Sethi, Jeffrey D. Ullman, Compilers : Principles, Techniques, and Tools. 2nd ed. Boston (Mass.) San Francisco (Calif.) New York [etc: Pearson Addison Wesley, 2007]
-
-- Minsky, Anil Madhavapeddy, and Jason Hickey. 2013. Real World OCaml. O’Reilly Media, [**URL**](https://dev.realworldocaml.org/)
-
-- Martin Avanzini and Ugo Dal Lago. 2017. Automating sized-type inference for complexity analysis. Proceedings of the ACM on Programming Languages 1, Volume 1, Issue ICFP, Article No.: 43, pp 1–29 (2017)
-
-- Dominic Orchard, Vilem-Benjamin Liepelt, and Harley Eades III. 2019. Quantitative program reasoning with graded modaltypes.Proceedings of the ACM on Programming Languages3, Volume 3, Issue ICFP, Article No.: 110, pp 1–30 (2019)
-
-- Xavier Leroy. 2022 OCaml library. OCaml Lazy Doc. Retrieved February 20, 2023 [**URL**](https://v2.OCaml.org/api/index.html)
-
-- Haskell - Wikibooks, open books for an open world. Doc Haskell. Retrieved February 17, 2023 [**URL**](https://en.wikibooks.org/wiki/Haskell)
-
-- Emmanuel Chailloux,  Pascal Manoury, Bruno Pagano. Développement d’applications avec Objective Caml. Paris Cambridge [etc: O’Reilly, 2000],[**URL**](https://www-apr.lip6.fr/~chaillou/Public/DA-OCAML/) 
-
-- Hector Suzanne. Autobill, 2023, GitLab, [**URL**](https://gitlab.lip6.fr/suzanneh/autobill) -->

@@ -86,9 +86,11 @@ Dans l'optique de ne pas se restreindre dans l'utilisation d'outils notamment au
 
 L'avantage réside dans le fait que, lors du développement, si un nouvel outil est amené à être utilisé mais ne dispose de compatibilité sur navigateur Web, alors le serveur peut répondre à ce problème. C'est aussi un sujet de comparaison intéressant à présenter par la suite, que ce soit au niveau des performances que du déploiement de ces solutions.
 
+De cette démarche, il en résulte un code source d'environ 500 lignes, client et serveur compris, faisant tourner notre IDE en ligne dans un état fonctionnel.
+
 ## Client uniquement
 
-Une première approche tout client a été mise œuvre dès le début du projet. Celle-ci permettait de garantir une facilité dans le déploiement en ligne de notre solution. L'environnement limité du navigateur Web a remis en question la tenue de cette architecture, mais des compromis ont été trouvés pour satisfaire la contrainte d'interopérabilité entre le Web et Ocaml. De cette démarche, il en résulte un code source d'environ 400 lignes faisant tourner notre IDE en ligne dans un état fonctionnel.
+Une première approche tout client a été mise œuvre dès le début du projet. Celle-ci permettait de garantir une facilité dans le déploiement en ligne de notre solution. L'environnement limité du navigateur Web a remis en question la tenue de cette architecture, mais des compromis ont été trouvés pour satisfaire la contrainte d'interopérabilité entre le Web et Ocaml.
 
 ### Outils et Technologies utilisés
 
@@ -121,23 +123,12 @@ Sa librairie est codée en C++ mais il reste utilisable dans notre interface Web
 
 ![](./MarkdownVersions/Rapport/screen.png)
 
-  
-### Tâches réalisées 
-- Intégration d'un IDE similaire aux *Playground* de [OCaml](https://OCaml.org/play) et [Rescript](https://rescript-lang.org/try)
-- Implémentation d'un éditeur de code supportant la syntaxe de **MiniML**
-- Liaison entre le code Javascript et OCaml à l'aide de Js_of_OCaml 
-- Implémentation de plusieurs modes de traitement du code **MiniML** : 
-  - Affichage de l'AST MiniML
-  - Affichage de l'AST de **Call-By-Push-Value**
-  - Affichage de l'équation résultant de l'analyse statique
-  - Vers Représentation Interne **Autobill**
-- Remontée d'erreurs et affichage dynamique sur l'interface
-- Implémentation du solveur d'équations MiniZinc côté client
-
 
 ## Serveur + client
 
-Dans le stade actuel d'Autobill, une architecture avec un client seul peut répondre aux exigences du projet STL. Néanmoins, Autobill évolue constamment et rien ne garantit que ses itérations suivantes puissent être supportées par notre solution. Dans l'optique de rendre notre solution plus flexible et *futureproof*, une version de notre interface faisant intervenir un serveur distant a été développé.
+Dans le stade actuel d'Autobill, une architecture avec un client seul peut répondre aux exigences du projet STL. Néanmoins, Autobill évolue constamment et rien ne garantit que ses itérations suivantes puissent être supportées par notre solution. Dans l'optique de rendre notre solution plus flexible et *futureproof*, une nouvelle version de notre interface, qui déporte les tâches complexes vers un serveur distant, a été développé.
+
+On a souhaité aussi adapter le client pour qu'il opère dans ces deux architectures différentes. Ainsi, dans notre environnement de développement, on peut facilement faire la bascule entre un mode de fonctionnement local/synchrone et un mode distant/asynchrone.
 
 ### Schéma de communication
 
@@ -145,17 +136,24 @@ Dans le stade actuel d'Autobill, une architecture avec un client seul peut répo
 
 ### Outils et technologies utilisés
 
-- **NodeJS**: NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'exécuter plusieurs opérations simultanément sans bloquer le fil d'exécution principal. Par exemple, si deux requêtes sont envoyées au serveur en même temps, elles seront gérées en parallèle par le serveur. Ainsi, grâce à cette gestion asynchrone, NodeJS permet d'optimiser l'utilisation des ressources système en réduisant les temps d'attente et en évitant les blocages inutiles, ce qui peut augmenter l'efficacité et les performances du programme. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel. Enfin, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de Node Js) permet de gagner beaucoup de temps de développement et de faciliter notre tâche. Par example, le module ["Child Processes"](https://nodejs.org/api/child_process.html) nous permet d'exécuter le code MiniZinc en passant les commandes directement. Cela nous permet d'éviter les restrictions du côté full-client au niveau du résolveur de contraintes.
+- **NodeJS**: NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'exécuter plusieurs opérations simultanément sans bloquer le fil d'exécution principal. Par exemple, si deux requêtes sont envoyées au serveur en même temps, elles seront gérées en parallèle par le serveur. Ainsi, grâce à cette gestion asynchrone, NodeJS permet d'optimiser l'utilisation des ressources système en réduisant les temps d'attente et en évitant les blocages inutiles, ce qui peut augmenter l'efficacité et les performances du programme. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel. De plus, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de Node Js) permet de gagner beaucoup de temps de développement et de faciliter notre tâche. Par example, le module ["Child Processes"](https://nodejs.org/api/child_process.html) nous permet d'exécuter le code MiniZinc en passant les commandes directement. Cela nous permet d'éviter les restrictions du côté tout-client au niveau du résolveur de contraintes notamment. Enfin, un des avantages de NodeJS est qu'il nous permet d'utiliser le même langage de programmation que le client. On s'évite ainsi les écueils autour de l'interopérabilité et de la compatibilité entre deux instances codées dans des langages différents.
 
+- **Express.js** : Express.js est un librairie Javascript disponible uniquement dans un environnement en NodeJS...
 
-### Tâches réalisées
-
-- Intégration d'une IDE similaire aux Playground de [OCaml](https://OCaml.org/play) et [Rescript](https://rescript-lang.org/try)
+## Tâches réalisées 
+- Intégration d'un IDE similaire aux *Playground* de [OCaml](https://OCaml.org/play) et [Rescript](https://rescript-lang.org/try)
 - Implémentation d'un éditeur de code supportant la syntaxe de **MiniML**
-- Liaison entre le code Javascript et OCaml à l'aide de Js_of_OCaml 
+- Liaison entre le code Javascript et OCaml à l'aide de Js_of_OCaml
 - Implémentation de plusieurs modes de traitement du code **MiniML** : 
-    - Affichage de l'équation résultant de l'analyse statique
-- Implémentation du solveur d'équations MiniZinc côté client et server
+  - Affichage de l'AST MiniML
+  - Affichage de l'AST de **Call-By-Push-Value**
+  - Affichage de l'équation résultant de l'analyse statique
+  - Vers Représentation Interne **Autobill**
+- Remontée d'erreurs et affichage dynamique sur l'interface
+- Implémentation du solveur d'équations MiniZinc côté client
+- Mise en place d'un serveur distant manipulant les libraires OCaml du projet et le solveur MiniZinc
+- Exposition du serveur avec une API REST
+- Mise en relation du client et du serveur
 
 # MiniML
 

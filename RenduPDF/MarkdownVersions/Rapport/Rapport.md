@@ -55,7 +55,8 @@ L'entrée est donc imposée. Pour étendre l'usage d'Autobill à un langage de p
 
 À partir d'une entrée en CBPV, Autobill traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Il l'internalise, c'est à dire construit l'arbre syntaxique abstrait (AST) de ce programme. Ensuite, Autobill infère dans l'AST le typage de ses expressions ainsi que leurs polarités. Enfin, il en tire en sortie les contraintes dans des formats d'entrées supportés par différents outils de recherche opérationnelles et assistants de preuve, comme [MiniZinc @minizinc] ou [Coq @coq], afin de prouver des propriétés de complexité temporelle ou spatiale.
 
-![Représentation simplifiée d'Autobill](./MarkdownVersions/Rapport/Schema_Autobill.png)  {#fig1}
+![Représentation simplifiée d'Autobill\label{fig1}](./MarkdownVersions/Rapport/Schema_Autobill.png)
+  
 
 ## Objectifs du projet
 
@@ -65,9 +66,7 @@ Le sujet de notre projet STL va donc être de soutenir l'effort de développemen
 
 On souhaite aussi faciliter l'utilisation de l'outil avec un langage fonctionnel pur en entrée plus accessible, un **MiniML**. Cela nous contraint donc à adapter cette nouvelle entrée pour qu'elle soit compatible avec Autobill. Enfin, on se charge aussi de traiter les différentes sorties standards et d'erreurs d'Autobill, notamment les expressions de contraintes, afin de les passer à des solveurs externes, en tirer des preuves de complexité et les afficher directement sur le client Web.
 
-Par rapport à Autobill et à la [Figure 1](#fig1), on se place donc en amont du code LCBPV en entrée et après la sortie en code MiniZinc/Coq.
-
-\newpage
+Par rapport à Autobill et à la Figure \ref{fig1} on se place donc en amont du code LCBPV en entrée et après la sortie en code MiniZinc/Coq.
 
 Notre charge de travail doit se diviser en plusieurs tâches principales : 
 
@@ -147,7 +146,7 @@ On a souhaité aussi adapter le client pour qu'il opère dans ces deux architect
 - **NodeJS**: NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'exécuter plusieurs opérations simultanément sans bloquer le fil d'exécution principal. Par exemple, si deux requêtes sont envoyées au serveur en même temps, elles seront gérées en parallèle par le serveur. Ainsi, grâce à cette gestion asynchrone, NodeJS permet d'optimiser l'utilisation des ressources système en réduisant les temps d'attente et en évitant les blocages inutiles, ce qui peut augmenter l'efficacité et les performances du programme. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel. De plus, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de Node Js) permet de gagner beaucoup de temps de développement et de faciliter notre tâche. Par example, le module ["Child Processes"](https://nodejs.org/api/child_process.html) nous permet d'exécuter le code MiniZinc en passant les commandes directement. Cela nous permet d'éviter les restrictions du côté tout-client au niveau du résolveur de contraintes notamment. Enfin, un des avantages de NodeJS est qu'il nous permet d'utiliser le même langage de programmation que le client. On s'évite ainsi les écueils autour de l'interopérabilité et de la compatibilité entre deux instances codées dans des langages différents.
 
 - **Express.js** : Express.jS est un bibliothèque d'application web populaire basé sur la plateforme Node.js, utilisé pour construire des applications web et des API évolutives. Il fournit de nombreux middleware, tels que ["morgan"](https://www.npmjs.com/package/morgan) pour enregistrer les journaux de session HTTP et ["helmet"](https://helmetjs.github.io/) pour garantir la sécurité. Avec Express.jS, nous pouvons facilement ajouter des middleware en utilisant directement "app.use()" sans avoir à les ajouter manuellement. De plus, Express.jS dispose d'un puissant routeur qui permet aux développeurs de gérer facilement les routes et de construire des API REST de manière efficace. Par conséquent, l'utilisation d'Express.jS rend la développement plus facile et plus efficace, et rend également le code plus concis. Donc il permet aux développeurs de créer facilement des applications web plus rapides et évolutives. De plus, comme l'histoire d'Express.js est plus longue, il dispose d'une plus grande communauté que les bibliothèques plus jeunes, comme "Koa" et "Nest". Il est donc facile de trouver de nombreuses ressources et solutions.
-
+\newpage
 - **REST API** : L'API REST est un modèle de conception d'interface de programmation d'application Web (API) utilisé pour fournir un accès aux ressources sur le Web. Il est basé sur le protocole HTTP et utilise des requêtes et des réponses HTTP pour communiquer. La conception de l'API REST est très simple, elle utilise des verbes HTTP (GET, POST, PUT, DELETE, etc.) pour représenter les opérations effectuées, utilise des formats de données standard (tels que JSON, XML) pour la transmission de données, et utilise des codes d'état HTTP standard pour représenter l'état de la réponse, par exemple, 200 représente le succès, 404 représente la ressource introuvable, etc. Cela permet aux clients de rapidement déterminer le résultat de la réponse en fonction du code d'état, sans avoir besoin de parser des informations de réponse complexes. Par rapport à "SOAP" qui ne peut utiliser que XML pour transférer des informations, l'API REST simplifie et facilite l'échange de données entre les clients et les serveurs. Comparé à "gRPC" et "GraphQL", qui nécessitent que les développeurs écrivent du code généré spécifique pour le client et le serveur, l'API REST permet aux développeurs de construire et de déployer des applications plus rapidement.
 
 ## Tâches réalisées 
@@ -196,8 +195,8 @@ Nous permettant lors de la traduction depuis un autre langage de choisir le type
 - Files *(FIFO)*
 
 ### Dépendances
-- [**Menhir** @menhir] : [*Menhir*](http://gallium.inria.fr/~fpottier/menhir/) est l'unique dépendance de l’implémentation de **MiniML**, Cette librairie permet la génération d'analyseurs syntaxiques en OCaml nous permettant d'éviter le développement d'un analyseur syntaxique rigide.
-Notre décision d'utiliser *menhir* contrairement à un analyseur syntaxique développer par nos soins reste nous a permis d'économiser en temps de développement et de gagné en flexibilité.\
+- [**Menhir** @menhir] : [*Menhir*](http://gallium.inria.fr/~fpottier/menhir/) est l'unique dépendance de l’implémentation de MiniML, librairie permet la génération d'analyseurs syntaxiques en OCaml nous permettant d'éviter le développement d'un analyseur syntaxique rigide.\
+C'est à la suite de différents tests de compatibilité avec les deux architectures du projet que nous avons choisi cette librarie nous permettant un gain en temps et en flexibilité non-négligeable.\
 Menhir est disponible sous licence GPL
 
 

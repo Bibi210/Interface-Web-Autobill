@@ -137,6 +137,12 @@ Dans le stade actuel d'Autobill, une architecture avec un client seul peut répo
 
 On a souhaité aussi adapter le client pour qu'il opère dans ces deux architectures différentes. Ainsi, dans notre environnement de développement, on peut facilement faire la bascule entre un mode de fonctionnement local/synchrone et un mode distant/asynchrone.
 
+Dans notre architecture Client-Server, on a réaliser 2 service principal en utilisant le protocole HTTP (voir Figure 4): la transformation de code MiniML vers l'équation résultant de l'analyse statique et la éxecution de code MiniZinc. Dans le premier service, le client envoie le code LCBPV au serveur via une requête POST, le serveur le convertit en équation et le renvoie au client. Dans le deuxième service, le client envoie le code de MiniZinc au serveur via une requête POST. Le serveur passe le code à un solveur de MiniZinc et renvoie le résultat au client.
+
+
+
+ 
+
 ### Schéma de communication
 
 ![Schéma de communication](./MarkdownVersions/Rapport/communication.png)

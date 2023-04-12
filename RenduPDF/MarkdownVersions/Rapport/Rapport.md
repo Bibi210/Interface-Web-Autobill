@@ -145,7 +145,7 @@ Dans notre architecture Client-Server, on a réaliser 2 service principal en uti
 
 ### Schéma de communication
 
-![Schéma de communication](./MarkdownVersions/Rapport/communication.png)
+![Schéma de communication](./MarkdownVersions/Rapport/Communication.png)
 
 \newpage
 

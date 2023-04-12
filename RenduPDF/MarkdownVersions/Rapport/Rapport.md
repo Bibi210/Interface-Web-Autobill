@@ -41,11 +41,13 @@ Dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'
 
 L'analyse statique est un domaine de l'informatique qui consiste à mesurer et détecter automatiquement les comportements ou erreurs dans un programme en examinant son code source. Pour effectuer cette analyse sur un langage de programmation donné, il est possible de définir des règles d'évaluation et de typage pour répondre à une problématique. Dans le cas d'Autobill, nous nous sommes particulièrement intéressés à l'occupation mémoire d'un programme.
 
-Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann sur l'analyse de consommation de ressources automatisé [AARA @Hoffmann]. Des solutions se basant sur ces théories existent, comme [Resource Aware ML @RAML], un langage *à la ML* permettant ce type d'analyse, créé par Jan Hoffman et Stephen Jost.
+Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann sur l'analyse de consommation de ressources automatisé [AARA @Hoffmann] (*Automatic Amortized Resource Analysis*). Des solutions se basant sur ces théories existent, comme [Resource Aware ML @RAML], un langage *à la ML* permettant ce type d'analyse, créé par Jan Hoffman et Stephen Jost.
+
+![Représentation simplifiée d'Autobill\label{fig1}](./MarkdownVersions/Rapport/Schema_Autobill.png)
 
 ## Qu'est-ce qu'Autobill ?
 
-La proposition d'Hector Suzanne avec Autobill se différencie par un niveau d'analyse plus précis sur les fermetures et les arguments fonctionnels d'un programme. D'abord, Autobill prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en [**Call-By-Push-Value** (CBPV) @Levy], avec ou sans continuation explicite. 
+La proposition d'Hector Suzanne avec Autobill se différencie par un niveau d'analyse plus précis sur les fermetures et les arguments fonctionnels d'un programme. D'abord, parmi les entrées possibles illustrées sur la gauche de la figure \ref{fig1}, Autobill ne supporte uniquement que des programmes écrits soit en modèle machine propre à Autobill, soit en [**Call-By-Push-Value** (CBPV) @Levy], avec ou sans continuation explicite. 
 
 Call-By-Push-Value est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de [Paul Blain Lévy @Levy]. CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite les quantités de mémoire pour chaque valeur introduite/éliminée ou fonction appelée/terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source: on fixe quand les évaluations se déroulent, afin de mieux prédire la consommation de mémoire à chaque étape du programme. Ces atouts font de CBPV un langage de choix à analyser pour Autobill.
 
@@ -53,14 +55,12 @@ L'entrée est donc imposée. Ainsi, pour étendre l'usage d'Autobill à un autre
 
 \newpage
 
-À partir d'une entrée en CBPV, Autobill traduit le programme en un code machine avec continuations explicites, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Il l'internalise, c'est à dire construit l'arbre syntaxique abstrait (AST) de ce programme. Ensuite, Autobill infère dans l'AST le typage de ses expressions ainsi que leurs polarités, pour démarquer les calculs et les valeurs dans l'AST. Enfin, il en tire en sortie les contraintes dans des formats d'entrées supportés par différents outils de recherche opérationnelles et assistants de preuve, comme [MiniZinc @minizinc] ou [Coq @coq], afin de prouver des propriétés de complexité temporelle ou spatiale.
+À partir d'une entrée en CBPV, Autobill traduit le programme en un code machine avec continuations explicites, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Il l'internalise, c'est à dire construit l'arbre syntaxique abstrait (AST) de ce programme. Ensuite, Autobill infère dans l'AST le typage de ses expressions ainsi que leurs polarités, pour démarquer les calculs et les valeurs dans l'AST. Enfin, en sortie, on remarque dans la figure \ref{fig1} la possibilité de tirer une interprétation du programme, mais surtout de récupérer les contraintes dans un format [MiniZinc @minizinc] ou [Coq @coq]. Ce sont des outils des assistants de preuve qui permettent, à l'aide d'un langage dédié, d'exprimer explicitement des contraintes logiques. Autobill s'en sert pour décrire les bornes mémoires nécessaires au fonctionnement d'un programme. On peut alors traiter ces équations avec des solveurs, fournis aussi par ces deux outils, pour prouver des propriétés de complexité temporelle ou spatiale.
 
-![Représentation simplifiée d'Autobill\label{fig1}](./MarkdownVersions/Rapport/Schema_Autobill.png)
-  
 
 ## Objectifs du projet
 
-Notre démarche se rapproche de celle de [RAML @RAML] avec leur site officiel: offrir une interface Homme-Machine accessible a tous et illustrant un sujet de recherche en analyse statique.
+Notre démarche se rapproche de celle de [RAML @RAML] avec leur site officiel: offrir une interface Homme-Machine accessible à tous et illustrant un sujet de recherche en analyse statique.
 
 Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des utilisateurs à travers un environnement de développement sur navigateur.
 
@@ -115,7 +115,7 @@ Néanmoins, ces dernières sont bien moins recherchées sur le marché du travai
 - **OCaml** @Minsky_Ocaml @chailloux @Leroy + [**Js_of_OCaml** @js_of_ocaml]:  Afin de manipuler la librairie d'Autobill, il est nécessaire de passer par OCaml pour traiter le code en entrée et en sortir des équations à résoudre ou des résultats d'interprétations. Pour faire le pont entre Javascript et OCaml, on utilise Js_of_OCaml, une librairie contenant, entre autres, un compilateur qui transpile du bytecode OCaml en Javascript et propose une grande variété de primitive et de type pour manipuler des éléments Javascript depuis OCaml. L'API de Js_of_OCaml est suffisamment fournie pour développer entièrement des applications web complètes et fonctionnelles.\newline 
 Pour ce projet, il sert surtout pour interagir avec Autobill et la librairie de MiniML depuis le client Web. Dans un fichier `main.ml`, on exporte un objet Javascript contenant plusieurs méthodes correspondant chacune à un mode d'exécution différent d'Autobill. Chaque méthode prend en entrée le code MiniML à traiter et réalise les transformations nécessaires pour générer la sortie demandée.\newline 
 Néanmoins, en l'absence de sortie standard ou d'erreurs, les messages d'exceptions d'Ocaml, par exemple, n'apparaissent que dans la console Javascript du navigateur. Js_of_ocaml met à notre disposition un module `Sys_js` qui offre des primitives permettant de capturer les possibles messages sur les sorties et les rediriger dans des buffers. Ces buffers peuvent être convertis en chaînes de caractères et retournés au client par la suite.\newline 
-La question s'est posé de l'intérêt de Js_of_OCaml comparé à d'autres technologies comme [ReasonML @reasonml] ou [Rescript @rescript]. En effet, ce sont tout deux des langages qui ont émergé d'Ocaml et permettent de créer dans un paradigme fonctionnel des applications web complexes. Des compilateurs pour transpiler du code Rescript (Bucklescript) ou ReasonML vers Javascript existent et ReasonML permet même de compiler vers du code en React.\newline 
+La question s'est posée de l'intérêt de Js_of_OCaml comparé à d'autres technologies comme [ReasonML @reasonml] ou [Rescript @rescript]. En effet, ce sont tout deux des langages qui ont émergé d'Ocaml et permettent de créer dans un paradigme fonctionnel des applications web complexes. Des compilateurs pour transpiler du code Rescript (Bucklescript) ou ReasonML vers Javascript existent et ReasonML permet même de compiler vers du code en React.\newline 
 Néanmoins, notre objectif principal est la manipulation de la librairie d'Autobill ainsi que celle de MiniML depuis le Web. Ces deux technologies affichent des syntaxes différentes de celle d'OCaml, ce qui empêche toute compatibilité avec les bibliothèques d'OCaml. Js_of_OCaml en complément avec un client en React correspond donc à un bon compromis dans notre cas d'étude.
 
 \newpage
@@ -179,7 +179,7 @@ Cela permet aux clients de rapidement déterminer le résultat de la réponse en
 
 # MiniML
 
-## Pourquoi MiniML ?
+## Description de MiniML
 
 **MiniML** émerge du choix par nos encadrants de créer un langage fonctionnel simple et accessible pour les utilisateurs d'Autobill servant d'abstraction à **CBPV**.
 Dans le cadre de ce projet MiniML, dispose d'une implémentation écrite en **OCaml**.
@@ -211,7 +211,7 @@ Menhir est disponible sous licence GPL
 
 ## Un exemple de code MiniML
 
-Cet exemple est une implémentation possible d'une file d'attente en **MiniML**.
+Cet exemple est une implémentation possible d'une file d'attente en **MiniML**.Dans le prochain rapport, nous allons nous baser sur une variante de ce code pour décrire, avec des schémas de traduction basés sur la spécification du langage, comment l'on passe d'un code **MiniML** à un code **Call-By-Push-Value**  reçu en entrée par **Autobill**
 
 ```OCaml
   type 'a option =
@@ -244,17 +244,13 @@ Cet exemple est une implémentation possible d'une file d'attente en **MiniML**.
   (pop queue)
 
 ```
-### Schéma de traduction
-
-Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple pour décrire, avec des schémas de traduction basés sur la spécification du langage comment l'on passe d'un code **MiniML** à un code **Call-By-Push-Value** pour reçu en entrée par **Autobill**
-
 
 # Conclusion et tâches à réaliser
 
 ## Conclusion
-La réalisation de cette interface a fait intervenir un large panel de sujets en lien avec la formation du Master d'informatique STL et mis à profit les connaissances acquises lors de ce semestre. Le projet est à un stade d'avancement satisfaisant. Autobill étant encore en phase expérimentale, celui-ci est alimenté continuellement de nouveautés et corrections que l'on doit intégrer.
+La réalisation de cette interface a fait intervenir un large panel de sujets en lien avec la formation du Master d'informatique STL et mis à profit les connaissances acquises lors de ce semestre. En premier lieu, le cours d'analyse de programme statique (APS) pour toute la partie MiniML et le processus de transformation vers CBPV. Puis, les cours de programmation concurrente répartie, réactive et réticulaire (PC3R), notamment pour la partie réticulaire et l'architecture d'applications Web modernes. 
 
-La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de [RAML @RAML], mentionnée en section 1.
+Le projet est à un stade d'avancement satisfaisant. Autobill étant encore en phase expérimentale, celui-ci est alimenté continuellement de nouveautés et corrections que l'on doit intégrer. La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de [RAML @RAML], mentionnée en section 1.
 
 ## MiniML
   - Ajout de sucre syntaxique. (Records, Operateurs Infixes, ...)

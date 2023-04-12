@@ -51,6 +51,8 @@ C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thè
 
 L'entrée est donc imposée. Pour étendre l'usage d'Autobill à un langage de programmation, un travail de traduction de ce langage donné vers CBPV doit avoir lieu. Cela implique donc de comprendre le langage d'entrée que l'on compile, notamment les stratégies d'évaluations implicites mises en œuvre, et de l'adapter aux caractéristiques uniques de CBPV citées plus haut.
 
+\newpage
+
 À partir d'une entrée en CBPV, Autobill traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Il l'internalise, c'est à dire construit l'arbre syntaxique abstrait (AST) de ce programme. Ensuite, Autobill infère dans l'AST le typage de ses expressions ainsi que leurs polarités. Enfin, il en tire en sortie les contraintes dans des formats d'entrées supportés par différents outils de recherche opérationnelles et assistants de preuve, comme [MiniZinc @minizinc] ou [Coq @coq], afin de prouver des propriétés de complexité temporelle ou spatiale.
 
 ![Représentation simplifiée d'Autobill](./MarkdownVersions/Rapport/Schema_Autobill.png)
@@ -62,6 +64,8 @@ Notre démarche se rapproche de celle de [RAML @RAML] dans leur site officiel.
 Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des utilisateurs à travers un environnement de développement sur navigateur. 
 
 On souhaite aussi faciliter l'utilisation de l'outil avec un langage fonctionnel pur en entrée plus accessible, un **MiniML**. Cela nous contraint donc à adapter cette nouvelle entrée pour qu'elle soit compatible avec Autobill. Enfin, on se charge aussi de traiter les différentes sorties standards et d'erreurs d'Autobill, notamment les expressions de contraintes, afin de les passer à des solveurs externes, en tirer des preuves de complexité et les afficher directement sur le client Web.
+
+\newpage
 
 Notre charge de travail doit se diviser en plusieurs tâches principales : 
 
@@ -96,21 +100,20 @@ Une première approche tout client a été mise œuvre dès le début du projet.
 Il s'agit de la suite de langages principaux permettant de bâtir l'interface Web souhaitée. On a ainsi la main sur la structure de la page à l'aide des balises HTML, du style souhaité pour l'éditeur de code avec le CSS et on vient apporter l'interactivité et les fonctionnalités en les programmant avec Javascript, complété par la librairie React.
 
 
-- **React.js** : React.js est une bibliothèque JavaScript open-source pour la création d'interfaces utilisateur,utilisée pour la création d'applications web modernes et interactives.
+- [**React.js** @react] : React.js est une bibliothèque JavaScript open-source pour la création d'interfaces utilisateur,utilisée pour la création d'applications web modernes et interactives.
 Parmi les avantages de cette technologie, il y a l'utilisation du Virtual DOM (Document Object Model) qui permet une mise à jour plus efficace et rapide des éléments d'une page. Le Virtual DOM est une représentation virtuelle d'un arbre DOM qui est stockée en mémoire et mise à jour en temps réel en fonction des interactions de l'utilisateur avec l'interface. On modifie seulement les éléments impactés, et non l'ensemble du DOM de la page, ce qui se traduit par des temps de réponse plus rapides et des meilleures performances.
 Aussi, React est basé sur la programmation orientée composant. L'interface utilisateur est décomposée en petits composants réutilisables, chacun étant responsable de l'affichage d'une partie spécifique de l'interface. Chaque composant est construit de manière indépendante et peut être utilisé à plusieurs endroits dans une application. Cette approche modulaire rend l'interface plus flexible et maintenable.
 D'autres solutions concurrentes et valables telles que [Angular.js @angularjs] ou [Vue.js @vuejs] proposent une expérience développeur similaire. Néanmoins, ces dernières sont bien moins recherchées sur le marché du travail que React. Nous voulions à travers ce projet nous former et pratiquer une technologie très en vogue et que l'on pourra facilement réinvestir plus tard dans notre parcours professionnel.
 
-- **CodeMirror** : C'est une librairie Javascript permettant d'intégrer un éditeur de code puissant, incluant le support de la coloration syntaxique, de l'autocomplétion ou encore le surlignage d'erreurs. Les fonctionnalités de l'éditeur sont grandement extensives et permettant même la compatibilité avec un langage de programmation personnalisé comme **MiniML**. Enfin, CodeMirror est disponible sous licence MIT, libre de droits.
+- [**CodeMirror** @codemirror] : C'est une librairie Javascript permettant d'intégrer un éditeur de code puissant, incluant le support de la coloration syntaxique, de l'autocomplétion ou encore le surlignage d'erreurs. Les fonctionnalités de l'éditeur sont grandement extensives et permettant même la compatibilité avec un langage de programmation personnalisé comme MiniML. Enfin, CodeMirror est disponible sous licence MIT, libre de droits.
+
+
+- **OCaml** @Minsky_Ocaml @chailloux @Leroy + [**Js_of_OCaml** @js_of_ocaml] :  Afin de manipuler la librairie d'Autobill, il est nécessaire de passer par du côté OCaml pour traiter le code en entrée et en sortir des équations à résoudre ou des résultats d'interprétations. Pour faire le pont entre Javascript et OCaml, on utilise Js_of_OCaml, une librairie contenant, entre autres, un compilateur qui transpile du bytecode OCaml en Javascript et propose une grande variété de primitive et de type pour manipuler des éléments Javascript depuis OCaml. L'API de Js_of_OCaml est suffisamment fournie pour développer entièrement des applications web complètes et fonctionnelles.\
+Pour ce projet, il sert surtout pour interagir avec Autobill et la librairie de MiniML depuis le client Web. Dans un fichier `main.ml`, on exporte un objet Javascript contenant plusieurs méthodes correspondant chacune à un mode d'exécution différent d'Autobill. Chaque méthode prend en entrée le code MiniML à traiter et réalise les transformations nécessaires pour générer la sortie demandée.\ 
+Néanmoins, en l'absence de sortie standard ou d'erreurs, les messages d'exceptions d'Ocaml, par exemple, n'apparaissent que dans la console Javascript du navigateur. Js_of_ocaml met à notre disposition un module `Sys_js` qui offre des primitives permettant de capturer les possibles messages sur les sorties et les rediriger dans des buffers. Ces buffers peuvent être convertis en chaînes de caractères et retournés au client par la suite.\
+La question s'est posé de l'intérêt de Js_of_OCaml comparé à d'autres technologies comme [ReasonML @reasonml] ou [Rescript @rescript]. En effet, ce sont tout deux des langages qui ont émergé d'Ocaml et permettent de créer dans un paradigme fonctionnel des applications web complexes. Des compilateurs pour transpiler du code Rescript (Bucklescript) ou ReasonML vers Javascript existent et ReasonML permet même de compiler vers du code en React. Néanmoins, notre objectif principal est la manipulation de la librairie d'Autobill ainsi que celle de MiniML depuis le Web. Ces deux technologies affichent des syntaxes différentes de celle d'OCaml, ce qui empêche toute compatibilité avec les bibliothèques d'OCaml. Js_of_OCaml en complément avec un client en React correspond donc à un bon compromis dans notre cas d'étude.
 
 \newpage
-
-- **OCaml + Js_of_OCaml** :  Afin de manipuler la librairie d'**Autobill**, il est nécessaire de passer par du côté OCaml pour traiter le code en entrée et en sortir des équations à résoudre ou des résultats d'interprétations. Pour faire le pont entre Javascript et OCaml, on utilise Js_of_OCaml, une librairie contenant, entre autres, un compilateur qui transpile du bytecode OCaml en Javascript et propose une grande variété de primitive et de type pour manipuler des éléments Javascript depuis OCaml. L'API de Js_of_OCaml est suffisamment fournie pour développer entièrement des applications web complètes et fonctionnelles.
-
-Pour ce projet, il sert surtout pour interagir avec Autobill et la librairie de MiniML depuis le client Web. Dans un fichier `main.ml`, on exporte un objet Javascript contenant plusieurs méthodes correspondant chacune à un mode d'exécution différent d'Autobill. Chaque méthode prend en entrée le code MiniML à traiter et réalise les transformations nécessaires pour générer la sortie demandée. 
-Néanmoins, en l'absence de sortie standard ou d'erreurs, les messages d'exceptions d'Ocaml, par exemple, n'apparaissent que dans la console Javascript du navigateur. Js_of_ocaml met à notre disposition un module `Sys_js` qui offre des primitives permettant de capturer les possibles messages sur les sorties et les rediriger dans des buffers. Ces buffers peuvent être convertis en chaînes de caractères et retournés au client par la suite.
-
-La question s'est posé de l'intérêt de Js_of_OCaml comparé à d'autres technologies comme [ReasonML @reasonml] ou [Rescript @rescript]. En effet, ce sont tout deux des langages qui ont émergé d'Ocaml et permettent de créer dans un paradigme fonctionnel des applications web complexes. Des compilateurs pour transpiler du code Rescript (Bucklescript) ou ReasonML vers Javascript existent et ReasonML permet même de compiler vers du code en React. Néanmoins, notre objectif principal est la manipulation de la librairie d'Autobill ainsi que celle de MiniML depuis le Web. Ces deux technologies affichent des syntaxes différentes de celle d'OCaml, ce qui empêche toute compatibilité avec les bibliothèques d'OCaml. Js_of_OCaml en complément avec un client en React correspond donc à un bon compromis dans notre cas d'étude.
 
 - **MiniZinc**: À la génération des expressions de contraintes, Autobill retourne une sortie au format MiniZinc.
 Ce langage permet de décrire des problèmes de manière déclarative à l'aide de contraintes logiques. L'objectif avec MiniZinc est de calculer les bornes mémoires minimums pour satisfaire les contraintes mémoires du programme et d'afficher, sous forme d'équation, le résultat dans la sortie de notre IDE. 
@@ -119,8 +122,9 @@ Sa librairie est codée en C++ mais il reste utilisable dans notre interface Web
 
 ### Aperçu de l'interface graphique
 
-![](./MarkdownVersions/Rapport/screen.png)
+![Aperçu de l’interface graphique](./MarkdownVersions/Rapport/screen.png)
 
+\newpage
   
 ### Tâches réalisées 
 - Intégration d'un IDE similaire aux *Playground* de [OCaml](https://OCaml.org/play) et [Rescript](https://rescript-lang.org/try)
@@ -141,7 +145,7 @@ Dans le stade actuel d'Autobill, une architecture avec un client seul peut répo
 
 ### Schéma de communication
 
-![](./MarkdownVersions/Rapport/communication.png)
+![Schéma de communication](./MarkdownVersions/Rapport/communication.png)
 
 ### Outils et technologies utilisés
 
@@ -157,6 +161,9 @@ Dans le stade actuel d'Autobill, une architecture avec un client seul peut répo
     - Affichage de l'équation résultant de l'analyse statique
 - Implémentation du solveur d'équations MiniZinc côté client et server
 
+
+\newpage
+
 # MiniML
 
 ## Pourquoi MiniML ?
@@ -170,7 +177,8 @@ Le développement de **MiniML** suivant les besoins de nos encadrants celui-ci e
 ### Call-By-Push-Value
 Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par **Autobill** permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.
 Dans LCBPV, une distinction a lieu entre les calculs et les valeurs permettant de décider en détail comment ceux-ci sont évalué.
-Nous permettant lors de la traduction depuis un autre langage choisir le type de stratégie utilisé
+Nous permettant lors de la traduction depuis un autre langage de choisir le type de stratégie utilisé
+
 
 ### Contenu actuel
 - Integer
@@ -185,7 +193,7 @@ Nous permettant lors de la traduction depuis un autre langage choisir le type de
 - Files *(FIFO)*
 
 ### Dépendances
-- **Menhir** : [*Menhir*](http://gallium.inria.fr/~fpottier/menhir/) est l'unique dépendance de l’implémentation de **MiniML**, Cette librairie permet la génération d'analyseurs syntaxiques en OCaml nous permettant d'éviter le développement d'un analyseur syntaxique rigide.
+- [**Menhir** @menhir] : [*Menhir*](http://gallium.inria.fr/~fpottier/menhir/) est l'unique dépendance de l’implémentation de **MiniML**, Cette librairie permet la génération d'analyseurs syntaxiques en OCaml nous permettant d'éviter le développement d'un analyseur syntaxique rigide.
 Notre décision d'utiliser *menhir* contrairement à un analyseur syntaxique développer par nos soins reste nous a permis d'économiser en temps de développement et de gagné en flexibilité.\
 Menhir est disponible sous licence GPL
 
@@ -235,7 +243,7 @@ Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple
 ## Conclusion
 La réalisation de cette interface a fait intervenir un large panel de sujets en lien avec la formation du Master d'informatique STL et mis à profit les connaissances acquises lors de ce semestre. Le projet est à un stade d'avancement satisfaisant. Autobill étant encore en phase expérimentale, celui-ci ajoute contiuellement des nouveautés et corrections que l'on doit intégrer.
 
-La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de RAML [3], mentionnée en section 1.
+La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de [RAML @RAML], mentionnée en section 1.
 
 ## MiniML
   - Ajout de sucre syntaxique. (Records, Operateurs Infixes, ...)

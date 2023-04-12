@@ -117,7 +117,7 @@ La question s'est posé de l'intérêt de Js_of_OCaml comparé à d'autres techn
 
 \newpage
 
-- **MiniZinc**: À la génération des expressions de contraintes, Autobill retourne une sortie au format MiniZinc.
+- **MiniZinc** @minizinc: À la génération des expressions de contraintes, Autobill retourne une sortie au format MiniZinc.
 Ce langage permet de décrire des problèmes de manière déclarative à l'aide de contraintes logiques. L'objectif avec MiniZinc est de calculer les bornes mémoires minimums pour satisfaire les contraintes mémoires du programme et d'afficher, sous forme d'équation, le résultat dans la sortie de notre IDE. 
 Son API prend en charge une large gamme de solveurs. Aussi, il dispose d'une grande communauté d'utilisateurs et de contributeurs, ce qui nous permet de trouver nombreuses ressources disponibles pour l'apprentissage et le dépannage.
 Sa librairie est codée en C++ mais il reste utilisable dans notre interface Web grâce à Web Assembly. C'est un format binaire de code exécutable qui permet de porter des applications codées dans des langages de programmation sur le Web. Grâce à des compilateurs vers Web Assembly, comme Emscripten pour C/C++, on peut lancer des tâches intensives de résolution de contraintes, depuis n'importe quel navigateur Web moderne.
@@ -126,6 +126,7 @@ Sa librairie est codée en C++ mais il reste utilisable dans notre interface Web
 
 ![Aperçu de l’interface graphique](./MarkdownVersions/Rapport/screen.png)
 
+\newpage
 
 ## Serveur + client
 
@@ -135,7 +136,9 @@ On a souhaité aussi adapter le client pour qu'il opère dans ces deux architect
 
 ### Schéma de communication
 
-![](./MarkdownVersions/Rapport/communication.png)
+![Schéma de communication](./MarkdownVersions/Rapport/communication.png)
+
+\newpage
 
 ### Outils et technologies utilisés
 
@@ -157,6 +160,8 @@ On a souhaité aussi adapter le client pour qu'il opère dans ces deux architect
 - Mise en place d'un serveur distant manipulant les libraires OCaml du projet et le solveur MiniZinc
 - Exposition du serveur avec une API REST
 - Mise en relation du client et du serveur
+
+\newpage
 
 # MiniML
 

@@ -170,16 +170,16 @@ On a souhaité aussi adapter le client pour qu'il opère dans ces deux architect
 
 ## Pourquoi MiniML ?
 
-**MiniML** émerge de la volonté de nos encadrants de créer un langage fonctionnel simple et accessible pour les utilisateurs d'**Autobill** servant d'abstraction à **LCBPV**.
-Dans le cadre de ce projet **MiniML**, dispose d'une implémentation écrite en **OCaml**.
-Nous avons pris la décision de rendre la syntaxe **MiniML** parfaitement compatible **OCaml** simplifiant les comparaisons avec [RAML @RAML].
+**MiniML** émerge du choix par nos encadrants de créer un langage fonctionnel simple et accessible pour les utilisateurs d'Autobill servant d'abstraction à **LCBPV**.
+Dans le cadre de ce projet MiniML, dispose d'une implémentation écrite en **OCaml**.
+Nous avons pris la décision de rendre la syntaxe MiniML parfaitement compatible avec OCaml simplifiant les comparaisons avec [RAML @RAML].
 
-Le développement de **MiniML** suivant les besoins de nos encadrants celui-ci est pour l'instant sans effets de bords.
+Le développement de **MiniML** suivant les besoins de nos encadrants celui-ci est pour l'instant sans effets de bord.
 
 ### Call-By-Push-Value
 Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par **Autobill** permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.
 Dans LCBPV, une distinction a lieu entre les calculs et les valeurs permettant de décider en détail comment ceux-ci sont évalué.
-Nous permettant lors de la traduction depuis un autre langage de choisir le type de stratégie utilisé
+Nous permettant lors de la traduction depuis un autre langage de choisir le type de stratégie utilisé.
 
 
 ### Contenu actuel
@@ -237,7 +237,7 @@ Cet exemple est une implémentation possible d'une file d'attente en **MiniML**.
 ```
 ### Schema de traduction
 
-Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple pour décrire, avec des schémas de traduction comment l'on passe de **MiniML** à **Call-By-Push-Value** compatible pour **Autobill**.
+Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple pour décrire, avec des schémas de traduction basés sur la spécification du langage comment l'on passe d'un code **MiniML** à un code **Call-By-Push-Value** pour reçu en entrée par **Autobill**
 
 
 # Conclusion et tâches à réaliser

@@ -149,6 +149,8 @@ On a souhaité aussi adapter le client pour qu'il opère dans ces deux architect
 De plus, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de Node Js) permet de gagner beaucoup de temps de développement et de faciliter notre tâche. Par example, le module [Child processes @Child_Processes] nous permet d'exécuter le code MiniZinc en passant les commandes directement. Cela nous permet d'éviter les restrictions du côté tout-client au niveau du résolveur de contraintes notamment. Enfin, un des avantages de NodeJS est qu'il nous permet d'utiliser le même langage de programmation que le client. On s'évite ainsi les écueils autour de l'interopérabilité et de la compatibilité entre deux instances codées dans des langages différents.
 
 - **Express.js** @Express_js : Express.js est une bibliothèque d'application web populaire basé sur la plateforme Node.js, utilisé pour construire des applications web et des API évolutives. Il fournit de nombreux middlewares, tels que [morgan @morgan] pour enregistrer les journaux de session HTTP et [helmet @helmet] pour garantir la sécurité. Avec Express.js, nous pouvons facilement ajouter des middlewares en utilisant directement `app.use()` sans avoir à les ajouter manuellement. De plus, Express.js dispose d'un puissant routeur qui permet aux développeurs de gérer facilement les routes et de construire des API REST de manière efficace. Par conséquent, l'utilisation d'Express.js rend la développement plus facile et plus efficace, et rend également le code plus concis. Donc il permet aux développeurs de créer facilement des applications web plus rapides et évolutives. Il dispose d'une plus grande communauté que les bibliothèques plus jeunes, avec de nombreuses ressources et solutions disponibles.
+  
+\newpage
 
 - **REST API** @PC3R : L'API REST est un modèle de conception d'interface de programmation d'application Web (API) utilisé pour fournir un accès aux ressources sur le Web. Il est basé sur le protocole HTTP et utilise des requêtes et des réponses HTTP pour communiquer. \newline 
 La conception de l'API REST est très simple, elle utilise des verbes HTTP (GET, POST, PUT, DELETE, etc.) pour représenter les opérations effectuées, utilise des formats de données standards (tels que JSON, XML) pour la transmission de données, et utilise des codes d'état HTTP standard pour représenter l'état de la réponse, par exemple, le code 200 représente le succès, le code 404 représente la ressource introuvable, etc.\newline 
@@ -238,7 +240,7 @@ Cet exemple est une implémentation possible d'une file d'attente en **MiniML**.
   (pop queue)
 
 ```
-### Schema de traduction
+### Schéma de traduction
 
 Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple pour décrire, avec des schémas de traduction basés sur la spécification du langage comment l'on passe d'un code **MiniML** à un code **Call-By-Push-Value** pour reçu en entrée par **Autobill**
 

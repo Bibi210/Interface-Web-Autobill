@@ -39,7 +39,7 @@ pandoc  MarkdownVersions/Rapport/Rapport.md --citeproc --standalone -V date="$(d
 
 Dans le cadre de sa thèse sur l'analyse statique de la consommation mémoire d'un programme au sein de l'équipe APR du LIP6, notre tuteur de projet, Hector Suzanne, a développé [**Autobill** @autobill]. 
 
-L'analyse statique est un domaine de l'informatique qui consiste à mesurer et détecter automatiquement les comportements ou erreurs dans un programme en examinant son code source. Pour effectuer cette analyse sur un langage de programmation donné, il est possible de définir des règles d'évaluation et de typage pour répondre à une problématique. Dans le cas d'Autobill, nous nous sommes particulièrement intéressés par l'occupation de la mémoire d'un programme.
+L'analyse statique est un domaine de l'informatique qui consiste à mesurer et détecter automatiquement les comportements ou erreurs dans un programme en examinant son code source. Pour effectuer cette analyse sur un langage de programmation donné, il est possible de définir des règles d'évaluation et de typage pour répondre à une problématique. Dans le cas d'Autobill, nous nous sommes particulièrement intéressés à l'occupation mémoire d'un programme.
 
 Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann sur l'analyse de consommation de ressources automatisé [AARA @Hoffmann]. Des solutions se basant sur ces théories existent, comme [Resource Aware ML @RAML], un langage *à la ML* permettant ce type d'analyse, créé par Jan Hoffman et Stephen Jost.
 
@@ -47,13 +47,13 @@ Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers
 
 La proposition d'Hector Suzanne avec Autobill se différencie par un niveau d'analyse plus précis sur les fermetures et les arguments fonctionnels d'un programme. D'abord, Autobill prend en entrée des programmes écrits soit en modèle machine propre à Autobill, soit en [**Call-By-Push-Value** (CBPV) @Levy], avec ou sans continuation explicite. 
 
-C'est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de [Paul Blain Lévy @Levy]. CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite les quantités de mémoire pour chaque valeur introduite/éliminée ou fonction appelée/terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source: on fixe quand les évaluations se déroulent, afin de mieux prédire la consommation de mémoire à chaque étape du programme. Ces atouts font de CBPV un langage de choix à analyser pour Autobill.
+Call-By-Push-Value est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de [Paul Blain Lévy @Levy]. CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite les quantités de mémoire pour chaque valeur introduite/éliminée ou fonction appelée/terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source: on fixe quand les évaluations se déroulent, afin de mieux prédire la consommation de mémoire à chaque étape du programme. Ces atouts font de CBPV un langage de choix à analyser pour Autobill.
 
 L'entrée est donc imposée. Ainsi, pour étendre l'usage d'Autobill à un autre langage de programmation, un travail de traduction de ce langage donné vers CBPV doit avoir lieu. Cela implique donc de comprendre le langage que l'on compile, notamment les stratégies d'évaluations implicites mises en œuvre, et de l'adapter aux caractéristiques uniques de CBPV citées plus haut.
 
 \newpage
 
-À partir d'une entrée en CBPV, Autobill traduit le programme en un code machine avec continuation, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Il l'internalise, c'est à dire construit l'arbre syntaxique abstrait (AST) de ce programme. Ensuite, Autobill infère dans l'AST le typage de ses expressions ainsi que leurs polarités. Enfin, il en tire en sortie les contraintes dans des formats d'entrées supportés par différents outils de recherche opérationnelles et assistants de preuve, comme [MiniZinc @minizinc] ou [Coq @coq], afin de prouver des propriétés de complexité temporelle ou spatiale.
+À partir d'une entrée en CBPV, Autobill traduit le programme en un code machine avec continuations explicites, exprimant explicitement les contraintes de taille qui s'appliquent sur l'entrée. Il l'internalise, c'est à dire construit l'arbre syntaxique abstrait (AST) de ce programme. Ensuite, Autobill infère dans l'AST le typage de ses expressions ainsi que leurs polarités, pour démarquer les calculs et les valeurs dans l'AST. Enfin, il en tire en sortie les contraintes dans des formats d'entrées supportés par différents outils de recherche opérationnelles et assistants de preuve, comme [MiniZinc @minizinc] ou [Coq @coq], afin de prouver des propriétés de complexité temporelle ou spatiale.
 
 ![Représentation simplifiée d'Autobill\label{fig1}](./MarkdownVersions/Rapport/Schema_Autobill.png)
   
@@ -70,7 +70,7 @@ Par rapport à la chaîne d'instructions d'Autobill et à la Figure \ref{fig1}, 
 
 Notre charge de travail doit se diviser en plusieurs tâches principales: 
 
-- L'implémentation du langage MiniML et sa traduction vers LCBPV
+- L'implémentation du langage MiniML et sa traduction vers CBPV
 - La mise en place d'une interface Web 
 - La mise en relation entre l'interface Web et la machine Autobill
 - Le traitement des contraintes d'Autobill par un solveur externe
@@ -112,7 +112,7 @@ Néanmoins, ces dernières sont bien moins recherchées sur le marché du travai
 - [**CodeMirror** @codemirror]: C'est une librairie Javascript permettant d'intégrer un éditeur de code puissant, incluant le support de la coloration syntaxique, de l'autocomplétion ou encore le surlignage d'erreurs. Les fonctionnalités de l'éditeur sont grandement extensives et permettant même la compatibilité avec un langage de programmation personnalisé comme MiniML. Enfin, CodeMirror est disponible sous licence MIT, libre de droits.
 
 
-- **OCaml** @Minsky_Ocaml @chailloux @Leroy + [**Js_of_OCaml** @js_of_ocaml]:  Afin de manipuler la librairie d'Autobill, il est nécessaire de passer par du côté OCaml pour traiter le code en entrée et en sortir des équations à résoudre ou des résultats d'interprétations. Pour faire le pont entre Javascript et OCaml, on utilise Js_of_OCaml, une librairie contenant, entre autres, un compilateur qui transpile du bytecode OCaml en Javascript et propose une grande variété de primitive et de type pour manipuler des éléments Javascript depuis OCaml. L'API de Js_of_OCaml est suffisamment fournie pour développer entièrement des applications web complètes et fonctionnelles.\newline 
+- **OCaml** @Minsky_Ocaml @chailloux @Leroy + [**Js_of_OCaml** @js_of_ocaml]:  Afin de manipuler la librairie d'Autobill, il est nécessaire de passer par OCaml pour traiter le code en entrée et en sortir des équations à résoudre ou des résultats d'interprétations. Pour faire le pont entre Javascript et OCaml, on utilise Js_of_OCaml, une librairie contenant, entre autres, un compilateur qui transpile du bytecode OCaml en Javascript et propose une grande variété de primitive et de type pour manipuler des éléments Javascript depuis OCaml. L'API de Js_of_OCaml est suffisamment fournie pour développer entièrement des applications web complètes et fonctionnelles.\newline 
 Pour ce projet, il sert surtout pour interagir avec Autobill et la librairie de MiniML depuis le client Web. Dans un fichier `main.ml`, on exporte un objet Javascript contenant plusieurs méthodes correspondant chacune à un mode d'exécution différent d'Autobill. Chaque méthode prend en entrée le code MiniML à traiter et réalise les transformations nécessaires pour générer la sortie demandée.\newline 
 Néanmoins, en l'absence de sortie standard ou d'erreurs, les messages d'exceptions d'Ocaml, par exemple, n'apparaissent que dans la console Javascript du navigateur. Js_of_ocaml met à notre disposition un module `Sys_js` qui offre des primitives permettant de capturer les possibles messages sur les sorties et les rediriger dans des buffers. Ces buffers peuvent être convertis en chaînes de caractères et retournés au client par la suite.\newline 
 La question s'est posé de l'intérêt de Js_of_OCaml comparé à d'autres technologies comme [ReasonML @reasonml] ou [Rescript @rescript]. En effet, ce sont tout deux des langages qui ont émergé d'Ocaml et permettent de créer dans un paradigme fonctionnel des applications web complexes. Des compilateurs pour transpiler du code Rescript (Bucklescript) ou ReasonML vers Javascript existent et ReasonML permet même de compiler vers du code en React.\newline 
@@ -146,14 +146,14 @@ On a souhaité aussi adapter le client pour qu'il opère dans ces deux architect
 ### Outils et technologies utilisés
 
 - **NodeJS** @Node_js : NodeJS permet une gestion asynchrone des opérations entrantes, ce qui permet d'exécuter plusieurs opérations simultanément sans bloquer le fil d'exécution principal. Par exemple, si deux requêtes sont envoyées au serveur en même temps, elles seront gérées en parallèle par le serveur. Ainsi, grâce à cette gestion asynchrone, NodeJS permet d'optimiser l'utilisation des ressources système en réduisant les temps d'attente et en évitant les blocages inutiles, ce qui peut augmenter l'efficacité et les performances du programme. En outre, NodeJS est également connu pour son excellent support de la gestion des entrées/sorties et du traitement de données en temps réel.\newline 
-De plus, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de Node Js) permet de gagner beaucoup de temps de développement et de faciliter notre tâche. Par example, le module [Child processes @Child_Processes] nous permet d'exécuter le code MiniZinc en passant les commandes directement. Cela nous permet d'éviter les restrictions du côté tout-client au niveau du résolveur de contraintes notamment. Enfin, un des avantages de NodeJS est qu'il nous permet d'utiliser le même langage de programmation que le client. On s'évite ainsi les écueils autour de l'interopérabilité et de la compatibilité entre deux instances codées dans des langages différents.
+De plus, la grande quantité de packages disponible sur NPM (le gestionnaire de packages de NodeJS) permet de gagner beaucoup de temps de développement et de faciliter notre tâche. Par example, le module [Child processes @Child_Processes] nous permet d'exécuter le code MiniZinc en passant les commandes directement. Cela nous permet d'éviter les restrictions du côté tout-client au niveau du solveur de contraintes notamment. Enfin, un des avantages de NodeJS est qu'il nous permet d'utiliser le même langage de programmation que le client. On s'évite ainsi les écueils autour de l'interopérabilité et de la compatibilité entre deux instances codées dans des langages différents.
 
-- **Express.js** @Express_js : Express.js est une bibliothèque d'application web populaire basé sur la plateforme Node.js, utilisé pour construire des applications web et des API évolutives. Il fournit de nombreux middlewares, tels que [morgan @morgan] pour enregistrer les journaux de session HTTP et [helmet @helmet] pour garantir la sécurité. Avec Express.js, nous pouvons facilement ajouter des middlewares en utilisant directement `app.use()` sans avoir à les ajouter manuellement. De plus, Express.js dispose d'un puissant routeur qui permet aux développeurs de gérer facilement les routes et de construire des API REST de manière efficace. Par conséquent, l'utilisation d'Express.js rend la développement plus facile et plus efficace, et rend également le code plus concis. Donc il permet aux développeurs de créer facilement des applications web plus rapides et évolutives. Il dispose d'une plus grande communauté que les bibliothèques plus jeunes, avec de nombreuses ressources et solutions disponibles.
+- **Express.js** @Express_js : Express.js est une bibliothèque d'application web populaire basé sur la plateforme NodeJS, utilisé pour construire des applications web et des API évolutives. Il fournit de nombreux middlewares, tels que [morgan @morgan] pour enregistrer les journaux de session HTTP et [helmet @helmet] pour garantir la sécurité. Avec Express.js, nous pouvons facilement ajouter des middlewares en utilisant directement `app.use()` sans avoir à les ajouter manuellement. De plus, Express.js dispose d'un puissant routeur qui permet aux développeurs de gérer facilement les routes et de construire des API REST de manière efficace. Par conséquent, l'utilisation d'Express.js rend la développement plus facile et plus efficace, et rend également le code plus concis. Donc il permet aux développeurs de créer facilement des applications web plus rapides et évolutives. Il dispose d'une plus grande communauté que les bibliothèques plus jeunes, avec de nombreuses ressources et solutions disponibles.
   
 \newpage
 
 - **REST API** @PC3R : L'API REST est un modèle de conception d'interface de programmation d'application Web (API) utilisé pour fournir un accès aux ressources sur le Web. Il est basé sur le protocole HTTP et utilise des requêtes et des réponses HTTP pour communiquer. \newline 
-La conception de l'API REST est très simple, elle utilise des verbes HTTP (GET, POST, PUT, DELETE, etc.) pour représenter les opérations effectuées, utilise des formats de données standards (tels que JSON, XML) pour la transmission de données, et utilise des codes d'état HTTP standard pour représenter l'état de la réponse, par exemple, le code 200 représente le succès, le code 404 représente la ressource introuvable, etc.\newline 
+La conception de l'API REST est très simple. Elle utilise des verbes HTTP (GET, POST, PUT, DELETE, etc.) pour représenter les opérations effectuées, ainsi que des formats de données standards (tels que JSON, XML) pour la transmission de données. L'état des réponses est représenté sous la forme de codes d'état HTTP. Par exemple, le code 200 représente le succès, le code 404 représente la ressource introuvable, etc.\newline 
 Cela permet aux clients de rapidement déterminer le résultat de la réponse en fonction du code d'état, sans avoir besoin de parser des informations de réponse complexes. Par rapport à "SOAP" qui ne peut utiliser que XML pour transférer des informations, l'API REST simplifie et facilite l'échange de données entre les clients et les serveurs.
 
 ## Tâches réalisées 
@@ -177,21 +177,21 @@ Cela permet aux clients de rapidement déterminer le résultat de la réponse en
 
 ## Pourquoi MiniML ?
 
-**MiniML** émerge du choix par nos encadrants de créer un langage fonctionnel simple et accessible pour les utilisateurs d'Autobill servant d'abstraction à **LCBPV**.
+**MiniML** émerge du choix par nos encadrants de créer un langage fonctionnel simple et accessible pour les utilisateurs d'Autobill servant d'abstraction à **CBPV**.
 Dans le cadre de ce projet MiniML, dispose d'une implémentation écrite en **OCaml**.
 Nous avons pris la décision de rendre la syntaxe MiniML parfaitement compatible avec OCaml simplifiant les comparaisons avec [RAML @RAML].
 
 Le développement de **MiniML** suivant les besoins de nos encadrants celui-ci est pour l'instant sans effets de bord.
 
 ### Call-By-Push-Value
-Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par **Autobill** permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.
-Dans LCBPV, une distinction a lieu entre les calculs et les valeurs permettant de décider en détail comment ceux-ci sont évalués.
-Nous permettant lors de la traduction depuis un autre langage de choisir le type de stratégie utilisé
+Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par **Autobill** permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes : **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.
+Dans CBPV, une distinction a lieu entre les calculs et les valeurs permettant de décider en détail comment ceux-ci sont évalués.
+Nous permettant, lors de la traduction depuis un autre langage, de choisir le type de stratégie utilisée.
 
 
 ### Contenu actuel
-- Integer
-- Boolean
+- Entiers
+- Booléens
 - Listes
 - Fonction récusives
 - Opérateurs de bases
@@ -202,7 +202,7 @@ Nous permettant lors de la traduction depuis un autre langage de choisir le type
 - Files *(FIFO)*
 
 ### Dépendances
-- [**Menhir** @menhir]: [*Menhir*](http://gallium.inria.fr/~fpottier/menhir/) est l'unique dépendance de l’implémentation de MiniML, librairie permet la génération d'analyseurs syntaxiques en OCaml nous permettant d'éviter le développement d'un analyseur syntaxique rigide. C'est à la suite de différents tests de compatibilité avec les deux architectures du projet que nous avons choisi cette librairie nous permettant un gain en temps et en flexibilité non négligeable. 
+- [**Menhir** @menhir]: [*Menhir*](http://gallium.inria.fr/~fpottier/menhir/) est l'unique dépendance de l’implémentation de MiniML. C'est une librairie qui génère des analyseurs syntaxiques en OCaml et nous évitant le développement d'un analyseur syntaxique rigide. C'est à la suite de différents tests de compatibilité avec les deux architectures du projet que nous avons choisi cette librairie nous permettant un gain en temps et en flexibilité non négligeable. 
 Menhir est disponible sous licence GPL
 
 ## Un exemple de code MiniML
@@ -248,7 +248,7 @@ Dans le prochain rapport, nous allons nous baser sur une variante de cet exemple
 # Conclusion et tâches à réaliser
 
 ## Conclusion
-La réalisation de cette interface a fait intervenir un large panel de sujets en lien avec la formation du Master d'informatique STL et mis à profit les connaissances acquises lors de ce semestre. Le projet est à un stade d'avancement satisfaisant. Autobill étant encore en phase expérimentale, celui-ci ajoute continuellement des nouveautés et corrections que l'on doit intégrer.
+La réalisation de cette interface a fait intervenir un large panel de sujets en lien avec la formation du Master d'informatique STL et mis à profit les connaissances acquises lors de ce semestre. Le projet est à un stade d'avancement satisfaisant. Autobill étant encore en phase expérimentale, celui-ci est alimenté continuellement de nouveautés et corrections que l'on doit intégrer.
 
 La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de [RAML @RAML], mentionnée en section 1.
 

@@ -43,7 +43,6 @@ L'analyse statique est un domaine de l'informatique qui consiste à mesurer et d
 
 Historiquement, ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann sur l'analyse de consommation de ressources automatisé [AARA @Hoffmann] (*Automatic Amortized Resource Analysis*). Des solutions se basant sur ces théories existent, comme [Resource Aware ML @RAML], un langage *à la ML* permettant ce type d'analyse, créé par Jan Hoffman et Stephen Jost.
 
-![Représentation simplifiée d'Autobill\label{fig1}](./MarkdownVersions/Rapport/Schema_Autobill.png)
 
 ## Qu'est-ce qu'Autobill ?
 
@@ -52,6 +51,8 @@ La proposition d'Hector Suzanne avec Autobill se différencie par un niveau d'an
 Call-By-Push-Value est un langage qui utilise un paradigme déjà éprouvé, décrit dans la thèse de [Paul Blain Lévy @Levy]. CBPV utilise une pile pour stocker les valeurs et les fonctions manipulées dans le programme. Ainsi, on peut suivre de manière explicite les quantités de mémoire pour chaque valeur introduite/éliminée ou fonction appelée/terminée. Aussi, le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source: on fixe quand les évaluations se déroulent, afin de mieux prédire la consommation de mémoire à chaque étape du programme. Ces atouts font de CBPV un langage de choix à analyser pour Autobill.
 
 L'entrée est donc imposée. Ainsi, pour étendre l'usage d'Autobill à un autre langage de programmation, un travail de traduction de ce langage donné vers CBPV doit avoir lieu. Cela implique donc de comprendre le langage que l'on compile, notamment les stratégies d'évaluations implicites mises en œuvre, et de l'adapter aux caractéristiques uniques de CBPV citées plus haut.
+
+![Représentation simplifiée d'Autobill\label{fig1}](./MarkdownVersions/Rapport/Schema_Autobill.png)
 
 \newpage
 
@@ -63,7 +64,7 @@ L'entrée est donc imposée. Ainsi, pour étendre l'usage d'Autobill à un autre
 Notre démarche se rapproche de celle de [RAML @RAML] avec leur site officiel: offrir une interface Homme-Machine accessible à tous et illustrant un sujet de recherche en analyse statique.
 
 Le sujet de notre projet STL va donc être de soutenir l'effort de développement en proposant une interface sur le Web permettant la libre manipulation de l'outil Autobill par des utilisateurs à travers un environnement de développement sur navigateur.
-
+\newpage
 On souhaite aussi faciliter l'utilisation de l'outil avec un langage fonctionnel pur en entrée plus accessible, un **MiniML**. Cela nous contraint donc à adapter cette nouvelle entrée pour qu'elle soit compatible avec Autobill. Enfin, on se charge aussi de traiter les différentes sorties standards et d'erreurs d'Autobill, notamment les expressions de contraintes, afin de les passer à des solveurs externes, en tirer des preuves de complexité et les afficher directement sur le client Web.
 
 Par rapport à la chaîne d'instructions d'Autobill et à la Figure \ref{fig1}, on se place donc en amont du code LCBPV en entrée et après la sortie en code MiniZinc/Coq.
@@ -137,17 +138,14 @@ Dans le stade actuel d'Autobill, une architecture avec un client seul peut répo
 
 On a souhaité aussi adapter le client pour qu'il opère dans ces deux architectures différentes. Ainsi, dans notre environnement de développement, on peut facilement faire la bascule entre un mode de fonctionnement local/synchrone et un mode distant/asynchrone.
 
-Dans notre architecture Client-Server, on a réaliser 2 service principal en utilisant le protocole HTTP (voir Figure 4): la transformation de code MiniML vers l'équation résultant de l'analyse statique et la éxecution de code MiniZinc. Dans le premier service, le client envoie le code LCBPV au serveur via une requête POST, le serveur le convertit en équation et le renvoie au client. Dans le deuxième service, le client envoie le code de MiniZinc au serveur via une requête POST. Le serveur passe le code à un solveur de MiniZinc et renvoie le résultat au client.
-
-
-
- 
 
 ### Schéma de communication
 
 ![Schéma de communication](./MarkdownVersions/Rapport/Communication.png)
 
 \newpage
+
+Dans notre architecture Client-Server, nous avons mis en place 2 services principaux en utilisant le protocole HTTP (voir Figure 4): la transformation de code MiniML vers l'équation résultant de l'analyse statique et l'exécution de code MiniZinc. Dans le premier service, le client envoie le code LCBPV au serveur via une requête POST, le serveur le convertit en équation et le renvoie au client. Dans le second service, le client envoie le code de MiniZinc au serveur via une requête POST. Le serveur passe le code à un solveur de MiniZinc et renvoie le résultat au client.
 
 ### Outils et technologies utilisés
 
@@ -162,8 +160,8 @@ De plus, la grande quantité de packages disponible sur NPM (le gestionnaire de 
 La conception de l'API REST est très simple. Elle utilise des verbes HTTP (GET, POST, PUT, DELETE, etc.) pour représenter les opérations effectuées, ainsi que des formats de données standards (tels que JSON, XML) pour la transmission de données. L'état des réponses est représenté sous la forme de codes d'état HTTP. Par exemple, le code 200 représente le succès, le code 404 représente la ressource introuvable, etc.\newline 
 Cela permet aux clients de rapidement déterminer le résultat de la réponse en fonction du code d'état, sans avoir besoin de parser des informations de réponse complexes. Par rapport à "SOAP" qui ne peut utiliser que XML pour transférer des informations, l'API REST simplifie et facilite l'échange de données entre les clients et les serveurs.
 
-- **Morgan** @morgan : Morgan est une middleware JavaScript permettant d'enregistrer les journaux de session HTTP. Elle peut produire des informations dans plusieurs endroite (la console, les fichiers, les en-têtes HTTP...) pour nous aider à déboguer et à analyser le fonctionnement de leurs applications. De plus, Morgan peut être facilement ajouté aux applications Node.js en installant simplement les dépendances à l'aide de npm et en les introduisant dans l'application à l'aide d'[Express.js @Express_js]. Par rapport à d'autres outils similaires, Morgan est plus facile à utiliser, car il ne nécessite pas d'écriture de code supplémentaire. Ainsi, Morgan produit une plus grande variété des cibles de sortie. Ce sont les deux principales raisons pour lesquelles nous avons choisi Morgan.
-
+- **Morgan** @morgan : Morgan est un middleware JavaScript permettant d'enregistrer les journaux de session HTTP. Elle peut produire des informations dans plusieurs endroits (la console, les fichiers, les en-têtes HTTP...) pour nous aider à déboguer et à analyser le fonctionnement de leurs applications. De plus, Morgan peut être facilement ajouté aux applications Node.js en installant simplement les dépendances à l'aide de npm et en les introduisant dans l'application à l'aide d'[Express.js @Express_js]. Par rapport à d'autres outils similaires, Morgan est plus facile à utiliser, car il ne nécessite pas d'écriture de code supplémentaire. Ainsi, Morgan produit une plus grande variété des cibles de sortie.
+  
 - **Helmet** @helmet : Helmet est un middleware pour les applications Node.js, conçu pour aider à protéger les applications Web contre certaines attaques Web courantes. De plus, l'utilisation de Helmet est très facile, en installant simplement les dépendances à l'aide de npm et en les introduisant dans l'application à l'aide d'[Express.js @Express_js]. Et Helmet est un middleware populaire pour Node.js, bénéficiant d'une maintenance actifs de la communauté, ce qui nous permet de bénéficier facilement d'aide et de support dans la communauté.
 
 ## Tâches réalisées 
@@ -194,30 +192,39 @@ Nous avons pris la décision de rendre la syntaxe MiniML parfaitement compatible
 Le développement de **MiniML** suivant les besoins de nos encadrants celui-ci est pour l'instant sans effets de bord.
 
 ### Call-By-Push-Value
-Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par **Autobill** permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes : **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.
+Le paradigme de traitement de langage **Call-By-Push-Value** utilisé par **Autobill** permet à l'aide d'une seule sémantique de traiter deux types de stratégies d'évaluation différentes, **Call By Value** utilisée par **OCaml** et **Call By Name** utilisée par **Haskell** pour mettre en place l'évaluation *Lazy*.
 Dans CBPV, une distinction a lieu entre les calculs et les valeurs permettant de décider en détail comment ceux-ci sont évalués.
 Nous permettant, lors de la traduction depuis un autre langage, de choisir le type de stratégie utilisée.
 
 
 ### Contenu actuel
-- Entiers
-- Booléens
-- Listes
-- Fonction récusives
-- Opérateurs de bases
-- Construction de types de données
-- Types de données paramétrés
-- Types de données récursifs
-- Variables globales/locales
-- Files *(FIFO)*
+
+Le contenu actuel de **MiniML** est divisé en deux.
+Une partie noyau qui contient les éléments de base du langage servant de briques de construction pour la second partie ou se trouvent les types de données et les fonctions de haut niveau.
+
+Le noyau de **MiniML** contenant deux types de base les entiers et les booléens ainsi que les opérateurs de base.
+À partir de ces éléments, il est possible de construire des types de données plus complexes en exprimant des types paramétrés et en les combinant.
+Les listes sont un exemple de typique de structures de données construit à partir de ces mécanismes.
+Comme dans tout langage fonctionnel, il est possible de définir des fonctions anonymes ou non et de les passer en paramètre à d'autres fonctions.
+Il est également possible de définir des variables globales et locales.
+
+
+La partie contenant les types de données et les fonctions de haut niveau est la plus importante, car elle agit en tant que vitrine d'**Autobill** avec pour but de fournir un ensemble de types de données complexes dont l'analyse amortie est possible et mettant en lumière les apports d'**Autobill**. \newline
+Toujours en cours de développement, cette partie, basée sur le noyau, contient pour l'instant trois types de données les listes, les files et les arbres binaires.
 
 ### Dépendances
-- [**Menhir** @menhir]: [*Menhir*](http://gallium.inria.fr/~fpottier/menhir/) est l'unique dépendance de l’implémentation de MiniML. C'est une librairie qui génère des analyseurs syntaxiques en OCaml et nous évitant le développement d'un analyseur syntaxique rigide. C'est à la suite de différents tests de compatibilité avec les deux architectures du projet que nous avons choisi cette librairie nous permettant un gain en temps et en flexibilité non négligeable. 
+ 
+À l'instar du développement de l'interface web, la question des dépendances est cruciale pour MiniML.
+En effet pour n'avoir qu'une seule implémentation de MiniML et donc limiter l'effort de développement, il est nécessaire de ne choisir que des librairies qui sont parfaitement compatibles avec les deux architectures du projet.
+
+- [**Menhir** @menhir]: *Menhir* est l'unique dépendance de l’implémentation de MiniML. C'est une librairie qui génère des analyseurs syntaxiques en OCaml et nous évitant le développement d'un analyseur syntaxique rigide. C'est à la suite de différents tests de compatibilité avec les deux architectures du projet que nous avons choisi cette librairie nous permettant un gain en temps et en flexibilité non négligeable. 
 Menhir est disponible sous licence GPL
 
 ## Un exemple de code MiniML
 
-Cet exemple est une implémentation possible d'une file d'attente en **MiniML**.Dans le prochain rapport, nous allons nous baser sur une variante de ce code pour décrire, avec des schémas de traduction basés sur la spécification du langage, comment l'on passe d'un code **MiniML** à un code **Call-By-Push-Value**  reçu en entrée par **Autobill**
+Cet exemple est une implémentation possible d'une file d'attente en **MiniML**. Dans le prochain rapport, nous allons nous baser sur une variante de ce code pour décrire, avec des schémas de traduction basés sur la spécification du langage, comment l'on passe d'un code **MiniML** à un code **Call-By-Push-Value** reçu en entrée par **Autobill**.
+
+Le choix de ce code est motivé par le fait qu'il est assez simple et que ce dernier peut mettre en avant les résultats plus précis qu'une analyse amortie permet d'obtenir.
 
 ```OCaml
   type 'a option =
@@ -254,7 +261,7 @@ Cet exemple est une implémentation possible d'une file d'attente en **MiniML**.
 # Conclusion et tâches à réaliser
 
 ## Conclusion
-La réalisation de cette interface a fait intervenir un large panel de sujets en lien avec la formation du Master d'informatique STL et mis à profit les connaissances acquises lors de ce semestre. En premier lieu, le cours d'analyse de programme statique (APS) pour toute la partie MiniML et le processus de transformation vers CBPV. Puis, les cours de programmation concurrente répartie, réactive et réticulaire (PC3R), notamment pour la partie réticulaire et l'architecture d'applications Web modernes. 
+La réalisation de cette interface a fait intervenir un large panel de sujets en lien avec la formation du Master d'informatique STL et mis à profit les connaissances acquises lors de ce semestre. En premier lieu, le cours d'analyse de programme statique @APS pour toute la partie MiniML et le processus de transformation vers CBPV. Puis, les cours de programmation concurrente répartie, réactive et réticulaire @PC3R, notamment pour la partie réticulaire et l'architecture d'applications Web modernes. 
 
 Le projet est à un stade d'avancement satisfaisant. Autobill étant encore en phase expérimentale, celui-ci est alimenté continuellement de nouveautés et corrections que l'on doit intégrer. La suite consistera surtout à consolider les bases établies sur tous les aspects du projet présentés dans ce rapport et les adapter aux changements d'Autobill. Aussi, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de [RAML @RAML], mentionnée en section 1.
 

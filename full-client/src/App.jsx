@@ -174,9 +174,10 @@ function App() {
       setTypes(evaluation.erreur !== "" ? evaluation.erreur : "")
     } catch (error) {
       setPrint("")
-      if(serverAvailability.has(mode) && server){
+      if(availableAtServer.has(mode) && server){
         setTypes('Error: ' + error)
       } else{
+        console.log(error)
         const err = JSON.parse(error[2].c)
         setTypes((err.phase ?? "") + " " + err.info)
         highlight(err.line)
@@ -205,11 +206,11 @@ function App() {
               }}
             >
               <span>Server</span>
-              <div class="switch__container">
+              <div className="switch__container">
                 <input
                   onChange={() => setServer(!server)}
                   id="switch-shadow"
-                  class="switch switch--shadow"
+                  className="switch switch--shadow"
                   type="checkbox"
                 />
                 <label for="switch-shadow"></label>

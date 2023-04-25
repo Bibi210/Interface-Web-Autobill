@@ -11,9 +11,16 @@ import { StateField, StateEffect } from "@codemirror/state"
 import { Decoration } from "@codemirror/view"
 import { Model } from "https://cdn.jsdelivr.net/npm/minizinc/dist/minizinc.mjs"
 
+const serverAvailability = () => {
+  const res = new Set()
+  res.add("MiniML -> Autobill")
+  res.add("Equation -> Soluce")
+  return res
+}
 function App() {
   const selectNode = useRef(null)
   const modeNode = useRef(null)
+  const [server, setServer] = useState(false)
   const [code, setCode] = useState(billPrompts.playground)
   const [mode, setMode] = useState("MiniML -> MiniML_AST")
   const [types, setTypes] = useState("")
@@ -31,6 +38,8 @@ function App() {
     class: "line-error",
   })
 
+  const availableAtServer = serverAvailability()
+
   const lineHighlightField = StateField.define({
     create() {
       return Decoration.none
@@ -38,8 +47,10 @@ function App() {
     update(lines, tr) {
       lines = lines.map(tr.changes)
       if (dispatchSpec !== null) {
-        let e = dispatchSpec.effects
-        lines = lines.update({ add: [lineHighlightMark.range(e.value)] })
+        let [s, e] = dispatchSpec.effects
+        lines = lines.update({
+          add: [lineHighlightMark.range(s.value, e.value)],
+        })
       } else {
         for (let e of tr.effects) {
           if (e.is(addLineHighlight)) {
@@ -74,55 +85,82 @@ function App() {
     },
   })
   function highlight(l) {
-    let docPosition = view.state.doc.line(l).from
-    setDispatchSpec({ effects: addLineHighlight.of(docPosition) })
+    let docPositionStart = view.state.doc.line(l.beginning.line).from
+    let docPositionEnd = view.state.doc.line(l.end.line).from
+    setDispatchSpec({
+      effects: [
+        addLineHighlight.of(docPositionStart),
+        addLineHighlight.of(docPositionEnd),
+      ],
+    })
   }
   function handleSelect() {
     let val = selectNode.current?.value
     setCode(billPrompts[val])
   }
   function handleKeyDown(e) {
-    console.log(e.code)
-    console.log(ctrlPressed && e.code == "Enter")
-    if(e.key == "Meta"){
+    if (e.key == "Meta") {
       setCtrl(true)
-    } else{
-      if(ctrlPressed && e.code == "Enter"){
-        console.log("Tac")
+    } else {
+      if (ctrlPressed && e.code == "Enter") {
         e.stopPropagation()
         evalCode(e)
       }
     }
   }
-  function handleKeyUp(e){
-    if(e.key =="Meta"){
+  function handleKeyUp(e) {
+    if (e.key == "Meta") {
       setCtrl(false)
     }
   }
   const evalCode = async (e) => {
     e.preventDefault()
-    console.log("Ziak")
     try {
       let evaluation = {
         resultat: "",
-        erreur: ""
+        erreur: "",
       }
       switch (mode) {
         case "Equation -> Soluce":
-          const model = new Model()
-          model.addFile("playground.mzn", code)
-          const solve = await model.solve({
-            options: {
-              solver: "gecode",
-            },
-          })
-          evaluation.resultat = solve.solution.output.default
+          if (server) {
+            const data = await fetch("http://localhost:3002/api/minizinc", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json; charset = UTF-8",
+              },
+              body: JSON.stringify({ code: code }),
+            })
+            evaluation = await data.json()
+          } else {
+            const model = new Model()
+            model.addFile("playground.mzn", code)
+            const solve = await model.solve({
+              options: {
+                solver: "gecode",
+              },
+            })
+            evaluation.resultat = solve.solution.output.default
+          }
           break
         case "MiniML -> MiniML_AST":
           evaluation = ml.ast(code)
           break
         case "MiniML -> LCBPV_AST":
           evaluation = ml.translate(code)
+          break
+        case "MiniML -> Autobill":
+          if (server) {
+            const data = await fetch("http://localhost:3002/api/run-code", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json; charset = UTF-8",
+              },
+              body: JSON.stringify({ code: code }),
+            })
+            evaluation = await data.json()
+          } else {
+            evaluation = ml.parse(code)
+          }
           break
         case "MiniML -> Equation":
           evaluation = ml.mltoequation(code)
@@ -135,11 +173,14 @@ function App() {
       setPrint(evaluation.resultat !== "" ? evaluation.resultat : "")
       setTypes(evaluation.erreur !== "" ? evaluation.erreur : "")
     } catch (error) {
-      console.log(error)
       setPrint("")
-      const err = JSON.parse(error[2].c)
-      setTypes(err.text)
-      highlight(err.line)
+      if(serverAvailability.has(mode) && server){
+        setTypes('Error: ' + error)
+      } else{
+        const err = JSON.parse(error[2].c)
+        setTypes((err.phase ?? "") + " " + err.info)
+        highlight(err.line)
+      }
     }
   }
 
@@ -153,12 +194,27 @@ function App() {
           </div>
         </nav>
       </header>
-      <main
-        onKeyDown={(e) => handleKeyDown(e)}
-        onKeyUp={(e) => handleKeyUp(e)}>
+      <main onKeyDown={(e) => handleKeyDown(e)} onKeyUp={(e) => handleKeyUp(e)}>
         <section>
           <div ref={editor} className="editor" />
           <footer>
+            <div
+              className="mode"
+              style={{
+                display: availableAtServer.has(mode) ? "flex" : "none",
+              }}
+            >
+              <span>Server</span>
+              <div class="switch__container">
+                <input
+                  onChange={() => setServer(!server)}
+                  id="switch-shadow"
+                  class="switch switch--shadow"
+                  type="checkbox"
+                />
+                <label for="switch-shadow"></label>
+              </div>
+            </div>
             <div className="mode">
               <span>Mode</span>
               <select
@@ -172,6 +228,9 @@ function App() {
                 </option>
                 <option value={"MiniML -> LCBPV_AST"}>
                   {"MiniML -> LCBPV_AST"}
+                </option>
+                <option value={"MiniML -> Autobill"}>
+                  {"MiniML -> Autobill"}
                 </option>
                 <option value={"MiniML -> Equation"}>
                   {"MiniML -> Equation"}
@@ -209,8 +268,10 @@ function App() {
           <aside style={{ marginBottom: "1.5rem" }}>
             <span className="output">Output</span>
           </aside>
-          {print ? <pre className="print">{print}</pre> : ""}
-          {types ? <span className="types">{types}</span> : ""}
+          <div style={{ paddingLeft: "1.1rem" }}>
+            {print ? <pre className="print">{print}</pre> : ""}
+            {types ? <span className="types">{types}</span> : ""}
+          </div>
         </section>
       </main>
     </>

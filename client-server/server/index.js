@@ -5,7 +5,7 @@ const dotenv = require("dotenv");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cors = require('cors');
-const ocaml = require("../../MiniML_V2/_build/default/bin/main.bc.js");
+const ocaml = require("../../MiniML/_build/default/bin/main.bc.js");
 //const { lcbpv } = require("../language/mllike")
 //const billPrompts = require("../data/billPrompt")
 
@@ -49,7 +49,7 @@ app.post('/api/run-code', async (req, res) => {
     evaluation = ocaml.ml.parse(code);
     console.log("code traite");
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
-    res.send(JSON.stringify({ result: evaluation }) );
+    res.send(JSON.stringify({ resultat: evaluation }) );
   }catch(err){
     console.log(err.message);
     res.status(400).send(JSON.stringify({ error: err.message }));
@@ -167,6 +167,6 @@ app.post('/api/minizinc', (req, res) => {
     
     console.log(stdout);
     // Send the MiniZinc output back to the client
-    res.send(JSON.stringify({ result: stdout }) );
+    res.send(JSON.stringify({ resultat: stdout }) );
   });
 });

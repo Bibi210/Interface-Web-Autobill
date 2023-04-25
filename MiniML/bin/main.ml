@@ -8,6 +8,20 @@ open TypeInfer_intf
 open MiniML
 open Autobill.Misc
 
+let rec json_error_reporter e = match e with
+
+  | Fatal_error {phase; info; loc; pos} ->
+    let loc = match loc, pos with
+      | Some loc, _ -> HelpersML.json_of_loc loc
+      | None, Some pos -> HelpersML.json_of_pos pos
+      | None, None -> "false" in
+    failwith (Printf.sprintf "{\"phase\": \"%s\", \"loc\": %s, \"info\": \"%s\"}" phase loc info)
+
+  | Invariant_break (info, loc) ->
+    json_error_reporter (Fatal_error {info; loc; phase = "false"; pos = None})
+
+  | e -> raise e
+
 let string_of_full_ast ?(debug = false) prog =
   PrettyPrinter.PP.pp_program ~debug Format.str_formatter prog;
   Format.flush_str_formatter ()
@@ -44,8 +58,7 @@ let _ =
          let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
          object%js
            val resultat =
-             Js.string (Lcbpv_intf.string_of_cst (translate_ML_to_LCBPV lexbuf))
-
+             Js.string (string_of_lcbpv_cst (translate_ML_to_LCBPV lexbuf))
            val erreur = Js.string (Buffer.contents stderr_buff)
          end
 
@@ -62,50 +75,73 @@ let _ =
          let stderr_buff = Buffer.create 100 in
          Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
          let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
-         let prog, env =
-           internalize (Lcbpv_intf.convert_to_machine_code (Lcbpv_intf.parse lexbuf))
-         in
-         let prog = polarity_inference env prog in
-         let res = constraint_as_string prog in
-         object%js
-           val resultat = Js.string res
-           val erreur = Js.string (Buffer.contents stderr_buff)
-         end
+         let cst = translate_ML_to_LCBPV lexbuf in
+         try
+            let prog  = internalize (convert_to_machine_code cst) in
+            let prog = polarity_inference prog in
+            let res = constraint_as_string prog in
+            object%js
+              val resultat = Js.string res
+              val erreur = Js.string (Buffer.contents stderr_buff)
+            end
+          with
+            e -> (
+              ignore (json_error_reporter e);
+              object%js
+                val resultat = Js.string ""
+                val erreur = Js.string (Buffer.contents stderr_buff)
+              end
+            )
 
        method mltoequation code =
-          let stdout_buff = Buffer.create 100 in
-          Sys_js.set_channel_flusher stdout (Buffer.add_string stdout_buff);
           let stderr_buff = Buffer.create 100 in
           Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
           let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
           let cst = translate_ML_to_LCBPV lexbuf in
-          let prog, env = internalize (Lcbpv_intf.convert_to_machine_code cst) in
-          let prog = polarity_inference env prog in
-          let prog, post_con = type_infer ~trace:false prog in
-          let post_con = AaraCompress.compress_unification post_con in
-          let no_goal = (Types.cons (Types.Cons Primitives.nat_zero)) in
-          let res = AaraExport.convert_to_optimization
-                (fun _ -> failwith "unimplemented")
-                post_con no_goal in
-          AaraExport.pp_solution Format.std_formatter res;
-         object%js
-           val resultat = Js.string (Buffer.contents stdout_buff)
-           val erreur = Js.string (Buffer.contents stderr_buff)
-         end
+          try
+            let prog = internalize (convert_to_machine_code cst) in
+            let prog = polarity_inference prog in
+            let prog, post_con = type_infer ~trace:false prog in
+            let post_con = AaraCompress.compress_unification post_con in
+            let res =  match prog.goal with
+            | Some goal -> AaraExport.convert_to_minizinc_file goal post_con
+            | None -> Misc.fatal_error "Generating complexity model" "The program defines no goal to infer" 
+            in
+            object%js
+              val resultat = Js.string res
+              val erreur = Js.string (Buffer.contents stderr_buff)
+            end
+          with
+            e -> (
+              ignore (json_error_reporter e);
+              object%js
+                val resultat = Js.string ""
+                val erreur = Js.string (Buffer.contents stderr_buff)
+              end
+            )
 
        method mlinterpretation code =
-         let stderr_buff = Buffer.create 100 in
-         Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
-         let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
-         let cst = translate_ML_to_LCBPV lexbuf in
-         let prog, env = internalize (Lcbpv_intf.convert_to_machine_code cst) in
-         let prog = polarity_inference env prog in
-         let prog, post_con  = type_infer ~trace:false prog in
-         let prog = interpret_prog prog in
-         let res = string_of_full_ast prog in
-         object%js
-           val resultat = Js.string res
-           val erreur = Js.string (Buffer.contents stderr_buff)
-         end
+          let stderr_buff = Buffer.create 100 in
+          Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
+          let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
+          let cst = translate_ML_to_LCBPV lexbuf in
+          try
+            let prog = internalize (convert_to_machine_code cst) in
+            let prog = polarity_inference prog in
+            let prog, _  = type_infer ~trace:false prog in
+            let prog = interpret_prog prog in
+            let res = string_of_full_ast prog in
+            object%js
+              val resultat = Js.string res
+              val erreur = Js.string (Buffer.contents stderr_buff)
+            end
+          with
+            e -> (
+              ignore (json_error_reporter e);
+              object%js
+                val resultat = Js.string ""
+                val erreur = Js.string (Buffer.contents stderr_buff)
+              end
+            )
     end)
 ;;

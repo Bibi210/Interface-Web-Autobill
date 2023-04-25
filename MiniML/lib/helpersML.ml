@@ -1,15 +1,24 @@
 open AstML
 
-let err msg (pos : Autobill.Misc.position) =
-  let pos = pos.start_pos in
+
+
+let rec json_of_loc (loc : Autobill.Misc.position) =
+  Printf.sprintf "{\"beginning\": %s, \"end\": %s}" (json_of_pos loc.start_pos) (json_of_pos loc.end_pos)
+
+and  json_of_pos p =
+  Printf.sprintf "{\"line\": %d, \"column\": %d}" p.Lexing.pos_lnum (p.Lexing.pos_cnum - p.Lexing.pos_bol)
+
+and err msg (pos : Autobill.Misc.position) =
   failwith
-    (Printf.sprintf
-       "{\"line\": %d, \"text\": \"Error on line %d col %d: %s.\"}"
-       pos.Lexing.pos_lnum
-       pos.Lexing.pos_lnum
-       (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
-       msg)
+  (Printf.sprintf
+      "{\"line\": %s, \"info\": \"Error on line %d col %d: %s.\"}"
+      (json_of_loc pos)
+      pos.start_pos.Lexing.pos_lnum
+      (pos.start_pos.Lexing.pos_cnum - pos.start_pos.Lexing.pos_bol)
+      msg
+  )
 ;;
+
 
 let rec list_getlast_rem = function
   | [] -> raise Not_found

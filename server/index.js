@@ -5,9 +5,7 @@ const dotenv = require("dotenv");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cors = require('cors');
-const ocaml = require("../../MiniML/_build/default/bin/main.bc.js");
-//const { lcbpv } = require("../language/mllike")
-//const billPrompts = require("../data/billPrompt")
+const ocaml = require("../MiniML/_build/default/bin/main.bc.js"); 
 
 dotenv.config();
 
@@ -181,7 +179,7 @@ app.post('/api/minizinc/chuffed', (req, res) => {
   fs.writeFileSync(tmpFile, code);
 
   // Run the MiniZinc code using the minizinc executable
-  const cmd = `minizinc -s ${tmpFile} -p 4`;
+  const cmd = `minizinc --solver chuffed ${tmpFile} -p 4`;
   exec(cmd, (error, stdout, stderr) => {
     fs.unlink('temp.mzn', (err) => {
       if (err) throw err;

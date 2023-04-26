@@ -70,6 +70,27 @@ let _ =
            val resultat = Js.string (fmtMiniML (generate_ast lexbuf))
            val erreur = Js.string (Buffer.contents stderr_buff)
          end
+      
+       method machine code =
+        let stderr_buff = Buffer.create 100 in
+        Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
+        let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
+        let cbpv = translate_ML_to_LCBPV lexbuf in
+        try
+          let intern = internalize (convert_to_machine_code cbpv) in 
+          let res = polarity_inference intern in
+          object%js
+            val resultat = Js.string (string_of_full_ast res)
+            val erreur = Js.string (Buffer.contents stderr_buff)
+          end
+        with
+          e -> (
+            ignore (json_error_reporter e);
+            object%js
+              val resultat = Js.string ""
+              val erreur = Js.string (Buffer.contents stderr_buff)
+            end
+          )
 
        method parse code =
          let stderr_buff = Buffer.create 100 in

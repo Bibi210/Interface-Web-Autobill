@@ -140,6 +140,7 @@ function App() {
                 solver: "gecode",
               },
             })
+            console.log(solve)
             evaluation.resultat = solve.solution.output.default
           }
           break
@@ -172,7 +173,7 @@ function App() {
             })
             evaluation = await data.json()
           } else {
-            evaluation = ml.parse(code)
+            evaluation = ml.machine(code)
           }
           break
         case "MiniML -> Equation":

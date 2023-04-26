@@ -53,6 +53,9 @@ rule token = parse
 | '_' {LUnderScore}
 | '[' {LLeftAngleBraket} 
 | ']' {LRightAngleBraket}
+| "if" {LIf}
+| "then" {LThen}
+| "else" {LElse}
 | num+ as n       { Lint (int_of_string n) }
 | bool as boolean          {Lbool (bool_of_string boolean) }
 | vartype as usertype {LVarType (List.nth (String.split_on_char '\'' usertype) 1)}

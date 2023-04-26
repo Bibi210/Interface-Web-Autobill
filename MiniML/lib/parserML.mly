@@ -15,7 +15,7 @@
 %token LSemiColon LDoubleSemiColon LRightAngleBraket LLeftAngleBraket
 %token LTupleInfixe LConsInfixe 
 %token LSimpleArrow
-%token LLet LFun LIn LType LRec LOf LMatch LWith LUnderScore
+%token LLet LFun LIn LType LRec LOf LMatch LWith LUnderScore LIf LThen LElse
 
 %token LEqual LInf LMult LOr LTOr LTAnd  LAnd LAdd LDiv LModulo LSub LNot
 
@@ -201,6 +201,26 @@ expr:
       enode =  Match{ to_match = e ; cases}
     ; eloc = position $startpos($1) $endpos(cases)
   }
+}
+| LIf ; cond = expr ; LThen ; iftrue = expr ; LElse ; iffalse = expr {
+  { enode = Match{ to_match = cond ; 
+      cases = [
+        { pattern = { pnode = LitteralPattern (Boolean true)
+                    ; ploc = iftrue.eloc
+                    }
+        ; consequence = iftrue
+        ; cloc = iftrue.eloc
+        }
+      ; { pattern = { pnode = LitteralPattern (Boolean false)
+                    ; ploc = iffalse.eloc
+                    }
+        ; consequence = iffalse
+        ; cloc = iffalse.eloc
+        }
+      ]
+  }
+  ; eloc = position $startpos($1) $endpos(iffalse)
+  }
 } 
 
 match_case :
@@ -286,10 +306,9 @@ pattern :
 |LOr;LOr {Autobill.Lcbpv.Or}
 |LTOr {Autobill.Lcbpv.Or}
 |LTAnd { Autobill.Lcbpv.And }
-|LEqual;LEqual {Autobill.Lcbpv.Int_Eq}
+|LEqual {Autobill.Lcbpv.Int_Eq}
 |LInf;LEqual {Autobill.Lcbpv.Int_Leq}
 |LInf {Autobill.Lcbpv.Int_Lt}
-
 
 
 

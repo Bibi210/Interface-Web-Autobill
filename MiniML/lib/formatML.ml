@@ -49,7 +49,7 @@ let fmt_binary_op fmt op =
     | Autobill.Lcbpv.Mod -> "%"
     | Autobill.Lcbpv.And -> "and"
     | Autobill.Lcbpv.Or -> "or"
-    | Autobill.Lcbpv.Int_Eq -> "=="
+    | Autobill.Lcbpv.Int_Eq -> "="
     | Autobill.Lcbpv.Int_Leq -> "<="
     | Autobill.Lcbpv.Int_Lt -> "<")
 ;;

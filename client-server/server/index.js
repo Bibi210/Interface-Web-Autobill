@@ -107,7 +107,7 @@ app.post('/api/run-code', async (req, res) => {
   
 });
 
-app.post('/api/minizinc', (req, res) => {
+app.post('/api/minizinc/gecode', (req, res) => {
   const code = req.body.code;
   /*
   MiniZinc.init({
@@ -150,6 +150,38 @@ app.post('/api/minizinc', (req, res) => {
 
   // Run the MiniZinc code using the minizinc executable
   const cmd = `minizinc --solver Gecode ${tmpFile}`;
+  exec(cmd, (error, stdout, stderr) => {
+    fs.unlink('temp.mzn', (err) => {
+      if (err) throw err;
+      console.log('File deleted!');
+    });
+    
+    // Check for errors afaire: test client full/client-server
+    if (error || stderr) {
+      const errorMsg = error ? error.message : stderr;
+      console.error(`exec error: ${errorMsg}`);
+      res.status(500).send(errorMsg);
+      return;
+    }
+
+    
+    console.log(stdout);
+    // Send the MiniZinc output back to the client
+    res.send(JSON.stringify({ resultat: stdout }) );
+  });
+});
+
+
+app.post('/api/minizinc/chuffed', (req, res) => {
+  const code = req.body.code;
+
+  // Write the MiniZinc code to a temporary file
+  const fs = require('fs');
+  const tmpFile = './temp.mzn';
+  fs.writeFileSync(tmpFile, code);
+
+  // Run the MiniZinc code using the minizinc executable
+  const cmd = `minizinc -s ${tmpFile} -p 4`;
   exec(cmd, (error, stdout, stderr) => {
     fs.unlink('temp.mzn', (err) => {
       if (err) throw err;

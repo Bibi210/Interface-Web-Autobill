@@ -19,6 +19,7 @@
 html, body, #root{
   height: 100vh;
   overflow: hidden;
+  font-size: 13px;
 }
 
 #root{
@@ -109,7 +110,7 @@ footer button{
   font-weight: 600;
   font-family: 'Inter', sans-serif;
   padding: 0.8rem  1.3rem;
-  font-size: 16px;
+  font-size: 1rem;
   border-radius: 10px;
   margin-right: 2rem;
   cursor: pointer;
@@ -154,7 +155,7 @@ span.output{
 }
 .cm-content *{
   font-family: 'Monaco', sans-serif !important;
-  font-size: 16px;
+  font-size: 1rem;
 }
 pre #text{
   max-width: 100%;
@@ -177,7 +178,7 @@ select{
   font-weight: 600;
   font-family: 'Inter', sans-serif;
   padding: 0.8rem  1.3rem;
-  font-size: 16px;
+  font-size: 1rem;
   border-radius: 10px;
   border: 1px solid var(--main-color);
   outline: none;
@@ -185,19 +186,11 @@ select{
   position: relative;
 }
 
-select::before{
-  content: ">";
-  position: absolute;
-  font-size: 12px;
-  top: 0;
-  z-index: 1000;
-}
-
 .mode{
   display: flex;
   gap: 1rem;
   align-items: center;
-  font-size: 18px;
+  font-size: 1rem;
   font-weight: 700;
 }
 .line-error{

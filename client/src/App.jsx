@@ -49,9 +49,11 @@ function App() {
       lines = lines.map(tr.changes)
       if (dispatchSpec !== null) {
         let [s, e] = dispatchSpec.effects
-        lines = lines.update({
-          add: [lineHighlightMark.range(s.value, e.value)],
-        })
+        for(let i = s.value; i<= e.value; i++){
+          lines = lines.update({
+            add: [lineHighlightMark.range(i)],
+          })
+        }
       } else {
         for (let e of tr.effects) {
           if (e.is(addLineHighlight)) {
@@ -192,9 +194,20 @@ function App() {
         setTypes('Error: ' + error)
       } else{
         console.log(error)
-        const err = JSON.parse(error[2].c)
-        setTypes((err.phase ?? "") + " " + err.info)
-        highlight(err.line)
+        if(error[2].c){
+          try{
+            const err = JSON.parse(error[2].c)
+            console.log(err)
+            setTypes((err.phase ?? "") + " " + err.info)
+            highlight(err.loc)
+          } catch (e){
+            console.log(e)
+            setTypes(error[2].c)
+          }
+        } else{
+          setTypes(error[1].c)
+        }
+
       }
     }
   }

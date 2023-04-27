@@ -11,7 +11,7 @@ and  json_of_pos p =
 and err msg (pos : Autobill.Misc.position) =
   failwith
   (Printf.sprintf
-      "{\"line\": %s, \"info\": \"Error on line %d col %d: %s.\"}"
+      "{\"loc\": %s, \"info\": \"Error on line %d col %d: %s.\"}"
       (json_of_loc pos)
       pos.start_pos.Lexing.pos_lnum
       (pos.start_pos.Lexing.pos_cnum - pos.start_pos.Lexing.pos_bol)

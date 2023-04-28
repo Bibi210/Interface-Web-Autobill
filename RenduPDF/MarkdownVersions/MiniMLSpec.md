@@ -142,11 +142,8 @@ date: 2 fevrier, 2023
                     | _
                     | constructeur_ident 
                     | constructeur_ident Pattern
-                    | Pattern constructeur_infixes Pattern
-
 
 ## Types
-
     Type    :=  | (Type)
                 | int
                 | bool
@@ -172,18 +169,26 @@ date: 2 fevrier, 2023
 
 
 ## Définitions 
-    (VALDEF) si ꜔ v -> v',si  ꜔ e -> e' et si ꜔ pi -> ω'
-        alors  ꜔ (VariableDef(d), pi) -> (ω, ω')
-    (FUNREC)
-    (TYPDEF) si td ∈ CONSTR, si ꜔ td -> ω et si ꜔ pi -> ω'
-        alors  ꜔ (TypeDef(n, [t1,...,tn], td), pi) 
-                -> (Typ_Def(n, [t1,...,tn], ω), ω')
+    (VARDEF) si ꜔ v -> v' et si  ꜔ e -> e' 
+        alors  ꜔ VariableDef(v, e) -> NewGlobal(Ins_Let(v', e'))
+    (TYPDEF) si ꜔ c1 -> c1', ..., si ꜔ cN -> cN'
+        alors  ꜔ TypeDef(n, [t1,...,tn], cst)
+    -> NewTypeDef(Typ_Def(n, [t1,...,tn], Def_Datatype([c1,...,cN])))
 
-## Constructeurs
-    (SYNON) si 
-    (DATYP)
-    (COMPUT)
-*To be done*
+## Types
+    (TINT) ꜔ TypeInt -> Typ_App ((Typ_Int), [])
+    (TBOOL) ꜔ TypeBool -> Typ_App ((Typ_Bool), [])
+    (TUNIT) ꜔ TypeUnit -> Typ_App ((Typ_Unit), [])
+    (TTUPLE) si ꜔ t1 -> t_1,... et ꜔ tN -> t_N
+    alors ꜔ TypeTuple([t1,...tN]) -> Typ_App((Typ_Tuple, t.tloc), [t_1,...,t_N])
+    (TDEF) ꜔ TypeDefined(id) -> Typ_Var(id)
+    (TVAR) ꜔ TypeVar(id) -> Typ_Var (id)
+    (TCONS) si ꜔ t -> t', si ꜔ p1 -> p_1,... et si ꜔ pN -> p_N  
+    alors ꜔ TypeConstructor(t, [p1,...,pN]) -> Typ_App(t, [p_1,...,p_N])
+    (TLAMB) si ꜔ a -> a' et ꜔ ret -> ret'
+        alors ꜔ TypeLambda(a,ret) 
+    -> Typ_App(Typ_Closure(Exp),[(Typ_App(Typ_Fun, [Typ_App(Typ_Thunk, [ret']), a']))])
+
 
 ## Litteraux et Expressions
     (INT) si i ∈ NUM 
@@ -191,20 +196,31 @@ date: 2 fevrier, 2023
     (TRUE) si ꜔ b -> true 
         alors ꜔ Boolean(b) -> Expr_Constructor(True,[])
     (FALSE) si ꜔ b -> false
-        alors ꜔ Boolean(b) -> Expr_Constructor(False,[])
+        alors ꜔ Boolean(b) -> Expr_Constructor(False, [])
+    (UNIT) ꜔ Unit -> Expr_Constructor(Unit, [])    
     (TUPLE) si ꜔ e1 -> e_1, ..., si ꜔ eN -> e_N
-        alors ꜔ Tuple([e1,...,eN]) 
-                -> Expr_Constructor(Tuple, [e_1,...,e_N])
+        alors ꜔ Tuple([e1,...,eN]) -> Expr_Constructor(Tuple, [e_1,...,e_N])
+    (UNARY) si ꜔ a -> a_1 
+        alors ꜔ CallUnary(op, a) -> Expr_Mon_Prim(op, a_1)
+    (BINARY) si ꜔ a1 -> a_1 et ꜔ a2 -> a_2
+        alors ꜔ CallBinary(op, [a1,a2]) -> Expr_Bin_Prim(op, a_1, a_2) 
     (CONSTR) si ꜔ e -> e' 
-        alors ꜔ Construct((c,e)) 
-                -> Expr_Constructor(Cons_Named c, [e'])
+        alors ꜔ Construct(c,e) -> Expr_Constructor(Cons_Named(c), e')
     (BIND) si ꜔ i -> i' et si ꜔ c -> c' 
-        alors ꜔ Binding((v,i,c)) 
-            -> Expr_Block(Blk([Ins_Let (v, i')], c'))
-    (MATCH) si ꜔ m -> m', si m1 ∈ CASE,..., si mN ∈ CASE,
-            si ꜔ m1 -> m_1, ... et si ꜔ mN -> m_N 
-        alors ꜔ Match((m,[m1,...,mN])) 
-            -> Expr_Match(m', [m_1,...,m_N])
+        alors ꜔ Binding(v,i,c) -> Expr_Block(Blk([Ins_Let (v, i')], c'))
+    (MATCH) si ꜔ m -> m', si m1 ∈ CASE,..., si mN ∈ CASE, si ꜔ m1 -> m_1, ... et si ꜔ mN -> m_N alors ꜔ Match((m,[m1,...,mN])) -> Expr_Match(m', [m_1,...,m_N])
+    (SEQ) si ꜔ e1 -> Ins_Let(x1, e_1), ..., si ꜔ eN-1 -> Ins_Let(xN-1, e_N-1)
+        et si ꜔ eN -> e_N, alors ꜔ Sequence([e1,...,eN]) 
+            -> Expr_Block(Blk([Ins_Let(x1, e_1),..., Ins_Let(xN-1, e_N-1)], e_N))
+    (CALL) si ꜔ a -> a' et si ꜔ f -> f' 
+        alors Call(f, a) 
+    -> Expr_Block(Blk([Ins_Open(Exp, f'), Ins_Force(Expr_Method(Call, [a']))]))
+    (LAMBDA) si ꜔ a -> a' et si ꜔ b -> b'
+        alors ꜔ Lambda(a, b)
+        -> Expr_Closure(Exp, Expr_Get([GetPatTag(Call, [a'], Expr_Thunk(b'))]))
+    (REC) si ꜔ a -> a', si ꜔ v -> v' et si ꜔ b -> b'
+        alors ꜔ FunctionRec(v, a, b)
+    -> Expr_Closure(Exp,Expr_Rec(v',Expr_Get([GetPatTag(Call, [a'], Expr_Thunk(b'))])))
 
 ## Motifs et Filtrage
     (LITPAT1) si l = Integer(l') et ꜔ e -> e'
@@ -225,7 +241,7 @@ date: 2 fevrier, 2023
             -> MatchPatTag(Cons_Named(n), c', e')
     (VARPAT) si ꜔ e -> e'
         alors ꜔ Case(VarPattern(x), e, l)
-            -> MatchPatVar((x, l), e', l))
+            -> MatchPatVar((x, l), e', l)
     (WILDPAT) si ꜔ e -> e' 
         alors ꜔ Case(WildcardPattern(), e, l)
             -> MatchPatVar((n, l), e', l)

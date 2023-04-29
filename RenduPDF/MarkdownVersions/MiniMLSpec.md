@@ -1,5 +1,5 @@
 ---
-title: MiniML Grammar Spec
+title: MiniML Spec
 author:  
   - Fazazi Zeid
   - Luo Yukai 

@@ -153,6 +153,9 @@ constructeur\_infixes &= [:: \quad ,]
 
 ## Programmes
 $$ \vdash_{Prog} Prog[cs] \rightarrow Prog'(x) $$
+Un programme MiniML est une suite de commandes $[cs]$ qui est traduite en un programme $x$ en LCBPV. 
+Un programme est dit traduisible si la suite de commandes $[cs]$ qui le compose  peut-être traduite.
+
 \begin{align*}
 \text{ si }&   \vdash_{\text{Cmds}} cs \rightarrow  (g,\omega,\upsilon)\\
 \text{  alors}&   \vdash_{\text{Cmds}} Prog[cs] \rightarrow  Prog'(\omega;Do(g,\upsilon))
@@ -160,6 +163,15 @@ $$ \vdash_{Prog} Prog[cs] \rightarrow Prog'(x) $$
 
 ## Suites de commandes
 $$ \vdash_{\text{Cmds}} cs \rightarrow (\gamma,\omega,\upsilon) $$
+Le resultat de la traduction d'une suite de commandes $cs$ est un triplet $(\gamma,\omega,\upsilon)$ où: 
+
+- $\gamma$ est le resultat de la traduction des variables globales, 
+- $\omega$ est le resultat de la traduction des definitions de types 
+- $\upsilon$ est la dernière expression traduite.
+
+Ce triplet est rendu nécessaire par la sémantique de LCBPV qui ne permet pas de définir des variables globales comme en MiniML.
+Cela a aussi pour conséquence un changement de portée entre les déclarations de type en MiniML et en LCBPV.
+
 \begin{align*}
 \text{(VAR DEFS)  si }& \; d  \in DEF,\\
 \text{et si }&  \vdash_{\text{Cmds}} cs \rightarrow (\gamma,\omega,\upsilon)  \\
@@ -173,17 +185,28 @@ alors& \vdash_{\text{Cmds}} (Def(d); cs) \rightarrow ((\gamma;\pi),\omega,\upsil
 \text{et si }&  \pi \in TYPE \\
 alors& \vdash_{\text{Cmds}} (Def(d); cs) \rightarrow (\gamma,(\omega;\pi),\upsilon)\\
 \\
+\\
 \text{(GLB EXPR)} \text{ si }& b  \in EXPR,\\ 
 \text{et si }&  \vdash_{\text{Cmds}} cs \rightarrow (\gamma,\omega,\upsilon)  \\
 \text{et si }&  \vdash_{\text{Expr}} b \rightarrow  \upsilon' \\
 alors&   \vdash_{\text{Cmds}} (Expr(b), cs) \rightarrow  (\gamma,\omega,\upsilon')
 \end{align*}
 
-\newpage
 
 ## Définitions 
 
 $$ \vdash_{\text{Def}} d \rightarrow \pi $$
+On définit la relation $Def$ selon les cas de construction des définitions. Les cas de construction des définitions sont donnés par les clauses des règles syntaxiques.
+
+Une définition est dite traduisible si chacune de ses clauses peut être traduite.
+On distingue deux catégories de définitions: 
+
+- Les définitions de **Variables Globales**,
+- Les définitions de **Types**.
+
+Ces deux catégories de définitions sont traitées différemment par le jugement $\vdash_{\text{Cmds}}$
+
+- $\pi$ est donc la traduction de la définition $d$ placée dans la bonne catégorie.
 
 \begin{align*}
 \text{(VARDEF)} 
@@ -193,12 +216,16 @@ $$ \vdash_{\text{Def}} d \rightarrow \pi $$
 \text{(TYPDEF)} \text{ si }&  \vdash c1 \rightarrow  c1' 
 \dots \text{ si } \vdash cN \rightarrow  cN' \\
 \text{alors}&   \vdash_{\text{Def}} TypeDef(n, [t1,\dots,tn], [c1,\dots,cN]) \\
-\rightarrow \; & \text{TYPE}(Typ\_Def(n, [t1,\dots,tn], Def\_Datatype[c1',\dots,cN'])) \\
+\rightarrow \; & \text{TYPE}(TypDef(n, [t1,\dots,tn], DefDatatype[c1',\dots,cN'])) \\
 \end{align*}
 
 
 ## Types
 $$ \vdash_{\text{Type}} t \rightarrow t' $$
+On définit la relation $\vdash_{Type}$ selon les cas de construction des types. Les cas de construction des types sont donnés par les clauses des règles syntaxiques.
+Un type est dit traduisible si chacune de ses clauses peut être traduite.
+
+
 \begin{align*}
 \text{(TINT)}  &\vdash_{Type} TypeInt \rightarrow  TypInt \\
 \text{(TBOOL)}  &\vdash_{Type} TypeBool \rightarrow  TypBool \\
@@ -223,6 +250,9 @@ $$ \vdash_{\text{Type}} t \rightarrow t' $$
 ## Litteraux et Expressions
 
 $$ \vdash_{\text{Expr}} e \rightarrow e' $$
+
+On définit la relation $\vdash_{Expr}$ selon les cas de construction des expr. Les cas de construction des expressions sont donnés par les clauses des règles syntaxiques.
+Une expression est dite traduisible si chacune de ses clauses peut être traduite.
 \begin{align*}
 \text{(INT)} \text{ si }& i  \in \text{NUM} \\
 \text{alors}&  \vdash_{Expr} Integer(i) \rightarrow  ExprInt(i) \\
@@ -307,6 +337,12 @@ $$ \vdash_{\text{Patt}} p \rightarrow (p',vars) $$
 
 
 $$ \vdash_{\text{Case}} Case(p,e) \rightarrow \alpha $$
+
+On définit la relation $\vdash_{Case}$ selon les cas de construction des motif de correspondance. Les cas de construction des motif de correspondance sont donnés par les clauses des règles syntaxiques.
+Un motif de correspondance est dit traduisible si chacune de ses clauses peut être traduite.
+
+- $p$ est un motif
+- $e$ est l'expression qui sera évaluée si le motif est vérifié
 
 \begin{align*}
 \text{(INTPAT)} \text{ si }& l \in \text{NUM} \text{ et }  \vdash_{Expr} e \rightarrow  e' \\

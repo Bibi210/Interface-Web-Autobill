@@ -22,9 +22,9 @@ include-before: | # Texte avant la table des matières
 \allowdisplaybreaks
 \pagebreak
 # Syntaxe MiniML
-## Lexing Tokens
+## Jetons de lexing
 
-### Separators
+### Séparateurs
 
 $$\{\quad\}\qquad[\quad]\qquad(\quad)\qquad;\qquad,\qquad*\qquad\rightarrow\qquad|\qquad=$$
 
@@ -62,6 +62,19 @@ constructeur\_infixes &= [:: \quad ,]
 \pagebreak
 
 ## Grammaire
+
+Voici la grammaire BNF de notre langage MiniML.
+
+### Outils de lecture
+
+Pour simplifier la lecture de la grammaire, nous avons utilisé les notations suivantes :
+
+- $\bf{Litteral}$ : Utilisation d'une règle définie
+- $basic\_ident_{\bf{list}}$ : Utilisation de la règle zéro ou plusieurs fois
+- \textit{Variable} : Noeud ciblé par le cas 
+
+### Programmes
+
   \begin{align*}
     \bf{Prog} := \quad & |\quad \bf{Def} \\
         & |\quad \bf{Expr} \\
@@ -70,15 +83,26 @@ constructeur\_infixes &= [:: \quad ,]
 
 ### Definitions
 \begin{align*}
-\bf{Def} := \quad &|\quad let \; basic\_ident = \bf{Expr} &&\textit{Def Variable}  \\
-    &|\quad let \; basic\_ident_{\bf{list}} = \bf{Expr} && \textit{Def Function} \\ 
-    &|\quad let \; rec \; basic\_ident_{\bf{list}} = \bf{Expr} && \textit{Def FunctionRec} \\
-    &|\quad type \; vartype_{\bf{list}} \; basic\_ident =  \bf{NewContructor\_Case} &&  \textit{Def Type} 
+\bf{Def} := \quad &|\quad let \; basic\_ident = \bf{Expr} &&\textit{Variable}  \\
+    &|\quad let \; basic\_ident_{\bf{list}} = \bf{Expr} && \textit{Fonction} \\ 
+    &|\quad let \; rec \; basic\_ident_{\bf{list}} = \bf{Expr} && \textit{Fonction Rec} \\
+    &|\quad type \; vartype_{\bf{list}} \; basic\_ident =  \bf{NewContructors} &&  \textit{Type} \\
+    &|\quad type \; vartype_{\bf{list}} \; basic\_ident \; with \; basic\_ident_{\bf{list}} =  \bf{NewContructors} &&  \textit{Type Parametré} 
 \end{align*}
 \begin{align*}
-    \bf{NewContructor\_Case} :=   \quad &|\quad  constructeur\_ident \\
+    \bf{NewContructors} :=   \quad &|\quad  constructeur\_ident \\
                              &|\quad  constructeur\_ident \;of\; \textbf{Type} \\
-                             &|\quad  NewContructor\_Case \;'|'\; NewContructor\_Case \\
+                             &|\quad  \textbf{NewContructors} \;'|'\; \textbf{NewContructors} \\
+                             \\
+    \bf{NewContructorsParam} :=    \quad &|\quad constructeur\_ident \;of\; \textbf{Type} \; with \; \textbf{ParamEquation}\\ 
+    &|\quad  \textbf{NewContructorsParam} \;'|'\; \textbf{NewContructorsParam} && \\
+    \\
+    \bf{ParamEquation} := \quad &|\quad basic\_ident \\
+    &|\quad 0 \\
+    &|\quad 1 \\
+    &|\quad (\,\textbf{ParamEquation}\,) \\
+    &|\quad \textbf{ParamEquation} \; + \; \textbf{ParamEquation} \\
+    &|\quad \textbf{ParamEquation} \; * \; \textbf{ParamEquation} \\
 \end{align*}
 
 ### Expressions
@@ -105,7 +129,6 @@ constructeur\_infixes &= [:: \quad ,]
             &|\quad if \; \textbf{Expr}\; then \; \textbf{Expr}\; else \; \textbf{Expr}\\
             \\
 \bf{UnaryOperator}  \quad :=  \quad &|\quad  not \\
-            \\
 \bf{BinaryOperator}  \quad :=  \quad &|\quad \&\& \\
         &|\quad || \\
         &|\quad + \\
@@ -133,7 +156,6 @@ constructeur\_infixes &= [:: \quad ,]
                     &|\quad constructeur\_ident  \\
                     &|\quad constructeur\_ident \; \textbf{Pattern} \\
 \end{align*}
-\pagebreak
 
 ### Types
 \begin{align*}
@@ -316,26 +338,6 @@ Une expression est dite traduisible si chacune de ses clauses peut être traduit
 
 
 ## Motifs et Filtrage
-
-<!-- ### Patterns
-
-$$ \vdash_{\text{Patt}} p \rightarrow (p',vars) $$
-
-\begin{align*}
-\text{(INTPATT)} \text { si }& i \in NUM \\
-\text{ alors }& \vdash_{\text{Patt}} i \rightarrow (IntLitt,[]) \\
-\text{(TRUEPATT)} \quad& \vdash_{\text{Patt}} Boolean(true) \rightarrow (True,[]) \\
-\text{(FALSEPATT)} \quad& \vdash_{\text{Patt}} Boolean(false) \rightarrow (False,[]) \\
-\text{(UNITPATT)} \quad& \vdash_{\text{Patt}} Unit \rightarrow (Unit,[]) \\
-\\
-\text{(TUPLEPATT)} \quad& \vdash_{\text{Patt}} TuplePatt(VarPattern(v_1);\dots;VarPattern(v_N)) \rightarrow (Tuple,v_1;\dots;v_N) \\
-\\
-\text{(CONSTRPATT)} \quad& \vdash_{\text{Patt}} ConstructPattern(c,VarPattern(v_1);\dots;VarPattern(v_n) )  \\
-&\rightarrow (ConsNamed(c),v_1;\dots;v_N) \\
-\text{(VARPATT)} \quad& \vdash_{\text{Patt}} VarPattern(v) \rightarrow (Var,v) \\
-\end{align*} -->
-
-
 $$ \vdash_{\text{Case}} Case(p,e) \rightarrow \alpha $$
 
 On définit la relation $\vdash_{Case}$ selon les cas de construction des motif de correspondance. Les cas de construction des motif de correspondance sont donnés par les clauses des règles syntaxiques.

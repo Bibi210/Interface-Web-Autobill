@@ -13,7 +13,11 @@ import { Model } from "https://cdn.jsdelivr.net/npm/minizinc/dist/minizinc.mjs"
 
 const serverAvailability = () => {
   const res = new Set()
+  res.add("MiniML -> MiniML_AST")
+  res.add("MiniML -> LCBPV_AST")
   res.add("MiniML -> Autobill")
+  res.add("MiniML -> Autobill Typé")
+  res.add("MiniML -> Equation")
   res.add("Equation -> Soluce")
   res.add("Equation -> Soluce (with Chuffed)")
   return res
@@ -159,14 +163,36 @@ function App() {
             }
             break
         case "MiniML -> MiniML_AST":
+          if (server) {
+            const data = await fetch("http://localhost:3002/api/toMiniMLAST", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json; charset = UTF-8",
+              },
+              body: JSON.stringify({ code: code }),
+            })
+            evaluation = await data.json()
+          } else {
           evaluation = ml.ast(code)
+          }
           break
         case "MiniML -> LCBPV_AST":
+          if (server) {
+            const data = await fetch("http://localhost:3002/api/toLCBPV", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json; charset = UTF-8",
+              },
+              body: JSON.stringify({ code: code }),
+            })
+            evaluation = await data.json()
+          } else {
           evaluation = ml.translate(code)
+          }
           break
         case "MiniML -> Autobill":
           if (server) {
-            const data = await fetch("http://localhost:3002/api/run-code", {
+            const data = await fetch("http://localhost:3002/api/toAutobill", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json; charset = UTF-8",
@@ -179,10 +205,32 @@ function App() {
           }
           break
         case "MiniML -> Equation":
+          if (server) {
+            const data = await fetch("http://localhost:3002/api/toEquation", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json; charset = UTF-8",
+              },
+              body: JSON.stringify({ code: code }),
+            })
+            evaluation = await data.json()
+          }else{
           evaluation = ml.mltoequation(code)
+          }
           break
         case "MiniML -> Autobill Typé":
+          if (server) {
+            const data = await fetch("http://localhost:3002/api/toAutobillType", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json; charset = UTF-8",
+              },
+              body: JSON.stringify({ code: code }),
+            })
+            evaluation = await data.json()
+          }else{
           evaluation = ml.parse(code)
+          }
           break
       }
       setDispatchSpec(null)

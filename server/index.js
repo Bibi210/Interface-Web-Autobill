@@ -9,17 +9,12 @@ const ocaml = require("../MiniML/_build/default/bin/main.bc.js");
 
 dotenv.config();
 
-mongoose.connect(process.env.MONGO_URL, 
-    {useNewUrlParser: true, useUnifiesTopology: true},
-      ()=>{
-    console.log("Connected to MongoDB")
-});
 
 //middleware
 app.use(express.json());
 app.use(helmet());
 app.use(morgan("common"));
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: 'http://localhost:5174' }));
 
 
 mongoose.set('strictQuery', true);
@@ -33,11 +28,44 @@ app.listen(3002, () =>{
 const { exec } = require('child_process');
 const MiniZinc = require('minizinc');
 
-
-
-app.post('/api/run-code', async (req, res) => {
+app.post('/api/toMiniMLAST', async (req, res) => {
   const code = req.body.code;
-  //const tempFile = './temp.ml';
+  console.log("code get");
+  try {
+    let evaluation = {
+      resultat: "",
+      erreur: ""
+    }
+    evaluation = ocaml.ml.ast(code);
+    console.log("code traite");
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5174');
+    res.send(JSON.stringify({ resultat: evaluation.resultat }) );
+  }catch(err){
+    console.log(err.message);
+    res.status(400).send(JSON.stringify({ error: err.message }));
+  }
+});
+
+app.post('/api/toLCBPV', async (req, res) => {
+  const code = req.body.code;
+  console.log("code get");
+  try {
+    let evaluation = {
+      resultat: "",
+      erreur: ""
+    }
+    evaluation = ocaml.ml.translate(code);
+    console.log("code traite");
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5174');
+    res.send(JSON.stringify({ resultat: evaluation.resultat }) );
+  }catch(err){
+    console.log(err.message);
+    res.status(400).send(JSON.stringify({ error: err.message }));
+  }
+});
+
+app.post('/api/toAutobillType', async (req, res) => {
+  const code = req.body.code;
   console.log("code get");
   try {
     let evaluation = {
@@ -46,8 +74,44 @@ app.post('/api/run-code', async (req, res) => {
     }
     evaluation = ocaml.ml.parse(code);
     console.log("code traite");
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
-    res.send(JSON.stringify({ resultat: evaluation }) );
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5174');
+    res.send(JSON.stringify({ resultat: evaluation.resultat }) );
+  }catch(err){
+    console.log(err.message);
+    res.status(400).send(JSON.stringify({ error: err.message }));
+  }
+});
+
+app.post('/api/toEquation', async (req, res) => {
+  const code = req.body.code;
+  console.log("code get");
+  try {
+    let evaluation = {
+      resultat: "",
+      erreur: ""
+    }
+    evaluation = ocaml.ml.mltoequation(code);
+    console.log("code traite");
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5174');
+    res.send(JSON.stringify({ resultat: evaluation.resultat }) );
+  }catch(err){
+    console.log(err.message);
+    res.status(400).send(JSON.stringify({ error: err.message }));
+  }
+});
+
+app.post('/api/toAutobill', async (req, res) => {
+  const code = req.body.code;
+  console.log("code get");
+  try {
+    let evaluation = {
+      resultat: "",
+      erreur: ""
+    }
+    evaluation = ocaml.ml.machine(code);
+    console.log("code traite");
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5174');
+    res.send(JSON.stringify({ resultat: evaluation.resultat }) );
   }catch(err){
     console.log(err.message);
     res.status(400).send(JSON.stringify({ error: err.message }));

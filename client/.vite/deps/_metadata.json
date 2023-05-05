@@ -1,0 +1,77 @@
+{
+  "hash": "fda3b1d2",
+  "browserHash": "d44d9d61",
+  "optimized": {
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "48ca8e13",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "ad62a3ce",
+      "needsInterop": true
+    },
+    "@uiw/react-codemirror": {
+      "src": "../../node_modules/@uiw/react-codemirror/esm/index.js",
+      "file": "@uiw_react-codemirror.js",
+      "fileHash": "3599b5ef",
+      "needsInterop": false
+    },
+    "@codemirror/theme-one-dark": {
+      "src": "../../node_modules/@codemirror/theme-one-dark/dist/index.js",
+      "file": "@codemirror_theme-one-dark.js",
+      "fileHash": "794cf3d8",
+      "needsInterop": false
+    },
+    "@codemirror/language": {
+      "src": "../../node_modules/@codemirror/language/dist/index.js",
+      "file": "@codemirror_language.js",
+      "fileHash": "a1016523",
+      "needsInterop": false
+    },
+    "codemirror": {
+      "src": "../../node_modules/codemirror/dist/index.js",
+      "file": "codemirror.js",
+      "fileHash": "eb11cc8f",
+      "needsInterop": false
+    },
+    "@codemirror/state": {
+      "src": "../../node_modules/@codemirror/state/dist/index.js",
+      "file": "@codemirror_state.js",
+      "fileHash": "157ee89d",
+      "needsInterop": false
+    },
+    "@codemirror/view": {
+      "src": "../../node_modules/@codemirror/view/dist/index.js",
+      "file": "@codemirror_view.js",
+      "fileHash": "3b822bf8",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-ST3U5LCA": {
+      "file": "chunk-ST3U5LCA.js"
+    },
+    "chunk-4E3HOBJ2": {
+      "file": "chunk-4E3HOBJ2.js"
+    },
+    "chunk-SIH2XR4N": {
+      "file": "chunk-SIH2XR4N.js"
+    },
+    "chunk-NXIPFAN2": {
+      "file": "chunk-NXIPFAN2.js"
+    },
+    "chunk-2WOFAUPF": {
+      "file": "chunk-2WOFAUPF.js"
+    },
+    "chunk-N62YFMSC": {
+      "file": "chunk-N62YFMSC.js"
+    },
+    "chunk-DFKQJ226": {
+      "file": "chunk-DFKQJ226.js"
+    }
+  }
+}

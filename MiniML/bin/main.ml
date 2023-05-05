@@ -100,7 +100,8 @@ let _ =
          try
             let prog  = internalize (convert_to_machine_code cst) in
             let prog = polarity_inference prog in
-            let res = constraint_as_string prog in
+            let prog, post_con = type_infer ~trace:false prog in
+            let res = string_of_full_ast prog in
             object%js
               val resultat = Js.string res
               val erreur = Js.string (Buffer.contents stderr_buff)
@@ -128,30 +129,6 @@ let _ =
             | Some goal -> AaraExport.convert_to_minizinc_file goal post_con
             | None -> Misc.fatal_error "Generating complexity model" "The program defines no goal to infer" 
             in
-            object%js
-              val resultat = Js.string res
-              val erreur = Js.string (Buffer.contents stderr_buff)
-            end
-          with
-            e -> (
-              ignore (json_error_reporter e);
-              object%js
-                val resultat = Js.string ""
-                val erreur = Js.string (Buffer.contents stderr_buff)
-              end
-            )
-
-       method mlinterpretation code =
-          let stderr_buff = Buffer.create 100 in
-          Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
-          let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
-          let cst = translate_ML_to_LCBPV lexbuf in
-          try
-            let prog = internalize (convert_to_machine_code cst) in
-            let prog = polarity_inference prog in
-            let prog, _  = type_infer ~trace:false prog in
-            let prog = interpret_prog prog in
-            let res = string_of_full_ast prog in
             object%js
               val resultat = Js.string res
               val erreur = Js.string (Buffer.contents stderr_buff)

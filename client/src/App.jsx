@@ -181,8 +181,8 @@ function App() {
         case "MiniML -> Equation":
           evaluation = ml.mltoequation(code)
           break
-        case "MiniML -> Interpretation":
-          evaluation = ml.mlinterpretation(code)
+        case "MiniML -> Autobill Typé":
+          evaluation = ml.parse(code)
           break
       }
       setDispatchSpec(null)
@@ -193,13 +193,14 @@ function App() {
       if(availableAtServer.has(mode) && server){
         setTypes('Error: ' + error)
       } else{
-        console.log(error)
         if(error[2].c){
           try{
             const err = JSON.parse(error[2].c)
             console.log(err)
-            setTypes((err.phase ?? "") + " " + err.info)
-            highlight(err.loc)
+            setTypes((err.phase ?? "") + ": " + err.info)
+            if(err.loc!=false) {
+              highlight(err.loc)
+            }
           } catch (e){
             console.log(e)
             setTypes(error[2].c)
@@ -260,11 +261,11 @@ function App() {
                 <option value={"MiniML -> Autobill"}>
                   {"MiniML -> Autobill"}
                 </option>
+                <option value={"MiniML -> Autobill Typé"}>
+                  {"MiniML -> Autobill Typé"}
+                </option>
                 <option value={"MiniML -> Equation"}>
                   {"MiniML -> Equation"}
-                </option>
-                <option value={"MiniML -> Interpretation"}>
-                  {"MiniML -> Interpretation"}
                 </option>
                 <option value={"Equation -> Soluce"}>
                   {"Equation -> Soluce"}

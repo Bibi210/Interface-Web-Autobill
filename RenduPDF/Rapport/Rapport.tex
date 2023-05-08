@@ -1,170 +1,127 @@
-% Options for packages loaded elsewhere
-\PassOptionsToPackage{unicode}{hyperref}
-\PassOptionsToPackage{hyphens}{url}
-\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
-%
-\documentclass[
-  12pt,
-]{article}
-\usepackage{amsmath,amssymb}
-\usepackage{iftex}
-\ifPDFTeX
-  \usepackage[T1]{fontenc}
-  \usepackage[utf8]{inputenc}
-  \usepackage{textcomp} % provide euro and other symbols
-\else % if luatex or xetex
-  \usepackage{unicode-math} % this also loads fontspec
-  \defaultfontfeatures{Scale=MatchLowercase}
-  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
-\fi
-\usepackage{lmodern}
-\ifPDFTeX\else
-  % xetex/luatex font selection
-  \setmainfont[]{Palatino}
-  \setsansfont[]{Helvetica}
-  \setmonofont[]{Menlo}
-\fi
-% Use upquote if available, for straight quotes in verbatim environments
-\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-\IfFileExists{microtype.sty}{% use microtype if available
-  \usepackage[]{microtype}
-  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
-}{}
-\makeatletter
-\@ifundefined{KOMAClassName}{% if non-KOMA class
-  \IfFileExists{parskip.sty}{%
-    \usepackage{parskip}
-  }{% else
-    \setlength{\parindent}{0pt}
-    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
-}{% if KOMA class
-  \KOMAoptions{parskip=half}}
-\makeatother
-\usepackage{xcolor}
-\usepackage[margin = 1.2in]{geometry}
-\usepackage{color}
-\usepackage{fancyvrb}
-\newcommand{\VerbBar}{|}
-\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
-\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
-% Add ',fontsize=\small' for more characters per line
-\newenvironment{Shaded}{}{}
-\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
-\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
-\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
-\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
-\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
-\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
-\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
-\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
-\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
-\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
-\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
-\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
-\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
-\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
-\newcommand{\ExtensionTok}[1]{#1}
-\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
-\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
-\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
-\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
-\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
-\newcommand{\NormalTok}[1]{#1}
-\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
-\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
-\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
-\newcommand{\RegionMarkerTok}[1]{#1}
-\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
-\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
-\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
-\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
-\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
-\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\documentclass[12pt]{article}
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{setspace}
+\usepackage{abstract}
+\usepackage{subfig}
+\usepackage{listings}
+\usepackage{amsmath}
 \usepackage{graphicx}
-\makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-% Set default figure placement to htbp
-\makeatletter
-\def\fps@figure{htbp}
-\makeatother
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{5}
-\newlength{\cslhangindent}
-\setlength{\cslhangindent}{1.5em}
-\newlength{\csllabelwidth}
-\setlength{\csllabelwidth}{3em}
-\newlength{\cslentryspacingunit} % times entry-spacing
-\setlength{\cslentryspacingunit}{\parskip}
-\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
- {% don't indent paragraphs
-  \setlength{\parindent}{0pt}
-  % turn on hanging indent if param 1 is 1
-  \ifodd #1
-  \let\oldpar\par
-  \def\par{\hangindent=\cslhangindent\oldpar}
-  \fi
-  % set entry spacing
-  \setlength{\parskip}{#2\cslentryspacingunit}
- }%
- {}
-\usepackage{calc}
-\newcommand{\CSLBlock}[1]{#1\hfill\break}
-\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
-\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
-\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
-\ifLuaTeX
-\usepackage[bidi=basic]{babel}
-\else
-\usepackage[bidi=default]{babel}
-\fi
-\babelprovide[main,import]{french}
-\ifPDFTeX
-\else
-\babelfont[french]{rm}[]{Palatino}
-\fi
-% get rid of language-specific shorthands (see #6817):
-\let\LanguageShortHands\languageshorthands
-\def\languageshorthands#1{}
-\ifLuaTeX
-  \usepackage{selnolig}  % disable illegal ligatures
-\fi
-\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
-\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same}
-\hypersetup{
-  pdftitle={PSTL: Interface Web Autobill},
-  pdfauthor={Fazazi Zeid; Luo Yukai; Dibassi Brahima},
-  pdflang={fr},
-  colorlinks=true,
-  linkcolor={Maroon},
-  filecolor={Maroon},
-  citecolor={Blue},
-  urlcolor={NavyBlue},
-  pdfcreator={LaTeX via pandoc}}
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage{titlesec}           % Pour changer la tailles ses sections/subsections...
+\usepackage{algorithmic}        % Pour manipuler les algorithmes
+\usepackage{algorithm}          % Pour manipuler les algorithmes
+% \usepackage{algpseudocode}
+\usepackage[absolute,overlay]{textpos} % Pour bouger les figures
+\usepackage[nottoc]{tocbibind} %Includes "References" in the table of contents
 
-\title{PSTL: Interface Web Autobill}
-\usepackage{etoolbox}
-\makeatletter
-\providecommand{\subtitle}[1]{% add subtitle to \maketitle
-  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+% Changement des commandes pour les algorithmes 
+\renewcommand{\algorithmicrequire}{\textbf{Entrée(s)}}
+\renewcommand{\algorithmicensure}{\textbf{Sortie(s)}}
+\renewcommand{\algorithmicdo}{\textbf{faire}}
+\renewcommand{\algorithmicforall}{\textbf{pour tout}}
+\renewcommand{\algorithmicendfor}{\textbf{fin du pour}}
+\renewcommand{\algorithmicif}{\textbf{si}}
+\renewcommand{\algorithmicendif}{\textbf{fin du si}}
+\renewcommand{\algorithmicthen}{\textbf{alors}}
+\renewcommand{\algorithmicelse}{\textbf{sinon}}
+\renewcommand{\algorithmicelsif}{\textbf{sinon si}}
+\renewcommand{\algorithmiccomment}{\STATE //}
+\setcounter{secnumdepth}{5}
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
 }
+
+%pour ecrire chiffres romains
+\makeatletter
+\newcommand*{\rom}[1]{\expandafter\@slowromancap\romannumeral #1@}
 \makeatother
-\subtitle{Pré-Rapport}
-\author{Fazazi Zeid \and Luo Yukai \and Dibassi Brahima}
-\date{2023-05-06}
 
 \begin{document}
-\maketitle
 
-\textbf{Encadrants: Hector Suzanne, Emmanuel Chailloux} \newpage
+%régler l'espacement entre les lignes
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+
+\titleformat{\chapter}{\bfseries\Large}{\arabic{chapter}.~}{0pt}{}   % Changer la taille des sections dans tout le document
+\begin{titlepage}
+\center % Center everything on the page
+
+ 
+%----------------------------------------------------------------------------------------
+%	HEADING SECTIONS
+%----------------------------------------------------------------------------------------
+
+\textsc{\LARGE Sorbonne Université}\\[1.5cm] % Name of your university/college
+\textsc{\Large Rapport Final}\\[0.5cm] % Major heading such as course name
+{\large 19 Mai 2023}\\ % Date, change the \today to a set date if you want to be precise
+%\textsc{\large Minor Heading}\\[0.5cm] % Minor heading such as course title
+
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\vspace{2cm}
+\HRule \\[0.4cm]
+{ \huge \bfseries Projet STL: \\ - \\ Interface pour Autobill}\\[0.7cm] % Title of your document
+\HRule \\[1cm]
+
+
+%----------------------------------------------------------------------------------------
+%	AUTHOR SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+\emph{Auteurs:}\\
+Brahima \textsc{Dibassi} \\
+Zeid \textsc{Fazazi}\\
+Yukai \textsc{Luo} 
+\vspace{2.5cm}
+\end{flushleft}
+\end{minipage}
+~
+\begin{minipage}{0.55\textwidth}
+\begin{flushright} \large
+\emph{Encadrants:} \\
+Hector \textsc{Suzanne}\\ % Supervisor's Name
+Emmanuel \textsc{Chailloux}\\ % Supervisor's Name
+\textsc{}
+
+\vspace{2.5cm}
+\end{flushright}
+\end{minipage}\\[1cm]
+
+% If you don't want a supervisor, uncomment the two lines below and remove the section above
+%\Large \emph{Author:}\\
+%John \textsc{Smith}\\[3cm] % Your name
+
+%----------------------------------------------------------------------------------------
+%	DATE SECTION
+%----------------------------------------------------------------------------------------
+
+
+%----------------------------------------------------------------------------------------
+%	LOGO SECTION
+%----------------------------------------------------------------------------------------
+
+\includegraphics[scale=0.6]{images/logo.png}\\[1cm] % Include a department/university logo - this will require the graphicx package
+ 
+%----------------------------------------------------------------------------------------
+
+\vfill % Fill the rest of the page with whitespace
+
+\end{titlepage}
+\newpage
 
 {
   \hypersetup{linkcolor=}
@@ -172,35 +129,32 @@
   \tableofcontents
 }
 \newpage
-
-\hypertarget{contexte-du-projet}{%
-  \section{Contexte du projet}\label{contexte-du-projet}}
-
-\hypertarget{historique-et-duxe9finitions}{%
-  \subsection{Historique et
-    définitions}\label{historique-et-duxe9finitions}}
+\section{Contexte du projet}\label{contexte-du-projet}
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.55]{Figures/Schema_Autobill.png}
+  \caption{Représentation simplifiée d'Autobill\label{fig1}}
+\end{figure}
+\subsection{Historique et définitions}\label{historique-et-duxe9finitions}
 
 Dans le cadre de sa thèse sur l'analyse statique de la consommation
-mémoire d'un programme au sein de l'équipe APR du LIP6, notre tuteur de
-projet, Hector Suzanne, a développé \textbf{Autobill}
-\protect\hyperlink{ref-autobill}{{[}1{]}}.
+mémoire d'un programme, notre tuteur de projet, Hector Suzanne, membre de l'équipe APR du laboratoire LIP6, a développé \textbf{Autobill}. \\
 
-L'analyse statique est un domaine de l'informatique qui consiste à
-mesurer et détecter automatiquement les comportements ou erreurs dans un
-programme en examinant son code source. Pour effectuer cette analyse sur
-un langage de programmation donné, il est possible de définir des règles
-d'évaluation et de typage pour répondre à une problématique. Dans le cas
-d'Autobill, nous nous sommes particulièrement intéressés à l'occupation
-mémoire d'un programme.
+L'analyse statique est un ensemble de méthodes formelles permettant de
+mesurer et détecter automatiquement des comportements ou des erreurs dans un
+programme en examinant son code source. Parmi les usages les plus courants 
+de l'analyse statique, il y'a le débogage pour identifier des erreurs 
+syntaxiques (fautes de frappe) ou l'usage de variables non déclarée ou 
+non-initialisée par exemple. D'autres outils emploient des heuristiques et des règles pour répondre à des problématiques d'optimisation de code ou de fiabilité/sécurité. Ces analyseurs statiques sont conçus dans le but d'améliorer la maintenabilité du code. \\ 
 
-Historiquement, ce sujet de recherche a été plusieurs fois abordé dans
-divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann sur
-l'analyse de consommation de ressources automatisé AARA
+Autobill s'intéresse particulièrement à l'occupation mémoire d'un programme. Historiquement, 
+ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann et Steffen Jost sur l'analyse de consommation de ressources automatisé AARA
 \protect\hyperlink{ref-Hoffmann}{{[}2{]}} (\emph{Automatic Amortized
-  Resource Analysis}). Des solutions se basant sur ces théories existent,
-comme Resource Aware ML \protect\hyperlink{ref-RAML}{{[}3{]}}, un
-langage \emph{à la ML} permettant ce type d'analyse, créé par Jan
-Hoffman et Stephen Jost.
+Resource Analysis}).\\ 
+
+Cette technique suit un ensemble de règles d'inférences : chaque trait du langage analysé est annoté par ses bornes mémoire et on peut déduire la consommation mémoire que ce trait va engendrer. Pour déterminer ces bornes, l'AARA s'aide de l'analyse amortie par méthode du potentiel. En effet, l'analyse amortie s'inscrit dans une suite d'opérations sur des structures de données dynamiques pour calculer la coût total de cette séquence. Avec la méthode du potentiel, on attribue un potentiel aux structures de données manipulées, ce qui va affecter le coût que va avoir une opération sur cette structure. L’application de ces règles d'inférence sur l'ensemble des expressions du programme fournit une estimation raisonnable de ses bornes mémoires.\\
+
+Des langages de programmation expérimentaux ont vu le jour et ont implémenté cette analyse comme Resource Aware ML \protect\hyperlink{ref-RAML}{{[}3{]}}, un langage fonctionnel \emph{à la ML} créé par Jan Hoffmann, Klaus Aehlig et Martin Hofmann.
 
 \hypertarget{quest-ce-quautobill}{%
   \subsection{Qu'est-ce qu'Autobill ?}\label{quest-ce-quautobill}}
@@ -212,34 +166,20 @@ illustrées sur la gauche de la figure \ref{fig1}, Autobill ne supporte
 uniquement que des programmes écrits soit en modèle machine propre à
 Autobill, soit en \textbf{Call-By-Push-Value} (CBPV)
 \protect\hyperlink{ref-Levy}{{[}4{]}}, avec ou sans continuation
-explicite.
+explicite. \\ 
 
 Call-By-Push-Value est un langage qui utilise un paradigme déjà éprouvé,
 décrit dans la thèse de Paul Blain Lévy
-\protect\hyperlink{ref-Levy}{{[}4{]}}. CBPV utilise une pile pour
-stocker les valeurs et les fonctions manipulées dans le programme.
-Ainsi, on peut suivre de manière explicite les quantités de mémoire pour
-chaque valeur introduite/éliminée ou fonction appelée/terminée. Aussi,
-le langage permet d'exprimer clairement les stratégies d'évaluation
-utilisées dans le code source: on fixe quand les évaluations se
-déroulent, afin de mieux prédire la consommation de mémoire à chaque
-étape du programme. Ces atouts font de CBPV un langage de choix à
-analyser pour Autobill.
+\protect\hyperlink{ref-Levy}{{[}4{]}}. Dans CBPV, toutes les valeurs et fonctions sont stockées dans une pile. Lorsqu'une fonction est appelée, ses arguments sont placés sur la pile avant que la fonction elle-même ne soit ajoutée à la pile. Ce mécanisme permet de suivre de manière explicite les quantités de mémoire pour chaque valeur introduite/éliminée ou fonction appelée/terminée. Aussi,
+le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : soit en \textbf{\textit{call-by-value}}, en évaluant les arguments avant de lancer l'opération, soit en \textbf{\textit{call-by-name}}, en évaluant les arguments uniquement lorsqu’ils seront effectivement utilisés dans la fonction appelée. Ainsi, on fixe quand les évaluations se déroulent, afin de mieux prédire la consommation de mémoire à chaque
+étape du programme. Ces traits uniques font de CBPV un langage de choix à analyser pour Autobill. \\
 
 L'entrée est donc imposée. Ainsi, pour étendre l'usage d'Autobill à un
 autre langage de programmation, un travail de traduction de ce langage
 donné vers CBPV doit avoir lieu. Cela implique donc de comprendre le
 langage que l'on compile, notamment les stratégies d'évaluations
 implicites mises en œuvre, et de l'adapter aux caractéristiques uniques
-de CBPV citées plus haut.
-
-\begin{figure}
-  \centering
-  \includegraphics{Figures/Schema_Autobill.png}
-  \caption{Représentation simplifiée d'Autobill\label{fig1}}
-\end{figure}
-
-\newpage
+de CBPV citées plus haut. \\ 
 
 À partir d'une entrée en CBPV, Autobill traduit le programme en un code
 machine avec continuations explicites, exprimant explicitement les
@@ -258,7 +198,7 @@ les bornes mémoires nécessaires au fonctionnement d'un programme. On
 peut alors traiter ces équations avec des solveurs, fournis aussi par
 ces deux outils, pour prouver des propriétés de complexité temporelle ou
 spatiale.
-
+\newpage
 \hypertarget{objectifs-du-projet}{%
   \subsection{Objectifs du projet}\label{objectifs-du-projet}}
 
@@ -865,7 +805,6 @@ solution avec celle de Jan Hoffmann et l'interface de RAML
   \subsection{Tests}\label{tests}}
 
 \begin{itemize}
-  \tightlist
   \item
         Comparaison d'architectures Full-Client vs Client-Serveur
   \item
@@ -874,142 +813,7 @@ solution avec celle de Jan Hoffmann et l'interface de RAML
 
 \newpage
 
-\hypertarget{bibliography}{%
-  \section*{Bibliographie}\label{bibliography}}
-\addcontentsline{toc}{section}{Bibliographie}
-
-\hypertarget{refs}{}
-\begin{CSLReferences}{0}{0}
-  \leavevmode\vadjust pre{\hypertarget{ref-autobill}{}}%
-  \CSLLeftMargin{{[}1{]} }%
-  \CSLRightInline{H. Suzanne, {«~Autobill~»}.
-    \url{https://gitlab.lip6.fr/suzanneh/autobill}, 2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-Hoffmann}{}}%
-  \CSLLeftMargin{{[}2{]} }%
-  \CSLRightInline{J. Hoffmann et S. Jost, {«~Two decades of automatic
-        amortized resource analysis~»}, \emph{Mathematical Structures in
-      Computer Science}, vol. 32, p. 729‑759, mars 2022, doi:
-    \href{https://doi.org/10.1017/s0960129521000487}{10.1017/s0960129521000487}.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-RAML}{}}%
-  \CSLLeftMargin{{[}3{]} }%
-  \CSLRightInline{J. Hoffmann, {«~Resource Aware ML~»}.
-    \url{https://www.raml.co/}.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-Levy}{}}%
-  \CSLLeftMargin{{[}4{]} }%
-  \CSLRightInline{P. B. Levy, {«~Thése sur Call-By-Push-Value~»}.
-    \url{https://www.cs.bham.ac.uk/~pbl/papers/thesisqmwphd.pdf}, 2001.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-minizinc}{}}%
-  \CSLLeftMargin{{[}5{]} }%
-  \CSLRightInline{{«~Minizinc~»}, \emph{MiniZinc}.
-    \url{https://www.minizinc.org/}, 2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-coq}{}}%
-  \CSLLeftMargin{{[}6{]} }%
-  \CSLRightInline{INRIA, {«~The coq proof assistant~»}, \emph{The Coq
-      Proof Assistant}. \url{https://coq.inria.fr/}, 2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-react}{}}%
-  \CSLLeftMargin{{[}7{]} }%
-  \CSLRightInline{Facebook, {«~React -- Une bibliothèque JavaScript pour
-        créer des interfaces utilisateurs~»}. \url{https://fr.reactjs.org/},
-    2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-angularjs}{}}%
-  \CSLLeftMargin{{[}8{]} }%
-  \CSLRightInline{{«~AngularJS~»}, \emph{AngularJS}.
-    \url{https://angular.io/}, 2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-vuejs}{}}%
-  \CSLLeftMargin{{[}9{]} }%
-  \CSLRightInline{{«~VueJS~»}, \emph{VueJs}. \url{https://vuejs.org/},
-    2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-codemirror}{}}%
-  \CSLLeftMargin{{[}10{]} }%
-  \CSLRightInline{M. Haverbeke, {«~Codemirror~»}, \emph{CodeMirror}.
-    \url{https://codemirror.net/}, 2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-Minsky_Ocaml}{}}%
-  \CSLLeftMargin{{[}11{]} }%
-  \CSLRightInline{Y. Minsky, A. Madhavapeddy, et J. Hickey, \emph{Real
-      World OCaml}. \url{https://dev.realworldocaml.org/}; O'Reilly Media,
-    2013.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-chailloux}{}}%
-  \CSLLeftMargin{{[}12{]} }%
-  \CSLRightInline{E. Chailloux, P. Manoury, et B. Pagano, {«~Développement
-        d'applications avec Objective Caml~»}.
-    \url{https://www-apr.lip6.fr/~chaillou/Public/DA-OCAML/}; O'Reilly
-    Media, 2000.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-Leroy}{}}%
-  \CSLLeftMargin{{[}13{]} }%
-  \CSLRightInline{X. Leroy, {«~OCaml Library~»}.
-    \url{https://ocaml.org/api/}.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-js_of_ocaml}{}}%
-  \CSLLeftMargin{{[}14{]} }%
-  \CSLRightInline{Ocsigen, \emph{Js\_of\_ocaml}.
-    \url{https://ocsigen.org/js_of_ocaml/latest/manual/overview}; Ocsigen,
-    2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-reasonml}{}}%
-  \CSLLeftMargin{{[}15{]} }%
-  \CSLRightInline{{«~ReasonML~»}, \emph{ReasonML}.
-    \url{https://reasonml.github.io/}, 2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-rescript}{}}%
-  \CSLLeftMargin{{[}16{]} }%
-  \CSLRightInline{{«~Rescript~»}, \emph{Rescript}.
-    \url{https://rescript-lang.org/}, 2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-Node_js}{}}%
-  \CSLLeftMargin{{[}17{]} }%
-  \CSLRightInline{{«~Node.js~»}, \emph{Node.js}.
-    \url{https://nodejs.org/en}, 2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-Child_Processes}{}}%
-  \CSLLeftMargin{{[}18{]} }%
-  \CSLRightInline{{«~Child processes~»}, \emph{Child processes}.
-    \url{https://nodejs.org/api/child_process.html}, 2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-Express_js}{}}%
-  \CSLLeftMargin{{[}19{]} }%
-  \CSLRightInline{{«~Express.js~»}, \emph{Express.js}.
-    \url{https://expressjs.com/fr/}, 2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-morgan}{}}%
-  \CSLLeftMargin{{[}20{]} }%
-  \CSLRightInline{{«~morgan~»}, \emph{morgan}.
-    \url{https://www.npmjs.com/package/morgan}, 2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-helmet}{}}%
-  \CSLLeftMargin{{[}21{]} }%
-  \CSLRightInline{A. Baldwin, {«~helmet~»}, \emph{helmet}.
-    \url{https://helmetjs.github.io/}, 2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-PC3R}{}}%
-  \CSLLeftMargin{{[}22{]} }%
-  \CSLRightInline{E. Chailloux, {«~Cours PC2R~»}.
-    \url{https://www-apr.lip6.fr/~chaillou/Public/enseignement/2018-2019/pc2r/public/cours/Cours08.pdf},
-    2018.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-menhir}{}}%
-  \CSLLeftMargin{{[}23{]} }%
-  \CSLRightInline{INRIA, {«~Menhir Parser~»}, \emph{Menhir Reference
-      Manual}. \url{http://gallium.inria.fr/~fpottier/menhir/manual.html},
-    2023.}
-
-  \leavevmode\vadjust pre{\hypertarget{ref-APS}{}}%
-  \CSLLeftMargin{{[}24{]} }%
-  \CSLRightInline{P. MANOURY, \emph{Analyse de programmes et sémantique}.
-    \url{https://www-apr.lip6.fr/~manoury/Enseignement/2021-22/APS/index.html},
-    2021.}
-
-\end{CSLReferences}
+\bibliographystyle{acm}
+\bibliography{biblio}
 
 \end{document}

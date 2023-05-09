@@ -8,6 +8,7 @@
 ]{article}
 \usepackage{amsmath,amssymb}
 \usepackage{iftex}
+\usepackage{stmaryrd}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
@@ -136,7 +137,8 @@
   vartype               & = [`a] \; [0 \, .. \, 9]\,*\            \\
   \\
   constructeur\_ident   & = [A-Z] \, alphanum                     \\
-  constructeur\_infixes & = [:: \quad ,]
+  constructeur\_infixes & = [:: \quad ,]                          \\
+ symboles                &= [\&\& \quad || \quad + \quad - \quad / \quad \% \quad * \quad < \quad > \quad \leq \quad \geq \quad = ]
 \end{align*}
 
 \pagebreak
@@ -192,7 +194,7 @@ notations suivantes :
   \bf{ParamEquation} := \quad          & |\quad basic\_ident                                                                    \\
                                        & |\quad 0                                                                               \\
                                        & |\quad 1                                                                               \\
-                                       & |\quad (\,\textbf{ParamEquation}\,)                                                    \\
+                                       & |\quad \,\textbf{ParamEquation}\,                                                    \\
                                        & |\quad \textbf{ParamEquation} \; + \; \textbf{ParamEquation}                           \\
                                        & |\quad \textbf{ParamEquation} \; * \; \textbf{ParamEquation}                           \\
 \end{align*}
@@ -205,8 +207,7 @@ notations suivantes :
                                        & |\quad boolean                                                                                                                       \\
                                        & |\quad (\;)                                                                                          &  & \textit{ Unit}             \\
   \\
-  \bf{Expr}  \quad :=  \quad           & |\quad ( \textbf{Expr} )                                                                                                             \\
-                                       & |\quad \textbf{Litteral}                                                                                                             \\
+  \bf{Expr}  \quad :=  \quad           & |\quad \textbf{Litteral}                                                                                                             \\
                                        & |\quad basic\_ident                                                                                                                  \\
                                        & |\quad \textbf{UnaryOperator}\quad \textbf{Expr}                                                                                     \\
                                        & |\quad \textbf{Expr}\quad \textbf{BinaryOperator}\quad \textbf{Expr}                                                                 \\
@@ -223,18 +224,7 @@ notations suivantes :
                                        & |\quad if \; \textbf{Expr}\; then \; \textbf{Expr}\; else \; \textbf{Expr}                                                           \\
   \\
   \bf{UnaryOperator}  \quad :=  \quad  & |\quad  not                                                                                                                          \\
-  \bf{BinaryOperator}  \quad :=  \quad & |\quad \&\&                                                                                                                          \\
-                                       & |\quad ||                                                                                                                            \\
-                                       & |\quad +                                                                                                                             \\
-                                       & |\quad -                                                                                                                             \\
-                                       & |\quad /                                                                                                                             \\
-                                       & |\quad \%                                                                                                                            \\
-                                       & |\quad *                                                                                                                             \\
-                                       & |\quad <                                                                                                                             \\
-                                       & |\quad >                                                                                                                             \\
-                                       & |\quad \leq                                                                                                                          \\
-                                       & |\quad \geq                                                                                                                          \\
-                                       & |\quad =                                                                                                                             \\
+  \bf{BinaryOperator}  \quad :=  \quad & |\quad symboles                                                            \\
 \end{align*}
 
 \hypertarget{filtrage-et-motifs}{%
@@ -244,8 +234,7 @@ notations suivantes :
   \bf{Match\_Case}  \quad :=  \quad & |\quad  \textbf{Pattern} \rightarrow  \textbf{Expr}                         \\
                                     & |\quad \textbf{Pattern} \rightarrow  \textbf{Expr}\; '|'\; \bf{Match\_Case} \\
   \\
-  \textbf{Pattern} \quad :=  \quad  & |\quad   ( \textbf{Pattern} )                                               \\
-                                    & |\quad \textbf{Litteral}                                                    \\
+  \textbf{Pattern} \quad :=  \quad & |\quad \textbf{Litteral}                                                    \\
                                     & |\quad basic\_ident                                                         \\
                                     & |\quad \_                                                                   \\
                                     & |\quad constructeur\_ident                                                  \\
@@ -256,16 +245,10 @@ notations suivantes :
   \subsubsection{Types}\label{types-1}}
 
 \begin{align*}
-  \textbf{Type}    \quad :=  \quad & |\quad  (\textbf{Type})                                                    \\
-                                   & |\quad int                                                                 \\
-                                   & |\quad bool                                                                \\
-                                   & |\quad unit                                                                \\
-                                   & |\quad \textbf{Type} * \textbf{Type}            &  & \textit{Tuple Type}   \\
-                                   & |\quad \textbf{Type} \rightarrow  \textbf{Type} &  & \textit{Lambda Type}  \\
-                                   & |\quad vartype                                  &  & \textit{'a}           \\
-                                   & |\quad basic\_ident                             &  & \textit{Defined Type} \\
-                                   & |\quad \textbf{Type}_{\bf{List}}                &  & \textit{App Type}     \\
-\end{align*} \newpage
+  \textbf{Type}    \quad :=  \quad 
+                                   & |\quad vartype                                  &  & \textit{Type Variable}           \\
+                                   & |\quad constructeur\_ident \; vartype                             &  & \textit{Defined Type} \\
+\end{align*} 
 
 \hypertarget{semantique-de-traduction}{%
   \section{Semantique de traduction}\label{semantique-de-traduction}}
@@ -273,20 +256,18 @@ notations suivantes :
 \hypertarget{programmes-1}{%
   \subsection{Programmes}\label{programmes-1}}
 
-\[ \vdash_{Prog} Prog[cs] \rightarrow Prog'(x) \] Un programme MiniML
+\[ Prog[cs] \rightarrow \llbracket Prog[cs] \rrbracket_{Prog}  \] Un programme MiniML
 est une suite de commandes \([cs]\) qui est traduite en un programme
 \(x\) en LCBPV. Un programme est dit traduisible si la suite de
 commandes \([cs]\) qui le compose peut-être traduite.
-
 \begin{align*}
-  \text{ si }    & \vdash_{\text{Cmds}} cs \rightarrow  (g,\omega,\upsilon)                \\
-  \text{  alors} & \vdash_{\text{Cmds}} Prog[cs] \rightarrow  Prog'(\omega;Do(g,\upsilon))
+    &  Prog[cs] \rightarrow  \llbracket Prog[cs] \rrbracket_{Cmds} \rightarrow Prog'(\llbracket cs \rrbracket_{Cmds} )
 \end{align*}
 
 \hypertarget{suites-de-commandes}{%
   \subsection{Suites de commandes}\label{suites-de-commandes}}
 
-\[ \vdash_{\text{Cmds}} cs \rightarrow (\gamma,\omega,\upsilon) \] Le
+\[ cs \rightarrow \llbracket cs \rrbracket_{Cmds} \rightarrow (\gamma,\omega,\upsilon) \] Le
 resultat de la traduction d'une suite de commandes \(cs\) est un triplet
 \((\gamma,\omega,\upsilon)\) où:
 
@@ -304,31 +285,16 @@ Ce triplet est rendu nécessaire par la sémantique de LCBPV qui ne permet
 pas de définir des variables globales comme en MiniML. Cela a aussi pour
 conséquence un changement de portée entre les déclarations de type en
 MiniML et en LCBPV.
-
 \begin{align*}
-  \text{(VAR DEFS)  si }        & \; d  \in DEF,                                                               \\
-  \text{et si }                 & \vdash_{\text{Cmds}} cs \rightarrow (\gamma,\omega,\upsilon)                 \\
-  \text{et si }                 & \vdash_{\text{Def}} d \rightarrow  \pi                                       \\
-  \text{et si }                 & \pi \in GLB                                                                  \\
-  alors                         & \vdash_{\text{Cmds}} (Def(d); cs) \rightarrow ((\gamma;\pi),\omega,\upsilon) \\
+  \text{(VAR DEFS)} \quad      & (Def(d); cs) \rightarrow \llbracket d \rrbracket_{Def} +  \llbracket cs \rrbracket_{Cmds} \rightarrow ((\gamma;\llbracket d \rrbracket_{Def}),\omega,\upsilon) \\
   \\
-  \text{(TYPE DEFS)  si }       & \; d  \in DEF,                                                               \\
-  \text{et si }                 & \vdash_{\text{Cmds}} cs \rightarrow (\gamma,\omega,\upsilon)                 \\
-  \text{et si }                 & \vdash_{\text{Def}} d \rightarrow  \pi                                       \\
-  \text{et si }                 & \pi \in TYPE                                                                 \\
-  alors                         & \vdash_{\text{Cmds}} (Def(d); cs) \rightarrow (\gamma,(\omega;\pi),\upsilon) \\
+  \text{(TYPE DEFS)} \quad & (Def(d); cs) \rightarrow \llbracket d \rrbracket_{Def} + \llbracket cs \rrbracket_{Cmds} \rightarrow (\gamma,(\omega;\llbracket d \rrbracket_{Def}),\upsilon) \\
   \\
-  \\
-  \text{(GLB EXPR)} \text{ si } & b  \in EXPR,                                                                 \\
-  \text{et si }                 & \vdash_{\text{Cmds}} cs \rightarrow (\gamma,\omega,\upsilon)                 \\
-  \text{et si }                 & \vdash_{\text{Expr}} b \rightarrow  \upsilon'                                \\
-  alors                         & \vdash_{\text{Cmds}} (Expr(b), cs) \rightarrow  (\gamma,\omega,\upsilon')
+  \text{(GLB EXPR)} \quad & (Expr(b), cs) \rightarrow \llbracket b \rrbracket_{Expr} \times \llbracket cs \rrbracket_{Cmds}  \rightarrow (\gamma,\omega,\llbracket b \rrbracket_{Expr})
 \end{align*}
+\subsection{Définitions}\label{duxe9finitions}
 
-\hypertarget{duxe9finitions}{%
-  \subsection{Définitions}\label{duxe9finitions}}
-
-\[ \vdash_{\text{Def}} d \rightarrow \pi \] On définit la relation
+\[  d \rightarrow \llbracket d \rrbracket_{Def} \rightarrow \pi \] On définit la relation
 \(Def\) selon les cas de construction des définitions. Les cas de
 construction des définitions sont donnés par les clauses des règles
 syntaxiques.
@@ -344,8 +310,7 @@ traduite. On distingue deux catégories de définitions:
         Les définitions de \textbf{Types}.
 \end{itemize}
 
-Ces deux catégories de définitions sont traitées différemment par le
-jugement \(\vdash_{\text{Cmds}}\)
+Ces deux catégories de définitions sont traitées différemment par \({Cmds}\)
 
 \begin{itemize}
   \tightlist
@@ -353,128 +318,66 @@ jugement \(\vdash_{\text{Cmds}}\)
         \(\pi\) est donc la traduction de la définition \(d\) placée dans la
         bonne catégorie.
 \end{itemize}
-
 \begin{align*}
   \text{(VARDEF)}
-  \text{ si }                 & \vdash_{\text{Expr}} e \rightarrow  e'                                \\
-  \text{alors}                & \vdash_{\text{Def}} VariableDef(v, e) \rightarrow  GLB(InsLet(v, e')) \\
+  \quad & VariableDef(v, e) \rightarrow  GLB(InsLet(v, \llbracket e \rrbracket_{Expr})) \\
   \\
-  \text{(TYPDEF)} \text{ si } & \vdash c1 \rightarrow  c1'
-  \dots \text{ si } \vdash cN \rightarrow  cN'                                                        \\
-  \text{alors}                & \vdash_{\text{Def}} TypeDef(n, [t1,\dots,tn], [c1,\dots,cN])          \\
-  \rightarrow \;              & \text{TYPE}(TypDef(n, [t1,\dots,tn], DefDatatype[c1',\dots,cN']))     \\
+  \text{(TYPDEF) } \quad    & TypeDef(n, [t_1,\dots,t_N], [c_1,\dots,c_N])          \\
+  \rightarrow \;              & \text{TYPE}(TypDef(n, [t_1,\dots,t_N], DefDatatype[\llbracket c_1 \rrbracket,\dots,\llbracket c_N \rrbracket]))  
 \end{align*}
+\subsection{Types}\label{types-2}
 
-\hypertarget{types-2}{%
-  \subsection{Types}\label{types-2}}
-
-\[ \vdash_{\text{Type}} t \rightarrow t' \] On définit la relation
-\(\vdash_{Type}\) selon les cas de construction des types. Les cas de
+\[  t \rightarrow \llbracket t \rrbracket_{Type} \rightarrow t' \] On définit la relation
+\({Type}\) selon les cas de construction des types. Les cas de
 construction des types sont donnés par les clauses des règles
 syntaxiques. Un type est dit traduisible si chacune de ses clauses peut
 être traduite.
-
 \begin{align*}
-  \text{(TINT)}               & \vdash_{Type} TypeInt \rightarrow  TypInt                                               \\
-  \text{(TBOOL)}              & \vdash_{Type} TypeBool \rightarrow  TypBool                                             \\
-  \text{(TUNIT)}              & \vdash_{Type} TypeUnit \rightarrow  TypUnit                                             \\
-  \text{(TDEF)}               & \vdash_{Type} TypeDefined(id) \rightarrow  TypVar(id)                                   \\
-  \text{(TVAR)}               & \vdash_{Type} TypeVar(id) \rightarrow  TypVar (id)                                      \\
+  \text{(TLITT) }               & TypeInt \rightarrow \llbracket TypeInt \rrbracket_{Type}  \rightarrow TypInt                   \\    
   \\
-  \text{(TTUPLE)} \text{ si } & \vdash_{Type} t1 \rightarrow  t_1,\dots \text{ et }  \vdash_{Type} tN \rightarrow  t_N  \\
-  \text{alors}                & \vdash_{Type} TypeTuple([t1,\dots, tN]) \rightarrow  TypTuple[t_1,\dots,t_N]            \\
+  \text{(TVAR) }               & TypeDefined(id) \rightarrow \llbracket TypeDefined(id) \rrbracket_{Type} \rightarrow TypVar(id)    \\ \\              
+  \text{(TTUPLE) } & TypeTuple([t_1,\dots, t_N]) \rightarrow  TypTuple[\llbracket t_1 \rrbracket_{Type},\dots,\llbracket t_N \rrbracket_{Type}]            \\
   \\
-  \text{(TCONS)} \text{ si }  & \vdash_{Type} t \rightarrow  t'                                                         \\
-  \text{ si }                 & \vdash_{Type} p1 \rightarrow  p_1,\dots \text{ et } \vdash_{Type} pN \rightarrow  p_N   \\
-  \text{alors}                & \vdash_{Type} TypeConstructor(t, [p1,\dots,pN]) \rightarrow  TypApp(t, [p_1,\dots,p_N]) \\
+  \text{(TAPP) }  & TypeConstructor(t, [p_1,\dots,p_N]) \rightarrow  TypApp(\llbracket t \rrbracket_{Type}, [\llbracket p_1 \rrbracket_{Type},\dots,\llbracket p_N \rrbracket_{Type}]) \\
   \\
-  \\
-  \text{(TLAMB)} \text{ si }  & \vdash_{Type} a \rightarrow  a'                                                         \\
-  \text{et si}                & \vdash_{Type} ret  \rightarrow  ret'                                                    \\
-  \text{alors}                & \vdash_{Type} TypeLambda(a,ret)                                                         \\
-  \rightarrow \;              & TypClosure(Exp, \, (TypFun(TypThunk(ret'), a')))
+  \text{(TCLOS) }            & TypeLambda(a,ret)                                                  
+  \rightarrow \;               TypClosure(Exp, \, (TypFun(TypThunk(\llbracket ret \rrbracket_{Type}), \llbracket a \rrbracket_{Type})))
 \end{align*}
+\subsection{Litteraux et Expressions}\label{litteraux-et-expressions}
 
-\hypertarget{litteraux-et-expressions}{%
-  \subsection{Litteraux et Expressions}\label{litteraux-et-expressions}}
+\[ e \rightarrow \llbracket e \rrbracket_{Expr} \rightarrow e'  \]
 
-\[ \vdash_{\text{Expr}} e \rightarrow e' \]
-
-On définit la relation \(\vdash_{Expr}\) selon les cas de construction
+On définit la relation \({Expr}\) selon les cas de construction
 des expr. Les cas de construction des expressions sont donnés par les
 clauses des règles syntaxiques. Une expression est dite traduisible si
 chacune de ses clauses peut être traduite. \begin{align*}
-  \text{(INT)} \text{ si }     & i  \in \text{NUM}                                                                                                       \\
-  \text{alors}                 & \vdash_{Expr} Integer(i) \rightarrow  ExprInt(i)                                                                        \\
-  \text{(TRUE)} \quad          & \vdash_{Expr} Boolean(true) \rightarrow  ExprConstructor(True,[\;])                                                     \\
-  \text{(FALSE)} \quad         & \vdash_{Expr} Boolean(false) \rightarrow  ExprConstructor(False, [\;])                                                  \\
-  \text{(UNIT)}\quad           & \vdash_{Expr} Unit \rightarrow  ExprConstructor(Unit, [\;])
+    \text{(CONSTR)} \quad &  Construct(c,e) \rightarrow  ExprConstructor(ConsNamed(c), \llbracket e \rrbracket_{Expr})                                             \\
   \\
+  \text{(UNARY)} \quad & CallUnary(op, [a]) \rightarrow  ExprMonPrim(op, \llbracket a \rrbracket_{Expr}) \\
   \\
-  \text{(TUPLE)} \text{ si }   & \vdash_{Expr} e1 \rightarrow  e_1, \dots \text{ si }  \vdash_{Expr} eN \rightarrow  e_N                                 \\
-  \text{alors}                 & \vdash_{Expr} Tuple([e1,\dots,eN]) \rightarrow  ExprConstructor(Tuple, [e_1,\dots,e_N])
+  \text{(BINARY)} \quad &  CallBinary(op, [a_1,a_2]) \rightarrow  ExprBinPrim(op, \llbracket a_1 \rrbracket_{Expr}, \llbracket a_2 \rrbracket_{Expr})                                            \\                                    \\
+  \text{(MATCH)} \quad  &  Match(m,[m_1,\dots,m_N]) \rightarrow  ExprMatch(\llbracket m \rrbracket_{Expr}, [\llbracket m_1 \rrbracket_{Case},\dots,\llbracket m_N \rrbracket_{Case}])                                        \\
   \\
+  \text{(BLOCK)} \quad  & Sequence([e_1,\dots,e_{N-1}, e_N])                                    
+\rightarrow  ExprBlock(Blk([\llbracket e_1 \rrbracket_{Expr}; \dots ; \llbracket e_{N-1} \rrbracket_{Expr}], e_N))                                      \\
   \\
-  \text{(UNARY1)} \text{ si }  & \vdash_{Expr} a \rightarrow  a'                                                                                         \\
-  \text{alors}                 & \vdash_{Expr} CallUnary(op, [a]) \rightarrow  ExprMonPrim(op, a')                                                       \\
-  \text{(UNARY0)} \text{ si }  & \vdash_{Expr} Lambda(a,CallUnary(op, [a])) \rightarrow  \omega                                                          \\
-  \text{alors}                 & \vdash_{Expr} CallUnary(op, [\;]) \rightarrow \omega                                                                    \\
+  \text{(CALL)} \quad & Call(f, a)                                                 \rightarrow  ExprBlock(Blk([InsOpen(Exp, \llbracket f \rrbracket_{Expr} ), \\ & InsForce(ExprMethod(Call, [\llbracket a \rrbracket_{Expr}]))]))                                       \\
   \\
+  \text{(LAMBDA)} \quad  &  Lambda(a, b)                                                                                              \\
+                               & \rightarrow  ExprClosure(Exp, ExprGet([GetPatTag(Call, [\llbracket a \rrbracket_{Expr}], ExprThunk(\llbracket b \rrbracket_{Expr}))]))                                          \\
   \\
-  \text{(BINARY2)} \text{ si } & \vdash_{Expr} a1 \rightarrow  a_1 \text{ et }  \vdash_{Expr} a2 \rightarrow  a_2                                        \\
-  \text{alors}                 & \vdash_{Expr} CallBinary(op, [a1:a2]) \rightarrow  ExprBinPrim(op, a_1, a_2)                                            \\
-  \text{(BINARY1)}
-  \text{ si }                  & \vdash_{Expr} Lambda(b,CallUnary(op, [a,b])) \rightarrow  \omega                                                        \\
-  \text{alors}                 & \vdash_{Expr} CallBinary(op, [a]) \rightarrow \omega                                                                    \\
-  \text{(BINARY0)}
-  \text{ si }                  & \vdash_{Expr} Lambda(a,Lambda(b,CallUnary(op, [a,b]))) \rightarrow  \omega                                              \\
-  \text{alors}                 & \vdash_{Expr} CallBinary(op, [\;]) \rightarrow \omega                                                                   \\
-  \\
-  \text{(CONSTR)} \text{ si }  & \vdash_{Expr} e \rightarrow  e'                                                                                         \\
-  \text{alors}                 & \vdash_{Expr} Construct(c,e) \rightarrow  ExprConstructor(ConsNamed(c), e')                                             \\
-  \\
-  \text{(BIND)} \text{ si }    & \vdash_{Expr} i \rightarrow  i'                                                                                         \\
-  \text{et si }                & \vdash_{Expr} c \rightarrow  c'                                                                                         \\
-  \text{alors}                 & \vdash_{Expr} Binding(v,i,c) \rightarrow  ExprBlock(Blk([InsLet (v, i')], c'))                                          \\
-  \\
-  \text{(MATCH)} \text{ si }   & \vdash_{Expr} m \rightarrow  m'                                                                                         \\
-  \text{ si }                  & m1  \in CASE \dots \text{ et } mN  \in CASE                                                                             \\
-  \text{ si }                  & \vdash_{Case} m1 \rightarrow  m_1, \dots \text{ et } \vdash_{Case} mN \rightarrow  m_N                                  \\
-  \text{alors}                 & \vdash_{Expr} Match(m,[m1,\dots,mN]) \rightarrow  ExprMatch(m', [m_1,\dots,m_N])                                        \\
-  \\
-  \text{(SEQ)} \text{ si }     & \vdash_{Expr} e1 \rightarrow  InsLet(x1, e_1), \dots \text{ et }  \vdash_{Expr} eN-1 \rightarrow  InsLet(xN-1, e_{N-1}) \\
-  \text{et si }                & \vdash_{Expr} eN \rightarrow  e_N                                                                                       \\
-  \text{alors}                 & \vdash_{Expr} Sequence([e1,\dots,eN])                                                                                   \\
-                               & \rightarrow  ExprBlock(Blk([InsLet(x1, e_1); \dots ; InsLet(xN-1, e_{N-1})], e_N))                                      \\
-  \\
-  \text{(CALL)} \text{ si }    & \vdash_{Expr} a \rightarrow  a'                                                                                         \\
-  \text{et si }                & \vdash_{Expr} f \rightarrow  f'                                                                                         \\
-  \text{alors}                 & \vdash_{Expr} Call(f, a)                                                                                                \\
-                               & \rightarrow  ExprBlock(Blk([InsOpen(Exp, f'), InsForce(ExprMethod(Call, [a']))]))                                       \\
-  \\
-  \text{(LAMBDA)} \text{ si }  & \vdash_{Expr} a \rightarrow  a'                                                                                         \\
-  \text{et si }                & \vdash_{Expr} b \rightarrow  b'                                                                                         \\
-  \text{alors}                 & \vdash_{Expr} Lambda(a, b)                                                                                              \\
-                               & \rightarrow  ExprClosure(Exp, ExprGet([GetPatTag(Call, [a'], ExprThunk(b'))]))                                          \\
-  \\
-  \text{(REC)}
-  \text{ si }                  & \vdash_{Expr} a \rightarrow  a'                                                                                         \\
-  \text{ si }                  & \vdash_{Expr} v \rightarrow  v' \text{ et } \text{ si }  \vdash_{Expr} b \rightarrow  b'                                \\
-  \text{alors}                 & \vdash_{Expr} FunctionRec(v, a, b)                                                                                      \\
-                               & \rightarrow  ExprClosure(Exp,ExprRec(v',ExprGet([GetPatTag(Call, [a'], ExprThunk(b'))])))                               \\
+  \text{(REC)} \quad                  &  FunctionRec(v, a, b)                                      
+                                \rightarrow  ExprClosure(Exp,ExprRec(\llbracket v \rrbracket_{Expr}, \\  & ExprGet([GetPatTag(Call, [\llbracket a \rrbracket_{Expr}], ExprThunk(\llbracket b \rrbracket_{Expr}))]))) 
 \end{align*}
+\subsection{Motifs et Filtrage}\label{motifs-et-filtrage}
 
-\hypertarget{motifs-et-filtrage}{%
-  \subsection{Motifs et Filtrage}\label{motifs-et-filtrage}}
+\[ Case(p,e) \rightarrow \llbracket Case(p,e) \rrbracket_{Case} \rightarrow \alpha \]
 
-\[ \vdash_{\text{Case}} Case(p,e) \rightarrow \alpha \]
-
-On définit la relation \(\vdash_{Case}\) selon les cas de construction
+On définit la relation \({Case}\) selon les cas de construction
 des motif de correspondance. Les cas de construction des motif de
 correspondance sont donnés par les clauses des règles syntaxiques. Un
 motif de correspondance est dit traduisible si chacune de ses clauses
 peut être traduite.
-
 \begin{itemize}
   \tightlist
   \item
@@ -482,41 +385,12 @@ peut être traduite.
   \item
         \(e\) est l'expression qui sera évaluée si le motif est vérifié
 \end{itemize}
-
 \begin{align*}
-  \text{(INTPAT)} \text{ si }  & l \in \text{NUM} \text{ et }  \vdash_{Expr} e \rightarrow  e'                      \\
-  \text{alors}                 & \vdash_{Case} Case(LitteralPattern(l), e) \rightarrow
-  MatchPatTag(IntLitt\; l, [\;], e')                                                                                \\
-  \text{(BOOLPAT)} \text{ si } & l = Boolean(\_),                                                                   \\
-  \text{ si }                  & \vdash l \rightarrow  l' \text{ et }  \vdash_{Expr} e \rightarrow  e'              \\
-  \text{alors}                 & \vdash_{Case} Case(LitteralPattern(l), e)
-  \rightarrow  MatchPatTag(l', [\;], e')                                                                            \\
-  \text{(UNITPAT)} \text{ si } & l = Unit \text{ et }  \vdash_{Expr} e \rightarrow  e'                              \\
-  \text{alors}                 & \vdash_{Case} Case(LitteralPattern(l), e) \rightarrow  MatchPatTag(Unit, [\;], e') \\
+  \text{(PATTAG)} \quad    &  Case(ConstructorPattern((n,c)), e)
+  \\ &\rightarrow  MatchPatTag(ConsNamed(n), \llbracket c \rrbracket_{Case}, \llbracket e \rrbracket_{Expr})        \\                                                        
   \\
-  \\
-  \text{(TUPAT)}
-  \text{ si }                  & p1  \in CASE,\dots \text{ si } pN  \in CASE                                        \\
-  \text{ si }                  & \vdash p1 \rightarrow  p_1, \dots, \text{ si }  \vdash pN \rightarrow  p_N         \\
-  \text{ et }                  & \vdash_{Expr} e \rightarrow  e'                                                    \\
-  \text{alors}                 & \vdash_{Case} Case(TuplePattern([p1,\dots,pN]), e)
-  \rightarrow  MatchPatTag(Tuple, [p_1,\dots,p_N], e')                                                              \\
-  \\
-  \text{(CONSPAT)}
-  \text{ si }                  & c  \in CASE                                                                        \\
-  \text{ si }                  & \vdash c \rightarrow  c'                                                           \\
-  \text{ et }                  & \vdash_{Expr} e \rightarrow  e'                                                    \\
-  \text{alors}                 & \vdash_{Case} Case(ConstructorPattern((n,c)), e)
-  \rightarrow  MatchPatTag(ConsNamed(n), c', e')                                                                    \\
-  \\
-  \text{(VARPAT)} \text{ si }  & \vdash_{Expr} e \rightarrow  e'                                                    \\
-  \text{alors}                 & \vdash_{Case} Case(VarPattern(x), e, l)
-  \rightarrow  MatchPatVar((x, l), e', l)                                                                           \\
-  \\
-  \text{(WILDPAT)}
-  \text{ si }                  & \vdash_{Expr} e \rightarrow  e'                                                    \\
-  \text{alors}                 & \vdash_{Case} Case(WildcardPattern(), e, l)
-  \rightarrow  MatchPatVar((n, l), e', l)
+  \text{(PATVAR)} \quad & Case(VarPattern(x), e, l)
+  \rightarrow  MatchPatVar((x, l), \llbracket e \rrbracket_{Expr}, l)                              
 \end{align*}
 
 \end{document}

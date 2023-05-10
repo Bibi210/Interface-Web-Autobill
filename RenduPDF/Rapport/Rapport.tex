@@ -18,7 +18,42 @@
 % \usepackage{algpseudocode}
 \usepackage[absolute,overlay]{textpos} % Pour bouger les figures
 \usepackage[nottoc]{tocbibind} %Includes "References" in the table of contents
+\usepackage{listings}
+\usepackage{xcolor}
 
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{EEEEEE}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+
+\lstdefinelanguage{json}{
+    basicstyle=\normalfont\ttfamily,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{background},
+    literate=
+     *{0}{{{\color{numb}0}}}{1}
+      {1}{{{\color{numb}1}}}{1}
+      {2}{{{\color{numb}2}}}{1}
+      {3}{{{\color{numb}3}}}{1}
+      {4}{{{\color{numb}4}}}{1}
+      {5}{{{\color{numb}5}}}{1}
+      {6}{{{\color{numb}6}}}{1}
+      {7}{{{\color{numb}7}}}{1}
+      {8}{{{\color{numb}8}}}{1}
+      {9}{{{\color{numb}9}}}{1}
+      {:}{{{\color{punct}{:}}}}{1}
+      {,}{{{\color{punct}{,}}}}{1}
+      {\{}{{{\color{delim}{\{}}}}{1}
+      {\}}{{{\color{delim}{\}}}}}{1}
+      {[}{{{\color{delim}{[}}}}{1}
+      {]}{{{\color{delim}{]}}}}{1},
+}
 % Changement des commandes pour les algorithmes 
 \renewcommand{\algorithmicrequire}{\textbf{Entrée(s)}}
 \renewcommand{\algorithmicensure}{\textbf{Sortie(s)}}
@@ -198,9 +233,10 @@ les bornes mémoires nécessaires au fonctionnement d'un programme. On
 peut alors traiter ces équations avec des solveurs, fournis aussi par
 ces deux outils, pour prouver des propriétés de complexité temporelle ou
 spatiale.
+
 \newpage
-\hypertarget{objectifs-du-projet}{%
-  \subsection{Objectifs du projet}\label{objectifs-du-projet}}
+
+\subsection{Objectifs du projet}\label{objectifs-du-projet}
 
 Notre démarche se rapproche de celle de RAML
 \protect\hyperlink{ref-RAML}{{[}3{]}} avec leur site officiel: offrir
@@ -210,7 +246,7 @@ recherche en analyse statique.
 Le sujet de notre projet STL va donc être de soutenir l'effort de
 développement en proposant une interface sur le Web permettant la libre
 manipulation de l'outil Autobill par des utilisateurs à travers un
-environnement de développement sur navigateur. \newpage On souhaite
+environnement de développement sur navigateur. On souhaite
 aussi faciliter l'utilisation de l'outil avec un langage fonctionnel pur
 en entrée plus accessible, un \textbf{MiniML}. Cela nous contraint donc
 à adapter cette nouvelle entrée pour qu'elle soit compatible avec
@@ -226,7 +262,6 @@ la sortie en code MiniZinc/Coq.
 Notre charge de travail doit se diviser en plusieurs tâches principales:
 
 \begin{itemize}
-  \tightlist
   \item
         L'implémentation du langage MiniML et sa traduction vers CBPV
   \item
@@ -242,12 +277,11 @@ Notre charge de travail doit se diviser en plusieurs tâches principales:
 
 \begin{figure}
   \centering
-  \includegraphics{Figures/DiagrammeHautNiveauPSTL.png}
+  \includegraphics[scale=0.5]{Figures/DiagrammeHautNiveauPSTL.png}
   \caption{Représentation du système cible}
 \end{figure}
 
-\hypertarget{processus-de-conception}{%
-  \subsection{Processus de conception}\label{processus-de-conception}}
+\subsection{Processus de conception}\label{processus-de-conception}
 
 Lors de la conception de l'interface, les contraintes étaient multiples.
 La première était l'interopérabilité des technologies du projet. En
@@ -285,20 +319,60 @@ De cette démarche, il en résulte un code source d'environ 500 lignes,
 client et serveur compris, faisant tourner notre IDE en ligne dans un
 état fonctionnel.
 
-\hypertarget{client-uniquement}{%
-  \subsection{Client uniquement}\label{client-uniquement}}
+\subsection{Client}
 
 Une première approche tout client a été mise œuvre dès le début du
 projet. Celle-ci permettait de garantir une facilité dans le déploiement
-en ligne de notre solution. L'environnement limité du navigateur Web a
-remis en question la tenue de cette architecture, mais des compromis ont
-été trouvés pour satisfaire la contrainte d'interopérabilité entre le
-Web et Ocaml.
+en ligne de notre solution. Cette partie se concentra sur la présentation de 
+notre client Web, de l'implémentation des fonctionnalités importantes et des problèmes rencontrés ainsi que leurs résolutions.
 
-\hypertarget{outils-et-technologies-utilisuxe9s}{%
-  \subsubsection{Outils et technologies
-    utilisés}\label{outils-et-technologies-utilisuxe9s}}
+\subsubsection{Interopérabilité Web-Ocaml}\
 
+\subsubsection{L'éditeur de code}\
+
+L'idée initiale était de proposer une interface de développement intégrée sur le Web. Celle-ci devait proposer les outils nécessaires pour réaliser les trois tâches suivantes : analyser, écrire et déboguer du code. Pour répondre à ces besoins, plusieurs composants essentiels vont devoir fonctionner ensemble pour fournir l'expérience d'un IDE classique :
+\begin{itemize}
+    \item Un éditeur de code pratique et adapté à l'écriture de code dans notre langage MiniML.
+    \item Un menu de navigation entre les programmes proposés par l'application ou créés par l'utilisateur
+    \item Un menu de sélection entre différentes configurations d'analyses
+    \item Une sortie standard et d'erreur pour afficher le retour de l'analyse d'Autobill \\ 
+\end{itemize} 
+
+La question de l'éditeur de code s'est rapidement posée pour nous. En effet, c'est sur ce composant que va être concentrée l'expérience de l'application et nous avions la volonté de nous rapprocher au plus d'une prise en main similaire aux IDE modernes (Visual Studio Code, Eclipse, IntelliJ...). L'idée d'utiliser un simple champ de texte agrandi n'était donc pas envisageable. \\ 
+
+En premier lieu, l'effort de développement a été mis dans la construction \textit{from Scratch} d'un éditeur de code. Cela a permis de fixer clairement les exigences et les fonctionnalités que nous attendions d'un éditeur de code moderne. Déjà, il devait proposer une expérience d'écriture correcte avec toutes les manipulations usuelles et attendues : le comptage des lignes, la recherche et le remplacement rapide d'une suite de caractères (Ctrl+F), le \textit{linting} d'erreurs... Enfin, il y'a le support du langage d'écriture des programmes. Par cela, il est question notamment de coloration syntaxique pour isoler les mots clés et symboles réservés du langage mais aussi de l'autocomplétion basique.  \\ 
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.36]{Figures/screen.png}
+  \caption{Interface pour Autobill, dans le scénario d'une erreur}
+\end{figure}
+L'examen de nos besoins nous a donc contraints à repousser l'idée d'une création d'un éditeur en partant de zéro. Délivrer les fonctionnalités citées plus haut tout en assurant la stabilité de la solution serait complexe et concentrerait beaucoup d'efforts sur ce composant, au détriment de chantiers clés comme le MiniML. C'est un élément de l'application d'autant plus important qu'il ne doit pas être négligé et demande à lui seul l'effort et le temps nécessaires à un projet universitaire. pour être réalisé. Nous nous sommes donc tournés vers des librairies et solutions déjà existantes afin de les intégrer dans notre projet. \\ 
+
+Parmi les librairies disponibles, nous avons choisi CodeMirror. C'est un éditeur de code pour navigateur Web, disponible en libre de droits, qui peut s'intégrer à n'importe quelle application Web. Ses fonctionnalités sont exhaustives et il offre de multiples choix de personnalisations pour l'adapter à un langage spécifique. Nativement, il y'a le support intégré pour la syntaxe de langage à la ML comme Ocaml ou F\# : MiniML étant un substrat, on peut aisément créer notre fichier de configuration pour ne garder que les mots clés essentiels de notre langage et Codemirror s'occupe du parsing du code et de la coloration de chaque caractère. \\ 
+
+Enfin, le \textit{linting} est disponible et permet de dynamiquement surligner des lignes de l'éditeur. Comme illustré dans la Figure 3, on peut, à la volée, afficher directement les parties du programme concernées par une erreur de l'analyse. En effet, quand une méthode de Js\_of\_Ocaml est appelée et qu'une exception est levée durant l'exécution, sa sortie d'erreur peut être redirigée et retournée directement au client. Côté Ocaml, on peut alors formater la sortie d'erreur avec les données de l'exception : la ligne de début et de fin, le type d'erreur rencontrée, la phase de l'analyse durant laquelle l'exception a été levée... \\
+\begin{figure}
+  \centering
+  \begin{lstlisting}[language=json,firstnumber=1]
+{
+    "loc": {
+        "beginning": { "line": 10, "column": 19},
+        "end": {"line": 10, "column": 21}
+    },
+    "info": "Error on line 10 col 19: Syntax error."
+}
+\end{lstlisting}
+\caption{Sortie d'erreur Ocaml parsée}
+\end{figure}
+
+Côté Web, on peut parser la chaîne de caractères et récupérer le JSON parsé pour manipuler les informations sur l'erreur rencontrée (voir Figure 4). CodeMirror offre des fonctions permettant de manipuler l'état global de l'éditeur: son thème, son contenu, le langage de la coloration syntaxique, les options activées... On y retrouve surtout la liste des lignes qui composent l'éditeur. On peut alors leur affecter des changements de style pour les mettre en lumière ou faire apparaître une infobulle avec le message d'erreur si on passe la souris dessus... \\ 
+
+On offre ainsi les outils nécessaires à l'utilisateur pour bien écrire et déboguer son code MiniML. Néanmoins, il faut encore compléter la \textit{pipeline} en traitant toutes les sorties possibles d'Autobill, notamment les équations sur les contraintes mémoires du programme analysée qu'il va falloir résoudre.
+
+\subsubsection{La résolution de contraintes}\
+
+\iffalse                            
 \begin{itemize}
   \item
         \textbf{HTML / CSS / Javascript (JS)}: Il s'agit de la suite de
@@ -383,11 +457,7 @@ Web et Ocaml.
         les bibliothèques d'OCaml. Js\_of\_OCaml en complément avec un client
         en React correspond donc à un bon compromis dans notre cas d'étude.
 \end{itemize}
-
-\newpage
-
 \begin{itemize}
-  \tightlist
   \item
         \textbf{MiniZinc} \protect\hyperlink{ref-minizinc}{{[}5{]}} : À la
         génération des expressions de contraintes, Autobill retourne une
@@ -407,18 +477,7 @@ Web et Ocaml.
         pour C/C++, on peut lancer des tâches intensives de résolution de
         contraintes, depuis n'importe quel navigateur Web moderne.
 \end{itemize}
-
-\hypertarget{aperuxe7u-de-linterface-graphique}{%
-  \subsubsection{Aperçu de l'interface
-    graphique}\label{aperuxe7u-de-linterface-graphique}}
-
-\begin{figure}
-  \centering
-  \includegraphics{Figures/screen.png}
-  \caption{Aperçu de l'interface graphique}
-\end{figure}
-
-\newpage
+\fi 
 
 \hypertarget{serveur-client}{%
   \subsection{Serveur + client}\label{serveur-client}}
@@ -458,6 +517,7 @@ service, le client envoie le code de MiniZinc au serveur via une requête
 POST. Le serveur passe le code à un solveur de MiniZinc et renvoie le
 résultat au client.
 
+\iffalse                            
 \hypertarget{outils-et-technologies-utilisuxe9s-1}{%
   \subsubsection{Outils et technologies
     utilisés}\label{outils-et-technologies-utilisuxe9s-1}}
@@ -595,7 +655,7 @@ résultat au client.
   \item
         Mise en relation du client et du serveur
 \end{itemize}
-
+\fi 
 \newpage
 
 \hypertarget{miniml}{%

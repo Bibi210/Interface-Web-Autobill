@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { useCodeMirror } from "@uiw/react-codemirror"
 import { oneDark } from "@codemirror/theme-one-dark"
 import { StreamLanguage } from "@codemirror/language"
-import { lcbpv } from "../language/mllike"
+import { miniML } from "../language/mllike"
 
 import billPrompts from "../data/billPrompt"
 import "../../MiniML/_build/default/bin/main.bc.js"
@@ -81,7 +81,7 @@ function App() {
     maxWidth: "60vw",
     theme: oneDark,
     extensions: [
-      StreamLanguage.define(lcbpv),
+      StreamLanguage.define(miniML),
       EditorView.lineWrapping,
       lineHighlightField,
     ],
@@ -237,6 +237,7 @@ function App() {
       setPrint(evaluation.resultat !== "" ? evaluation.resultat : "")
       setTypes(evaluation.erreur !== "" ? evaluation.erreur : "")
     } catch (error) {
+      console.log(error)
       setPrint("")
       if(availableAtServer.has(mode) && server){
         setTypes('Error: ' + error)

@@ -1,33 +1,5 @@
-function mlLike(parserConfig) {
-  var words = {
-    'as': 'keyword',
-    'do': 'keyword',
-    'else': 'keyword',
-    'end': 'keyword',
-    'exception': 'keyword',
-    'fun': 'keyword',
-    'functor': 'keyword',
-    'if': 'keyword',
-    'in': 'keyword',
-    'include': 'keyword',
-    'let': 'keyword',
-    'of': 'keyword',
-    'open': 'keyword',
-    'rec': 'keyword',
-    'struct': 'keyword',
-    'then': 'keyword',
-    'type': 'keyword',
-    'val': 'keyword',
-    'while': 'keyword',
-    'with': 'keyword'
-  };
-
-  var extraWords = parserConfig.extraWords || {};
-  for (var prop in extraWords) {
-    if (extraWords.hasOwnProperty(prop)) {
-      words[prop] = parserConfig.extraWords[prop];
-    }
-  }
+function mLlike(parserConfig) {
+  var words = parserConfig.extraWords;
   var hintWords = [];
   for (var k in words) { hintWords.push(k); }
 
@@ -150,34 +122,22 @@ function mlLike(parserConfig) {
   };
 };
 
-export const lcbpv = mlLike({
+export const miniML = mLlike({
   name: "bill",
   extraWords: {
+    'else': 'keyword',
+    'fun': 'keyword',
+    'if': 'keyword',
+    'in': 'keyword',
+    'let': 'keyword',
+    'of': 'keyword',
+    'rec': 'keyword',
+    'then': 'keyword',
+    'type': 'keyword',
+    'with': 'keyword',
     'and': 'keyword',
-    'assert': 'keyword',
-    'begin': 'keyword',
-    
-    'class': 'keyword',
-    'function': 'keyword',
-    'match': 'keyword',
-    'method': 'keyword',
-    'module': 'keyword',
-    'mutable': 'keyword',
-    'new': 'keyword',
-    'object': 'keyword',
-    'try': 'keyword',
-    'thunk': 'keyword',
-    'force': 'keyword',
-    'exp': 'keyword',
-    'closure': 'keyword',
-    'get': 'keyword',
-    'proj': 'keyword',
-    'data': 'keyword',
-    'comput': 'keyword',
-    'absurd': 'keyword',
-    'return': 'keyword',
-    'letrec': 'keyword',
-    'unexp': 'keyword',
+    'or': 'keyword',
+    'not': 'keyword',
     
     // builtins
     'true': 'builtin',
@@ -186,23 +146,10 @@ export const lcbpv = mlLike({
     // Pervasives builtins
     '||': 'builtin',
     '&&': 'builtin',
-
-    'Int' : 'type', 
-    'Bool': 'type', 
-    'Unit' : 'type',  
-    'Zero' : 'type',  
-    'Top': 'type',
-    'Bottom': 'type',
-
-     // Modules
-    'Thunk': 'builtin',
-    'Iter': 'builtin',
-    'Tupple' : 'builtin',
-    'Sum' : 'builtin', 
-    'Fun' : 'builtin', 
-    'Choice' : 'builtin', 
-    'Thunk' : 'builtin', 
-    'Closure' : 'builtin',
-    'Exp': 'builtin'
+    
+    // types
+    'int' : 'type', 
+    'bool': 'type', 
+    'unit' : 'type'
   }
 });

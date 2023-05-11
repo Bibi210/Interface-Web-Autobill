@@ -1,4 +1,3 @@
-% Options for packages loaded elsewhere
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
@@ -94,161 +93,103 @@
 \allowdisplaybreaks
 \pagebreak
 
-\hypertarget{syntaxe-miniml}{%
-  \section{Syntaxe MiniML}\label{syntaxe-miniml}}
+\hypertarget{grammaire}{%
+  \section{Grammaire}\label{grammaire}}
 
-\hypertarget{jetons-de-lexing}{%
-  \subsection{Jetons de lexing}\label{jetons-de-lexing}}
+\newcommand{\grammarRule}[1]{\; \textbf{<\textcolor{Blue}{#1}>} \;}
+\newcommand{\grammarRuleUnSpaced}[1]{\textbf{<\textcolor{Blue}{#1}>}}
+\newcommand{\nTime}[1]{\; #1\text{*} \;}
+\newcommand{\nPlus}[1]{\; #1\text{+} \;}
+\newcommand{\isToken}[1]{\; \textit{`\textcolor{Maroon}{#1}`} \;}
+\newcommand{\isRangeToken}[2]{\; \textit{`\textcolor{Maroon}{#1} - \textcolor{Maroon}{#2}`} \;}
 
-\hypertarget{suxe9parateurs}{%
-  \subsubsection{Séparateurs}\label{suxe9parateurs}}
+Voici la grammaire BNF de notre langage MiniML.
 
-\[\{\quad\}\qquad[\quad]\qquad(\quad)\qquad;\qquad,\qquad*\qquad\rightarrow\qquad|\qquad=\]
-
-\hypertarget{mots-clefs}{%
-  \subsubsection{Mots Clefs}\label{mots-clefs}}
-
-\[let \qquad fun\qquad in \qquad match \qquad with \qquad type \qquad of \qquad rec \qquad if \qquad then \qquad else\]
-
-\hypertarget{types}{%
-  \subsubsection{Types}\label{types}}
-
-\[int\qquad bool\qquad unit\]
-
-\hypertarget{operateurs}{%
-  \subsubsection{Operateurs}\label{operateurs}}
-
-\[ + \qquad - \qquad \% \qquad  /  \qquad :: \qquad  \&\& \qquad  || \qquad  * \qquad < \qquad > \qquad \leq \qquad \geq \qquad = \]
-
-\hypertarget{valeurs-atomiques}{%
-  \subsubsection{Valeurs Atomiques}\label{valeurs-atomiques}}
+\hypertarget{Identificateurs}{%
+  \subsection{Identificateurs}\label{Identificateurs}}
 
 \begin{align*}
-  integer & = (\;-\;)\;?\;[\;0\;-\;9\;]\* \\
-  boolean & = (\;true\;|\;false\;)
+  \grammarRule{Id} ::= \quad             & \nTime{[\isRangeToken{a}{z} \isRangeToken{A}{Z} \isRangeToken{0}{9} \isToken{\_}]} \\
+  \grammarRule{ConstructeurId} ::= \quad & [\isRangeToken{A}{Z}] \grammarRule{Id}                                             \\
+  \grammarRule{Vartype} ::= \quad        & \isToken{'}[\isRangeToken{a}{z}] \; \nTime{[\isRangeToken{0}{9}]}
 \end{align*}
 
-\hypertarget{identificateur}{%
-  \subsubsection{Identificateur}\label{identificateur}}
+\hypertarget{programmes}{%
+  \subsection{Programmes}\label{programmes}}
+
 
 \begin{align*}
-  alphanum              & = [a-z \quad A-Z \quad 0-9 \quad \_]\,* \\
-  basic\_ident          & = [a-z \quad \_] \, alphanum            \\
-  vartype               & = [`a] \; [0 \, .. \, 9]\,*\            \\
+  \grammarRule{Prog} ::= \quad & |\quad \grammarRule{Expr}                                  \\
+                               & |\quad \grammarRule{Def}  \isToken{;;}  \grammarRule{Prog}
+\end{align*}
+
+\hypertarget{definitions}{%
+  \subsection{Definitions}\label{definitions}}
+
+\begin{align*}
+  \grammarRule{Def} ::= \quad              & |\quad \isToken{let} \grammarRule{Id} \isToken{=} \grammarRule{Expr}                                                  \\
+                                           & |\quad \isToken{type} \nTime{\grammarRuleUnSpaced{Vartype}} \grammarRule{Id} \isToken{=} \grammarRule{NewContructors} \\
   \\
-  constructeur\_ident   & = [A-Z] \, alphanum                     \\
-  constructeur\_infixes & = [:: \quad ,]                          \\
- symboles                &= [\&\& \quad || \quad + \quad - \quad / \quad \% \quad * \quad < \quad > \quad \leq \quad \geq \quad = ]
+  \grammarRule{NewContructors} ::=   \quad & |\quad  \grammarRule{ConstructeurId} \isToken{of} \grammarRule{Type}                                                  \\
+                                           & |\quad \grammarRule{ConstructeurId} \isToken{of} \grammarRule{Type}  \isToken{with}  \grammarRule{ParamAssigns}       \\
+                                           & |\quad  \grammarRule{NewContructors} \isToken{|} \grammarRule{NewContructors}                                         \\
+  \\
+  \grammarRule{ParamAssigns} ::= \quad     & |\quad \grammarRule{VarType} \isToken{=} \grammarRule{ParmExpr}                                                       \\
+                                           & |\quad \grammarRule{ParamAssigns} \isToken{,} \grammarRule{ParamAssigns}                                              \\
+  \grammarRule{ParmExpr} ::= \quad
+                                           & |\quad \isToken{1}                                                                                                    \\
+                                           & |\quad \grammarRule{VarType}                                                                                          \\
+                                           & |\quad \grammarRule{ParmExpr} \isToken{+} \grammarRule{ParmExpr}                                                      \\
+                                           & |\quad \grammarRule{ParmExpr} \isToken{*} \grammarRule{ParmExpr}                                                      \\
+\end{align*}
+\pagebreak
+
+\hypertarget{expressions}{%
+  \subsection{Expressions}\label{expressions}}
+\begin{align*}
+  \grammarRule{Litteral}  \quad ::=  \quad       & |\quad \nPlus{[\isRangeToken{0}{9}]}                                                                                                                                                  \\
+                                                 & |\quad [\isToken{true}|\isToken{false}]                                                                                                                                               \\
+                                                 & |\quad \isToken{(} \isToken{)}                                                                                                                                                        \\
+  \\
+  \grammarRule{Expr}  \quad ::=  \quad           & |\quad \grammarRule{Litteral}                                                                                                                                                         \\
+                                                 & |\quad \grammarRule{Id}                                                                                                                                                               \\
+                                                 & |\quad \grammarRule{UnaryOperator}                                                                                                                                                    \\
+                                                 & |\quad \grammarRule{BinaryOperator}                                                                                                                                                   \\
+                                                 & |\quad \isToken{(} \grammarRule{Expr}  \grammarRule{Expr}         \isToken{)}                                                                                                         \\
+                                                 & |\quad \isToken{let} \grammarRule{Id} \isToken{=} \grammarRule{Expr} \isToken{in} \grammarRule{Expr}                                                                                  \\
+                                                 & |\quad \isToken{fun} \grammarRule{Id} \rightarrow  \grammarRule{Expr}                                                                                                                 \\
+                                                 & |\quad \isToken{fun} \isToken{rec} \grammarRule{Id} \grammarRule{Id} \rightarrow  \grammarRule{Expr}                                                                                  \\
+                                                 & |\quad \grammarRule{Expr} \isToken{,} \grammarRule{Expr}                                                                                                                              \\
+                                                 & |\quad \grammarRule{ConstructeurId}  \grammarRule{Expr}                                                                                                                               \\
+                                                 & |\quad \isToken{match} \grammarRule{Expr} \isToken{with} \grammarRule{MatchCase}                                                                                                      \\
+  \\
+  \grammarRule{UnaryOperator}  \quad ::=  \quad  & \isToken{not}                                                                                                                                                                         \\
+  \grammarRule{BinaryOperator}  \quad ::=  \quad & [\isToken{and} \,|\, \isToken{or} \,|\, \isToken{+} \,|\, \isToken{-} \,|\, \isToken{/} \,|\, \isToken{\%} \,|\, \isToken{*} \,|\, \isToken{<} \,|\, \isToken{>}  \,|\, \isToken{=} ] \\
+\end{align*}
+
+\hypertarget{filtrage-et-motifs}{%
+  \subsection{Filtrage et Motifs}\label{filtrage-et-motifs}}
+\begin{align*}
+  \grammarRule{MatchCase}  \quad ::=  \quad & |\quad  \grammarRule{Pattern} \rightarrow  \grammarRule{Expr}      \\
+                                            & |\quad \grammarRule{MatchCase} \isToken{|} \grammarRule{MatchCase} \\
+  \\
+  \grammarRule{Pattern} \quad ::=  \quad    & |\quad \grammarRule{Litteral}                                      \\
+                                            & |\quad \grammarRule{Id}                                            \\
+                                            & |\quad  \grammarRule{Pattern} \isToken{,} \grammarRule{Pattern}    \\
+                                            & |\quad \grammarRule{ConstructeurId} \; \grammarRule{Pattern}       \\
 \end{align*}
 
 \pagebreak
 
-\hypertarget{grammaire}{%
-  \subsection{Grammaire}\label{grammaire}}
-
-Voici la grammaire BNF de notre langage MiniML.
-
-\hypertarget{outils-de-lecture}{%
-  \subsubsection{Outils de lecture}\label{outils-de-lecture}}
-
-Pour simplifier la lecture de la grammaire, nous avons utilisé les
-notations suivantes :
-
-\begin{itemize}
-  \tightlist
-  \item
-        \(\bf{Litteral}\) : Utilisation d'une règle définie
-  \item
-        \(basic\_ident_{\bf{list}}\) : Utilisation de la règle zéro ou
-        plusieurs fois
-  \item
-        \textit{Variable} : Noeud ciblé par le cas
-\end{itemize}
-
-\hypertarget{programmes}{%
-  \subsubsection{Programmes}\label{programmes}}
-
-\begin{align*}
-  \bf{Prog} := \quad & |\quad \bf{Def}                     \\
-                     & |\quad \bf{Expr}                    \\
-                     & |\quad \bf{Prog} \; ;; \; \bf{Prog}
-\end{align*}
-
-\hypertarget{definitions}{%
-  \subsubsection{Definitions}\label{definitions}}
-
-\begin{align*}
-  \bf{Def} := \quad & |\quad let \; basic\_ident = \bf{Expr}                                                                        &  & \textit{Variable}       \\
-                    & |\quad let \; basic\_ident_{\bf{list}} = \bf{Expr}                                                            &  & \textit{Fonction}       \\
-                    & |\quad let \; rec \; basic\_ident_{\bf{list}} = \bf{Expr}                                                     &  & \textit{Fonction Rec}   \\
-                    & |\quad type \; vartype_{\bf{list}} \; basic\_ident =  \bf{NewContructors}                                     &  & \textit{Type}           \\
-                    & |\quad type \; vartype_{\bf{list}} \; basic\_ident \; with \; basic\_ident_{\bf{list}} =  \bf{NewContructors} &  & \textit{Type Parametré}
-\end{align*} \begin{align*}
-  \bf{NewContructors} :=   \quad       & |\quad  constructeur\_ident                                                            \\
-                                       & |\quad  constructeur\_ident \;of\; \textbf{Type}                                       \\
-                                       & |\quad  \textbf{NewContructors} \;'|'\; \textbf{NewContructors}                        \\
-  \\
-  \bf{NewContructorsParam} :=    \quad & |\quad constructeur\_ident \;of\; \textbf{Type} \; with \; \textbf{ParamEquation}      \\
-                                       & |\quad  \textbf{NewContructorsParam} \;'|'\; \textbf{NewContructorsParam}         &  & \\
-  \\
-  \bf{ParamEquation} := \quad          & |\quad basic\_ident                                                                    \\
-                                       & |\quad 0                                                                               \\
-                                       & |\quad 1                                                                               \\
-                                       & |\quad \,\textbf{ParamEquation}\,                                                    \\
-                                       & |\quad \textbf{ParamEquation} \; + \; \textbf{ParamEquation}                           \\
-                                       & |\quad \textbf{ParamEquation} \; * \; \textbf{ParamEquation}                           \\
-\end{align*}
-
-\hypertarget{expressions}{%
-  \subsubsection{Expressions}\label{expressions}}
-
-\begin{align*}
-  \bf{Litteral}  \quad :=  \quad       & |\quad integer                                                                                                                       \\
-                                       & |\quad boolean                                                                                                                       \\
-                                       & |\quad (\;)                                                                                          &  & \textit{ Unit}             \\
-  \\
-  \bf{Expr}  \quad :=  \quad           & |\quad \textbf{Litteral}                                                                                                             \\
-                                       & |\quad basic\_ident                                                                                                                  \\
-                                       & |\quad \textbf{UnaryOperator}\quad \textbf{Expr}                                                                                     \\
-                                       & |\quad \textbf{Expr}\quad \textbf{BinaryOperator}\quad \textbf{Expr}                                                                 \\
-                                       & |\quad \textbf{Expr}\quad \textbf{Expr}                                                              &  & \textit{ Call}             \\
-                                       & |\quad \textbf{Expr};\textbf{Expr}                                                                   &  & \textit{ Sequence }        \\
-                                       & |\quad let \; basic\_ident = \textbf{Expr}\; in \; \textbf{Expr}                                     &  & \textit{ Binding}          \\
-                                       & |\quad fun \; basic\_ident_{\bf{list}} \rightarrow  \textbf{Expr}                                    &  & \textit{ Lambda}           \\
-                                       & |\quad \textbf{Expr}\; constructeur\_infixes\; \textbf{Expr}                                                                         \\
-                                       & |\quad constructeur\_ident  \; \textbf{Expr}\;                                                       &  & \textit{Construction}      \\
-                                       & |\quad constructeur\_ident                                                                                                           \\
-                                       & |\quad let \; basic\_ident_{\bf{list}} = \textbf{Expr}\; in \; \textbf{Expr}                         &  & \textit{Fonction}          \\
-                                       & |\quad let \; rec \; basic\_ident \; basic\_ident_{\bf{list}} = \textbf{Expr}\; in \;\textbf{Expr}\; &  & \textit{Fonction Recusive} \\
-                                       & |\quad match \; \textbf{Expr}\; with \; \textbf{Match\_Case}\quad                                                                    \\
-                                       & |\quad if \; \textbf{Expr}\; then \; \textbf{Expr}\; else \; \textbf{Expr}                                                           \\
-  \\
-  \bf{UnaryOperator}  \quad :=  \quad  & |\quad  not                                                                                                                          \\
-  \bf{BinaryOperator}  \quad :=  \quad & |\quad symboles                                                            \\
-\end{align*}
-
-\hypertarget{filtrage-et-motifs}{%
-  \subsubsection{Filtrage et Motifs}\label{filtrage-et-motifs}}
-
-\begin{align*}
-  \bf{Match\_Case}  \quad :=  \quad & |\quad  \textbf{Pattern} \rightarrow  \textbf{Expr}                         \\
-                                    & |\quad \textbf{Pattern} \rightarrow  \textbf{Expr}\; '|'\; \bf{Match\_Case} \\
-  \\
-  \textbf{Pattern} \quad :=  \quad & |\quad \textbf{Litteral}                                                    \\
-                                    & |\quad basic\_ident                                                         \\
-                                    & |\quad \_                                                                   \\
-                                    & |\quad constructeur\_ident                                                  \\
-                                    & |\quad constructeur\_ident \; \textbf{Pattern}                              \\
-\end{align*}
-
 \hypertarget{types-1}{%
-  \subsubsection{Types}\label{types-1}}
+  \subsection{Types}\label{types-1}}
 
 \begin{align*}
-  \textbf{Type}    \quad :=  \quad 
-                                   & |\quad vartype                                  &  & \textit{Type Variable}           \\
-                                   & |\quad constructeur\_ident \; vartype                             &  & \textit{Defined Type} \\
-\end{align*} 
+  \grammarRule{Type}    \quad ::=  \quad & |\quad \grammarRule{Vartype}                                        \\
+                                         & |\quad \grammarRule{Id}                                             \\
+                                         & |\quad\grammarRule{Type}  \isToken{*} \grammarRule{Type}            \\
+                                         & |\quad \isToken{(} \grammarRule{Type} \grammarRule{Type}\isToken{)} \\
+\end{align*}
 
 \hypertarget{semantique-de-traduction}{%
   \section{Semantique de traduction}\label{semantique-de-traduction}}
@@ -261,7 +202,7 @@ est une suite de commandes \([cs]\) qui est traduite en un programme
 \(x\) en LCBPV. Un programme est dit traduisible si la suite de
 commandes \([cs]\) qui le compose peut-être traduite.
 \begin{align*}
-    &  Prog[cs] \rightarrow  \llbracket Prog[cs] \rrbracket_{Cmds} \rightarrow Prog'(\llbracket cs \rrbracket_{Cmds} )
+   & Prog[cs] \rightarrow  \llbracket Prog[cs] \rrbracket_{Cmds} \rightarrow Prog'(\llbracket cs \rrbracket_{Cmds} )
 \end{align*}
 
 \hypertarget{suites-de-commandes}{%
@@ -286,11 +227,11 @@ pas de définir des variables globales comme en MiniML. Cela a aussi pour
 conséquence un changement de portée entre les déclarations de type en
 MiniML et en LCBPV.
 \begin{align*}
-  \text{(VAR DEFS)} \quad      & (Def(d); cs) \rightarrow \llbracket d \rrbracket_{Def} +  \llbracket cs \rrbracket_{Cmds} \rightarrow ((\gamma;\llbracket d \rrbracket_{Def}),\omega,\upsilon) \\
+  \text{(VAR DEFS)} \quad  & (Def(d); cs) \rightarrow \llbracket d \rrbracket_{Def} +  \llbracket cs \rrbracket_{Cmds} \rightarrow ((\gamma;\llbracket d \rrbracket_{Def}),\omega,\upsilon) \\
   \\
-  \text{(TYPE DEFS)} \quad & (Def(d); cs) \rightarrow \llbracket d \rrbracket_{Def} + \llbracket cs \rrbracket_{Cmds} \rightarrow (\gamma,(\omega;\llbracket d \rrbracket_{Def}),\upsilon) \\
+  \text{(TYPE DEFS)} \quad & (Def(d); cs) \rightarrow \llbracket d \rrbracket_{Def} + \llbracket cs \rrbracket_{Cmds} \rightarrow (\gamma,(\omega;\llbracket d \rrbracket_{Def}),\upsilon)  \\
   \\
-  \text{(GLB EXPR)} \quad & (Expr(b), cs) \rightarrow \llbracket b \rrbracket_{Expr} \times \llbracket cs \rrbracket_{Cmds}  \rightarrow (\gamma,\omega,\llbracket b \rrbracket_{Expr})
+  \text{(GLB EXPR)} \quad  & (Expr(b), cs) \rightarrow \llbracket b \rrbracket_{Expr} \times \llbracket cs \rrbracket_{Cmds}  \rightarrow (\gamma,\omega,\llbracket b \rrbracket_{Expr})
 \end{align*}
 \subsection{Définitions}\label{duxe9finitions}
 
@@ -320,10 +261,10 @@ Ces deux catégories de définitions sont traitées différemment par \({Cmds}\)
 \end{itemize}
 \begin{align*}
   \text{(VARDEF)}
-  \quad & VariableDef(v, e) \rightarrow  GLB(InsLet(v, \llbracket e \rrbracket_{Expr})) \\
+  \quad                  & VariableDef(v, e) \rightarrow  GLB(InsLet(v, \llbracket e \rrbracket_{Expr}))                                   \\
   \\
-  \text{(TYPDEF) } \quad    & TypeDef(n, [t_1,\dots,t_N], [c_1,\dots,c_N])          \\
-  \rightarrow \;              & \text{TYPE}(TypDef(n, [t_1,\dots,t_N], DefDatatype[\llbracket c_1 \rrbracket,\dots,\llbracket c_N \rrbracket]))  
+  \text{(TYPDEF) } \quad & TypeDef(n, [t_1,\dots,t_N], [c_1,\dots,c_N])                                                                    \\
+  \rightarrow \;         & \text{TYPE}(TypDef(n, [t_1,\dots,t_N], DefDatatype[\llbracket c_1 \rrbracket,\dots,\llbracket c_N \rrbracket]))
 \end{align*}
 \subsection{Types}\label{types-2}
 
@@ -333,14 +274,14 @@ construction des types sont donnés par les clauses des règles
 syntaxiques. Un type est dit traduisible si chacune de ses clauses peut
 être traduite.
 \begin{align*}
-  \text{(TLITT) }               & TypeInt \rightarrow \llbracket TypeInt \rrbracket_{Type}  \rightarrow TypInt                   \\    
+  \text{(TLITT) }  & TypeInt \rightarrow \llbracket TypeInt \rrbracket_{Type}  \rightarrow TypInt                                                                                       \\
   \\
-  \text{(TVAR) }               & TypeDefined(id) \rightarrow \llbracket TypeDefined(id) \rrbracket_{Type} \rightarrow TypVar(id)    \\ \\              
-  \text{(TTUPLE) } & TypeTuple([t_1,\dots, t_N]) \rightarrow  TypTuple[\llbracket t_1 \rrbracket_{Type},\dots,\llbracket t_N \rrbracket_{Type}]            \\
+  \text{(TVAR) }   & TypeDefined(id) \rightarrow \llbracket TypeDefined(id) \rrbracket_{Type} \rightarrow TypVar(id)                                                                    \\ \\
+  \text{(TTUPLE) } & TypeTuple([t_1,\dots, t_N]) \rightarrow  TypTuple[\llbracket t_1 \rrbracket_{Type},\dots,\llbracket t_N \rrbracket_{Type}]                                         \\
   \\
-  \text{(TAPP) }  & TypeConstructor(t, [p_1,\dots,p_N]) \rightarrow  TypApp(\llbracket t \rrbracket_{Type}, [\llbracket p_1 \rrbracket_{Type},\dots,\llbracket p_N \rrbracket_{Type}]) \\
+  \text{(TAPP) }   & TypeConstructor(t, [p_1,\dots,p_N]) \rightarrow  TypApp(\llbracket t \rrbracket_{Type}, [\llbracket p_1 \rrbracket_{Type},\dots,\llbracket p_N \rrbracket_{Type}]) \\
   \\
-  \text{(TCLOS) }            & TypeLambda(a,ret)                                                  
+  \text{(TCLOS) }  & TypeLambda(a,ret)
   \rightarrow \;               TypClosure(Exp, \, (TypFun(TypThunk(\llbracket ret \rrbracket_{Type}), \llbracket a \rrbracket_{Type})))
 \end{align*}
 \subsection{Litteraux et Expressions}\label{litteraux-et-expressions}
@@ -351,23 +292,23 @@ On définit la relation \({Expr}\) selon les cas de construction
 des expr. Les cas de construction des expressions sont donnés par les
 clauses des règles syntaxiques. Une expression est dite traduisible si
 chacune de ses clauses peut être traduite. \begin{align*}
-    \text{(CONSTR)} \quad &  Construct(c,e) \rightarrow  ExprConstructor(ConsNamed(c), \llbracket e \rrbracket_{Expr})                                             \\
+  \text{(CONSTR)} \quad & Construct(c,e) \rightarrow  ExprConstructor(ConsNamed(c), \llbracket e \rrbracket_{Expr})                                                                  \\
   \\
-  \text{(UNARY)} \quad & CallUnary(op, [a]) \rightarrow  ExprMonPrim(op, \llbracket a \rrbracket_{Expr}) \\
+  \text{(UNARY)} \quad  & CallUnary(op, [a]) \rightarrow  ExprMonPrim(op, \llbracket a \rrbracket_{Expr})                                                                            \\
   \\
-  \text{(BINARY)} \quad &  CallBinary(op, [a_1,a_2]) \rightarrow  ExprBinPrim(op, \llbracket a_1 \rrbracket_{Expr}, \llbracket a_2 \rrbracket_{Expr})                                            \\                                    \\
-  \text{(MATCH)} \quad  &  Match(m,[m_1,\dots,m_N]) \rightarrow  ExprMatch(\llbracket m \rrbracket_{Expr}, [\llbracket m_1 \rrbracket_{Case},\dots,\llbracket m_N \rrbracket_{Case}])                                        \\
+  \text{(BINARY)} \quad & CallBinary(op, [a_1,a_2]) \rightarrow  ExprBinPrim(op, \llbracket a_1 \rrbracket_{Expr}, \llbracket a_2 \rrbracket_{Expr})                                 \\                                    \\
+  \text{(MATCH)} \quad  & Match(m,[m_1,\dots,m_N]) \rightarrow  ExprMatch(\llbracket m \rrbracket_{Expr}, [\llbracket m_1 \rrbracket_{Case},\dots,\llbracket m_N \rrbracket_{Case}]) \\
   \\
-  \text{(BLOCK)} \quad  & Sequence([e_1,\dots,e_{N-1}, e_N])                                    
-\rightarrow  ExprBlock(Blk([\llbracket e_1 \rrbracket_{Expr}; \dots ; \llbracket e_{N-1} \rrbracket_{Expr}], e_N))                                      \\
+  \text{(BLOCK)} \quad  & Sequence([e_1,\dots,e_{N-1}, e_N])
+  \rightarrow  ExprBlock(Blk([\llbracket e_1 \rrbracket_{Expr}; \dots ; \llbracket e_{N-1} \rrbracket_{Expr}], e_N))                                                                 \\
   \\
-  \text{(CALL)} \quad & Call(f, a)                                                 \rightarrow  ExprBlock(Blk([InsOpen(Exp, \llbracket f \rrbracket_{Expr} ), \\ & InsForce(ExprMethod(Call, [\llbracket a \rrbracket_{Expr}]))]))                                       \\
+  \text{(CALL)} \quad   & Call(f, a)                                                 \rightarrow  ExprBlock(Blk([InsOpen(Exp, \llbracket f \rrbracket_{Expr} ),                      \\ & InsForce(ExprMethod(Call, [\llbracket a \rrbracket_{Expr}]))]))                                       \\
   \\
-  \text{(LAMBDA)} \quad  &  Lambda(a, b)                                                                                              \\
-                               & \rightarrow  ExprClosure(Exp, ExprGet([GetPatTag(Call, [\llbracket a \rrbracket_{Expr}], ExprThunk(\llbracket b \rrbracket_{Expr}))]))                                          \\
+  \text{(LAMBDA)} \quad & Lambda(a, b)                                                                                                                                               \\
+                        & \rightarrow  ExprClosure(Exp, ExprGet([GetPatTag(Call, [\llbracket a \rrbracket_{Expr}], ExprThunk(\llbracket b \rrbracket_{Expr}))]))                     \\
   \\
-  \text{(REC)} \quad                  &  FunctionRec(v, a, b)                                      
-                                \rightarrow  ExprClosure(Exp,ExprRec(\llbracket v \rrbracket_{Expr}, \\  & ExprGet([GetPatTag(Call, [\llbracket a \rrbracket_{Expr}], ExprThunk(\llbracket b \rrbracket_{Expr}))]))) 
+  \text{(REC)} \quad    & FunctionRec(v, a, b)
+  \rightarrow  ExprClosure(Exp,ExprRec(\llbracket v \rrbracket_{Expr},                                                                                                               \\  & ExprGet([GetPatTag(Call, [\llbracket a \rrbracket_{Expr}], ExprThunk(\llbracket b \rrbracket_{Expr}))])))
 \end{align*}
 \subsection{Motifs et Filtrage}\label{motifs-et-filtrage}
 
@@ -386,11 +327,11 @@ peut être traduite.
         \(e\) est l'expression qui sera évaluée si le motif est vérifié
 \end{itemize}
 \begin{align*}
-  \text{(PATTAG)} \quad    &  Case(ConstructorPattern((n,c)), e)
-  \\ &\rightarrow  MatchPatTag(ConsNamed(n), \llbracket c \rrbracket_{Case}, \llbracket e \rrbracket_{Expr})        \\                                                        
+  \text{(PATTAG)} \quad & Case(ConstructorPattern((n,c)), e)
+  \\ &\rightarrow  MatchPatTag(ConsNamed(n), \llbracket c \rrbracket_{Case}, \llbracket e \rrbracket_{Expr})        \\
   \\
   \text{(PATVAR)} \quad & Case(VarPattern(x), e, l)
-  \rightarrow  MatchPatVar((x, l), \llbracket e \rrbracket_{Expr}, l)                              
+  \rightarrow  MatchPatVar((x, l), \llbracket e \rrbracket_{Expr}, l)
 \end{align*}
 
 \end{document}

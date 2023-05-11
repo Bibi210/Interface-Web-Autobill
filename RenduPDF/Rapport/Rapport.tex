@@ -25,7 +25,63 @@
 \definecolor{background}{HTML}{EEEEEE}
 \definecolor{delim}{RGB}{20,105,176}
 \colorlet{numb}{magenta!60!black}
+\lstdefinelanguage{minizinc}{
+    morekeywords={
+        constraint,int,
+        maximize, solve, satisfy 
+        var,
+    },
+    sensitive=true, % are the keywords case sensitive
+    morecomment=[l][\em\color{ForestGreen}]{\%},
+    %morecomment=[s]{/*}{*/},
+    morestring=[b]",
+}
+\lstdefinelanguage{JavaScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
 
+\lstset{
+   language=JavaScript,
+   backgroundcolor=\color{lightgray},
+   extendedchars=true,
+   basicstyle=\footnotesize\ttfamily,
+   showstringspaces=false,
+   showspaces=false,
+   numbers=left,
+   numberstyle=\footnotesize,
+   numbersep=9pt,
+   tabsize=2,
+   breaklines=true,
+   showtabs=false,
+   captionpos=b
+}
+\lstset{
+ basicstyle=\normalfont\ttfamily,
+ language=caml,
+ columns=[c]fixed,
+ keywordstyle=\bfseries,
+ upquote=true,
+ commentstyle=,
+ breaklines=true,
+ frame=lines,
+     numbers=left,
+    numberstyle=\scriptsize,
+    backgroundcolor=\color{background},
+ showstringspaces=false,
+ stringstyle=\color{blue},
+ literate={'"'}{\textquotesingle "\textquotesingle}3
+}
 \lstdefinelanguage{json}{
     basicstyle=\normalfont\ttfamily,
     numbers=left,
@@ -164,39 +220,35 @@ Emmanuel \textsc{Chailloux}\\ % Supervisor's Name
   \tableofcontents
 }
 \newpage
+
 \section{Contexte du projet}\label{contexte-du-projet}
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.55]{Figures/Schema_Autobill.png}
-  \caption{Représentation simplifiée d'Autobill\label{fig1}}
-\end{figure}
-\subsection{Historique et définitions}\label{historique-et-duxe9finitions}
-
-Dans le cadre de sa thèse sur l'analyse statique de la consommation
+Dans le cadre de sa thèse sur l'analyse statique de consommation
 mémoire d'un programme, notre tuteur de projet, Hector Suzanne, membre de l'équipe APR du laboratoire LIP6, a développé \textbf{Autobill}. \\
-
 L'analyse statique est un ensemble de méthodes formelles permettant de
 mesurer et détecter automatiquement des comportements ou des erreurs dans un
 programme en examinant son code source. Parmi les usages les plus courants 
-de l'analyse statique, il y'a le débogage pour identifier des erreurs 
-syntaxiques (fautes de frappe) ou l'usage de variables non déclarée ou 
-non-initialisée par exemple. D'autres outils emploient des heuristiques et des règles pour répondre à des problématiques d'optimisation de code ou de fiabilité/sécurité. Ces analyseurs statiques sont conçus dans le but d'améliorer la maintenabilité du code. \\ 
-
+de l'analyse statique, il y a le débogage pour identifier des erreurs 
+syntaxiques (fautes de frappe) ou l'usage de variables non déclarées ou 
+non-initialisées. D'autres outils emploient des heuristiques et des règles pour répondre à des problématiques d'optimisation de code ou de fiabilité/sécurité. Ces analyseurs statiques sont conçus dans le but d'améliorer la maintenabilité du code. \\ 
 Autobill s'intéresse particulièrement à l'occupation mémoire d'un programme. Historiquement, 
 ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann et Steffen Jost sur l'analyse de consommation de ressources automatisé AARA
 \protect\hyperlink{ref-Hoffmann}{{[}2{]}} (\emph{Automatic Amortized
 Resource Analysis}).\\ 
-
-Cette technique suit un ensemble de règles d'inférences : chaque trait du langage analysé est annoté par ses bornes mémoire et on peut déduire la consommation mémoire que ce trait va engendrer. Pour déterminer ces bornes, l'AARA s'aide de l'analyse amortie par méthode du potentiel. En effet, l'analyse amortie s'inscrit dans une suite d'opérations sur des structures de données dynamiques pour calculer la coût total de cette séquence. Avec la méthode du potentiel, on attribue un potentiel aux structures de données manipulées, ce qui va affecter le coût que va avoir une opération sur cette structure. L’application de ces règles d'inférence sur l'ensemble des expressions du programme fournit une estimation raisonnable de ses bornes mémoires.\\
-
-Des langages de programmation expérimentaux ont vu le jour et ont implémenté cette analyse comme Resource Aware ML \protect\hyperlink{ref-RAML}{{[}3{]}}, un langage fonctionnel \emph{à la ML} créé par Jan Hoffmann, Klaus Aehlig et Martin Hofmann.
+Cette technique suit un ensemble de règles d'inférences : chaque trait du langage analysé est annoté par ses bornes mémoire et on peut déduire la consommation mémoire que ce trait va engendrer. Pour déterminer ces bornes, l'AARA s'aide de l'analyse amortie par la méthode du potentiel. En effet, l'analyse amortie exploite la structure séquentielle des opérations sur des structures de données dynamiques pour calculer le coût total de cette séquence. Avec la méthode du potentiel, on attribue un potentiel aux structures de données manipulées, ce qui va affecter le coût que va avoir une opération sur cette structure. L’application de ces règles d'inférence sur l'ensemble des expressions du programme fournit une estimation correcte de ses bornes mémoires.
+\begin{figure*}[!b]
+  \centering
+  \includegraphics[scale=0.55]{Figures/Schema_Autobill.png}
+  \caption{Représentation simplifiée d'Autobill\label{fig1}}
+\end{figure*}
+\subsection{Historique et définitions}\label{historique-et-duxe9finitions}
+Des langages de programmation expérimentaux ont vu le jour et ont implémenté cette analyse comme Resource Aware ML \protect\hyperlink{ref-RAML}{{[}3{]}}, un langage fonctionnel à la ML créé par Jan Hoffmann, Klaus Aehlig et Martin Hofmann.
 
 \hypertarget{quest-ce-quautobill}{%
   \subsection{Qu'est-ce qu'Autobill ?}\label{quest-ce-quautobill}}
 
 La proposition d'Hector Suzanne avec Autobill se différencie par un
 niveau d'analyse plus précis sur les fermetures et les arguments
-fonctionnels d'un programme. D'abord, parmi les entrées possibles
+fonctionnels d'un programme par rapport à RAML. D'abord, parmi les entrées possibles
 illustrées sur la gauche de la figure \ref{fig1}, Autobill ne supporte
 uniquement que des programmes écrits soit en modèle machine propre à
 Autobill, soit en \textbf{Call-By-Push-Value} (CBPV)
@@ -207,7 +259,7 @@ Call-By-Push-Value est un langage qui utilise un paradigme déjà éprouvé,
 décrit dans la thèse de Paul Blain Lévy
 \protect\hyperlink{ref-Levy}{{[}4{]}}. Dans CBPV, toutes les valeurs et fonctions sont stockées dans une pile. Lorsqu'une fonction est appelée, ses arguments sont placés sur la pile avant que la fonction elle-même ne soit ajoutée à la pile. Ce mécanisme permet de suivre de manière explicite les quantités de mémoire pour chaque valeur introduite/éliminée ou fonction appelée/terminée. Aussi,
 le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : soit en \textbf{\textit{call-by-value}}, en évaluant les arguments avant de lancer l'opération, soit en \textbf{\textit{call-by-name}}, en évaluant les arguments uniquement lorsqu’ils seront effectivement utilisés dans la fonction appelée. Ainsi, on fixe quand les évaluations se déroulent, afin de mieux prédire la consommation de mémoire à chaque
-étape du programme. Ces traits uniques font de CBPV un langage de choix à analyser pour Autobill. \\
+étape du programme. Ces traits font de CBPV un langage de choix à analyser pour Autobill. \\
 
 L'entrée est donc imposée. Ainsi, pour étendre l'usage d'Autobill à un
 autre langage de programmation, un travail de traduction de ce langage
@@ -328,6 +380,44 @@ notre client Web, de l'implémentation des fonctionnalités importantes et des p
 
 \subsubsection{Interopérabilité Web-Ocaml}\
 
+Autobill est un projet entièrement codé en Ocaml, un langage de programmation multiparadigme compilé, et notre projet STL impose un environnement sur navigateur Web, fonctionnant exclusivement avec son langage de script Javascript. Avant de commencer tout codage, il est nécessaire de passer en revue l'état de l'art autour de la compilation et d'exécution de programmes Ocaml sur le Web. De ces recherches vont découler  des choix de conception qui vont nous impacter tout le long du semestre. \\
+
+D'abord, il y'avait la piste des compilateurs vers WebAssembly. WebAssembly est un standard du W3C (World Wide Consortium) qui regroupe un bytecode (.wasm) et un environnement d'exécution compatible avec les navigateurs modernes Javascript. Le bytecode étant une représentation très bas niveau de l'exécutable, l'idée principale est de compiler un langage de programmation plus haut niveau, comme C/C++, Rust,.. vers bytecode. Ce bytecode est par la suite compilé par l'environnement d'exécution dans le langage machine de l'hôte. Tant que le support d'un langage de programmation est garanti par un compilateur WebAssembly, il est possible de programmer des applications web complètes dans le langage de son choix ou réinvestir des programmes codés dans ces langages dans une application codée avec des technologies Web. \\ 
+Pour le cas d'Ocaml, cette possibilité est offerte grâce au post-processeur Wasicaml : il offre un binaire qui prend en entrée un bytecode Ocaml et un fichier .wasm de destination pour traduire chaque instruction dans son équivalent en WebAssembly. Ainsi, on pourrait générer nos fichiers .wasm à partir des binaires d'Autobill et de notre compilateur MiniML, les intégrer à notre applicatiton Web et les appeler avec Javascript en leur fournissant les options nécessaires. Cette solution demande néanmoins une dépendance à un projet encore en phase expérimentale, avec certains traits d'Ocaml non intégrés (notamment certaines fonctions du module Unix).\\ 
+\begin{figure}
+\begin{lstlisting}
+$ ocamlc -o hello hello.ml
+$ wasicaml -o hello_wasm hello
+\end{lstlisting}
+\caption{Chaine d'instructions pour générer le bytecode WebAssembly}
+\end{figure}
+
+La seconde piste émise par nos tuteurs de projet était l'utilisation de compilateurs Ocaml vers Javascript. La présentation du projet nous a notamment pointé vers Js\_of\_Ocaml. C'est une librairie contenant, entre autres, un compilateur qui transpile du bytecode OCaml en Javascript et propose une grande variété de primitives et de type pour manipuler des éléments Javascript depuis OCaml. L'API de Js\_of\_OCaml est suffisamment fournie pour développer entièrement des applications web complètes et fonctionnelles. On profite alors de l'expérience développeur offerte par Ocaml avec son style de programmation fonctionnelle en y intégrant les traits nécessaires pour construire des pages Web dynamiques.\\ 
+
+Il est aussi possible de l'utiliser en coopération avec une base de code Javascript déjà rédigée grâce à la fonctionnalité d'export offerte par Js\_of\_Ocaml. En effet, on pourrait avoir dans un objet Javascript plusieurs méthodes correspondant chacune à un mode d'exécution différent d'Autobill. Chaque méthode prend en entrée le code MiniML à traiter et réalise les transformations nécessaires pour générer la sortie demandée. On peut aussi tirer profit des exceptions d'Ocaml et de la capture des sorties d'erreurs offerte par Js\_of\_Ocaml pour rediriger les messages d'erreurs et les afficher à l'utilisateur. Une fois l'objet exporté et le fichier Ocaml compilé vers Javascript, n'importe quel fichier Javascript du projet pourra ensuite importer l'objet et accéder aux méthodes définies précédemment. On garde ainsi une liberté sur le choix de technologies pour construire notre application.\\
+
+\begin{figure*}[!b]
+\begin{lstlisting}[language=caml]
+Js.export
+    "ml"
+    (object%js
+       method translate code =
+         let stderr_buff = Buffer.create 100 in
+         Sys_js.set_channel_flusher stderr (Buffer.add_string stderr_buff);
+         let lexbuf = Lexing.from_string ~with_positions:true (Js.to_string code) in
+         let res = string_of_lcbpv_cst (translate_ML_to_LCBPV lexbuf)
+         object%js
+           val resultat = Js.string res
+           val erreur = Js.string (Buffer.contents stderr_buff)
+         end
+    end)
+\end{lstlisting}
+\caption{Création et exportation d'un objet Javascript avec une méthode de traduction de MiniML vers CBPV}
+\end{figure*}
+Enfin, une dernière piste suggérée a été l'utilisation de langages de programmation camélien compilables vers Javascript, comme ReasonML ou Rescript. En effet, ce sont tout deux des langages qui ont émergé d'Ocaml et permettent de créer dans un paradigme fonctionnel des applications web complexes. Ils profitent d'une syntaxe ML, d'outils et d'un support communautaire intéressant, faisant des deux langages des alternatives intéressantes pour le Web. Néanmoins, notre objectif principal est la manipulation de la librairie d'Autobill ainsi que celle de MiniML depuis le Web. La compatibilité avec les librairies en Ocaml n'est cependant pas garantie dans le contexte d'une compilation vers Javascript. \\
+
+Notre groupe a donc opté pour un choix de conception assez flexible afin de nous adapter aux situations que l'on pourrait rencontrée dans le projet. Le client fonctionnera conjointement grâce à une partie Ocaml servie à l'aide de Js\_of\_Ocaml et une partie en Javascript, plus précisément en React.js, pour assurer les fonctionnalités propres à notre IDE.
+
 \subsubsection{L'éditeur de code}\
 
 L'idée initiale était de proposer une interface de développement intégrée sur le Web. Celle-ci devait proposer les outils nécessaires pour réaliser les trois tâches suivantes : analyser, écrire et déboguer du code. Pour répondre à ces besoins, plusieurs composants essentiels vont devoir fonctionner ensemble pour fournir l'expérience d'un IDE classique :
@@ -354,7 +444,7 @@ Parmi les librairies disponibles, nous avons choisi CodeMirror. C'est un éditeu
 Enfin, le \textit{linting} est disponible et permet de dynamiquement surligner des lignes de l'éditeur. Comme illustré dans la Figure 3, on peut, à la volée, afficher directement les parties du programme concernées par une erreur de l'analyse. En effet, quand une méthode de Js\_of\_Ocaml est appelée et qu'une exception est levée durant l'exécution, sa sortie d'erreur peut être redirigée et retournée directement au client. Côté Ocaml, on peut alors formater la sortie d'erreur avec les données de l'exception : la ligne de début et de fin, le type d'erreur rencontrée, la phase de l'analyse durant laquelle l'exception a été levée... \\
 \begin{figure}
   \centering
-  \begin{lstlisting}[language=json,firstnumber=1]
+\begin{lstlisting}[language=json,firstnumber=1]
 {
     "loc": {
         "beginning": { "line": 10, "column": 19},
@@ -368,10 +458,34 @@ Enfin, le \textit{linting} est disponible et permet de dynamiquement surligner d
 
 Côté Web, on peut parser la chaîne de caractères et récupérer le JSON parsé pour manipuler les informations sur l'erreur rencontrée (voir Figure 4). CodeMirror offre des fonctions permettant de manipuler l'état global de l'éditeur: son thème, son contenu, le langage de la coloration syntaxique, les options activées... On y retrouve surtout la liste des lignes qui composent l'éditeur. On peut alors leur affecter des changements de style pour les mettre en lumière ou faire apparaître une infobulle avec le message d'erreur si on passe la souris dessus... \\ 
 
-On offre ainsi les outils nécessaires à l'utilisateur pour bien écrire et déboguer son code MiniML. Néanmoins, il faut encore compléter la \textit{pipeline} en traitant toutes les sorties possibles d'Autobill, notamment les équations sur les contraintes mémoires du programme analysée qu'il va falloir résoudre.
+On offre ainsi les outils nécessaires à l'utilisateur pour bien écrire et déboguer son code MiniML. Néanmoins, il faut encore compléter la \textit{pipeline} en traitant toutes les sorties possibles d'Autobill, notamment les équations sur les contraintes mémoires du programme analysée qu'il va falloir résoudre. 
 
 \subsubsection{La résolution de contraintes}\
 
+Autobill exprime les contraintes mémoires qui s'appliquent à un programme dans des formats proches d'équations mathématiques. Il propose de type de sortie : une sous Coq et une sous MiniZinc. Nous nous concentrerons principalement sur MiniZinc dans cette partie, Coq n'étant pas encore totalement opérationnel et demandant des ressources qui dépassent le cadre du Master d'informatique. \\ 
+
+MiniZinc est un langage permettant de décrire des problèmes de manière déclarative à l'aide de contraintes logiques. Il fournit des éléments de syntaxe et de notations très similaires à la programmation et aux mathématiques pour rédiger des modèles qui, lorsqu'ils seront passés à des compilateurs et des solveurs dédiés, vont répondre à des problématiques d'optimisation ou de satisfiabilité. Dans notre cas, on s'intéresse à l'optimisation : on veut déterminer les bornes mémoires minimum du programme passée à Autobill.
+Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie est codée en C++, langage compilé, incompatible avec l'environnement Web. Là encore, l'option de WebAssembly est envisageable avec un compilateur comme Emscripten qui supporte la traduction de code C/C++ vers bytecode WebAssembly. Ici, la librairie core de MiniZinc est beaucoup plus fournie et ne contient pas un point d'entrée direct explicite, comme avec le binaire d'Autobill. La compilation devient alors une tâche plus compliquée et la manipulation sûre de l'outil n'est pas non plus garantie par la suite.
+\begin{figure*}[!b]
+    \centering
+    \begin{lstlisting}[language=minizinc]
+        int: n;
+        var 1..n: x; var 1..n: y;
+        constraint x+y > n;
+        solve satisfy;
+    \end{lstlisting}
+    \caption{Exemple de modèle en MiniZinc}
+    \label{Simple modèle pour déterminer la satisfiabilité d'une équation}
+\end{figure*} \newpage
+\begin{lstlisting}[language=javascript]
+    const model = new Model()
+    model.addFile("playground.mzn", code)
+    const solve = await model.solve({
+      options: {
+        solver: "gecode",
+      },
+    })
+\end{lstlisting}
 \iffalse                            
 \begin{itemize}
   \item

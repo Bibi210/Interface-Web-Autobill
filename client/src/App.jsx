@@ -130,7 +130,7 @@ function App() {
       switch (mode) {
         case "Equation -> Soluce":
           if (server) {
-            const data = await fetch("http://localhost:3002/api/minizinc/gecode", {
+            const data = await fetch("http://localhost:3002/minizinc/gecode", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json; charset = UTF-8",
@@ -152,7 +152,7 @@ function App() {
           break
           case "Equation -> Soluce (with Chuffed)":
             if (server) {
-              const data = await fetch("http://localhost:3002/api/minizinc/chuffed", {
+              const data = await fetch("http://localhost:3002/minizinc/chuffed", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json; charset = UTF-8",
@@ -164,7 +164,7 @@ function App() {
             break
         case "MiniML -> MiniML_AST":
           if (server) {
-            const data = await fetch("http://localhost:3002/api/toMiniMLAST", {
+            const data = await fetch("http://localhost:3002/MiniML/toMiniMLAST", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json; charset = UTF-8",
@@ -178,7 +178,7 @@ function App() {
           break
         case "MiniML -> LCBPV_AST":
           if (server) {
-            const data = await fetch("http://localhost:3002/api/toLCBPV", {
+            const data = await fetch("http://localhost:3002/MiniML/toLCBPV", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json; charset = UTF-8",
@@ -192,7 +192,7 @@ function App() {
           break
         case "MiniML -> Autobill":
           if (server) {
-            const data = await fetch("http://localhost:3002/api/toAutobill", {
+            const data = await fetch("http://localhost:3002/MiniML/toAutobill", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json; charset = UTF-8",
@@ -206,7 +206,7 @@ function App() {
           break
         case "MiniML -> Equation":
           if (server) {
-            const data = await fetch("http://localhost:3002/api/toEquation", {
+            const data = await fetch("http://localhost:3002/MiniML/toEquation", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json; charset = UTF-8",
@@ -220,7 +220,7 @@ function App() {
           break
         case "MiniML -> Autobill Typé":
           if (server) {
-            const data = await fetch("http://localhost:3002/api/toAutobillType", {
+            const data = await fetch("http://localhost:3002/MiniML/toAutobillType", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json; charset = UTF-8",

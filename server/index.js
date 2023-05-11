@@ -28,7 +28,7 @@ app.listen(3002, () =>{
 const { exec } = require('child_process');
 const MiniZinc = require('minizinc');
 
-app.post('/api/toMiniMLAST', async (req, res) => {
+app.post('/MiniML/toMiniMLAST', async (req, res) => {
   const code = req.body.code;
   console.log("code get");
   try {
@@ -46,7 +46,7 @@ app.post('/api/toMiniMLAST', async (req, res) => {
   }
 });
 
-app.post('/api/toLCBPV', async (req, res) => {
+app.post('/MiniML/toLCBPV', async (req, res) => {
   const code = req.body.code;
   console.log("code get");
   try {
@@ -64,7 +64,7 @@ app.post('/api/toLCBPV', async (req, res) => {
   }
 });
 
-app.post('/api/toAutobillType', async (req, res) => {
+app.post('/MiniML/toAutobillType', async (req, res) => {
   const code = req.body.code;
   console.log("code get");
   try {
@@ -82,7 +82,7 @@ app.post('/api/toAutobillType', async (req, res) => {
   }
 });
 
-app.post('/api/toEquation', async (req, res) => {
+app.post('/MiniML/toEquation', async (req, res) => {
   const code = req.body.code;
   console.log("code get");
   try {
@@ -100,7 +100,7 @@ app.post('/api/toEquation', async (req, res) => {
   }
 });
 
-app.post('/api/toAutobill', async (req, res) => {
+app.post('/MiniML/toAutobill', async (req, res) => {
   const code = req.body.code;
   console.log("code get");
   try {
@@ -169,7 +169,7 @@ app.post('/api/toAutobill', async (req, res) => {
   
 });
 
-app.post('/api/minizinc/gecode', (req, res) => {
+app.post('/minizinc/gecode', (req, res) => {
   const code = req.body.code;
   /*
   MiniZinc.init({
@@ -233,34 +233,3 @@ app.post('/api/minizinc/gecode', (req, res) => {
   });
 });
 
-
-app.post('/api/minizinc/chuffed', (req, res) => {
-  const code = req.body.code;
-
-  // Write the MiniZinc code to a temporary file
-  const fs = require('fs');
-  const tmpFile = './temp.mzn';
-  fs.writeFileSync(tmpFile, code);
-
-  // Run the MiniZinc code using the minizinc executable
-  const cmd = `minizinc --solver chuffed ${tmpFile} -p 4`;
-  exec(cmd, (error, stdout, stderr) => {
-    fs.unlink('temp.mzn', (err) => {
-      if (err) throw err;
-      console.log('File deleted!');
-    });
-    
-    // Check for errors afaire: test client full/client-server
-    if (error || stderr) {
-      const errorMsg = error ? error.message : stderr;
-      console.error(`exec error: ${errorMsg}`);
-      res.status(500).send(errorMsg);
-      return;
-    }
-
-    
-    console.log(stdout);
-    // Send the MiniZinc output back to the client
-    res.send(JSON.stringify({ resultat: stdout }) );
-  });
-});

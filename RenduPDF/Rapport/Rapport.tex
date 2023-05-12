@@ -594,14 +594,11 @@ Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie 
 \fi
 
 \hypertarget{serveur-client}{%
-      \subsection{Serveur + client}\label{serveur-client}}
+  \subsection{Serveur + client}\label{serveur-client}}
 
 Dans le stade actuel d'Autobill, une architecture avec un client seul
-peut répondre aux exigences du projet STL. Néanmoins, Autobill évolue
-constamment et rien ne garantit que ses itérations suivantes puissent
-être supportées par notre solution. Dans l'optique de rendre notre
-solution plus flexible et \emph{futureproof}, une nouvelle version de
-notre interface, qui déporte les tâches complexes vers un serveur
+peut répondre aux exigences du projet STL. Néanmoins, au fur et à mesure que le projet avançait, nous nous sommes rendu compte d'un problème. Autobill évolue constamment et rien ne garantit que ses itérations suivantes puissent
+être supportées par notre solution. Par exemple, la utilisation de la librairie core de Mini-Zinc peut échouer en mode client unique. Dans l'optique de rendre notre solution plus flexible et \emph{futureproof}, une nouvelle version de notre interface, qui déporte les tâches complexes vers un serveur
 distant, a été développée.
 
 On a souhaité aussi adapter le client pour qu'il opère dans ces deux
@@ -610,26 +607,43 @@ développement, on peut facilement faire la bascule entre un mode de
 fonctionnement local/synchrone et un mode distant/asynchrone.
 
 \hypertarget{schuxe9ma-de-communication}{%
-      \subsubsection{Schéma de
-            communication}\label{schuxe9ma-de-communication}}
+  \subsubsection{MiniML}\label{schuxe9ma-de-communication}}
 
 \begin{figure}
-      \centering
-      \includegraphics{Figures/Communication.png}
-      \caption{Schéma de communication}
+  \centering
+  \includegraphics{Figures/Communication.png}
+  \caption{Schéma de communication}
 \end{figure}
 
 \newpage
 
-Dans notre architecture Client-Server, nous avons mis en place 2
-services principaux en utilisant le protocole HTTP (voir Figure 4): la
-transformation de code MiniML vers l'équation résultant de l'analyse
-statique et l'exécution de code MiniZinc. Dans le premier service, le
-client envoie le code LCBPV au serveur via une requête POST, le serveur
-le convertit en équation et le renvoie au client. Dans le second
-service, le client envoie le code de MiniZinc au serveur via une requête
-POST. Le serveur passe le code à un solveur de MiniZinc et renvoie le
-résultat au client.
+Nous vouslons diviser notre architecture Client-Server en deux partie, la partie MiniML et la partie résolution de contraintes. Dans la partie MiniML, nous avons mis en place 5 services principaux en utilisant le protocole HTTP (voir Figure 8): \emph{'/MiniML/toMiniMLAST'}, \emph{'/MiniML/toLCBPV'}, \emph{'/MiniML/toAutobill'}, \emph{'/MiniML/toAutobillType'} et \emph{'/MiniML/toEquation'}. \\
+Pour le service \emph{'/MiniML/toMiniMLAST'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers l'AST de MiniML et le renvoit au client.\\
+Pour le service \emph{'/MiniML/toLCBPV'},le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers l'AST de LCBPV et le renvoit au client.\\
+Pour le service \emph{'/MiniML/toAutobill'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers le code d'Autobill et le renvoit au client.\\
+Pour le service \emph{'/MiniML/toAutobillType'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers le code d'Autobill typé et le renvoit au client.\\
+Pour le service \emph{'/MiniML/toAutobillType'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers l'équation résultant de l'analyse statique et le renvoit au client.\\
+
+
+\subsubsection{La résolution de contraintes}\
+
+Dans la partie résolution de contraintes, nous avons un service \emph{'/minizinc/gecode'} qui éxecute le code MiniZinc. Le client envoie le code de MiniZinc au serveur via une requête POST. Le serveur écrit le code dans un fichier temporaire puis l'exécuter à l'aide de l'exécutable de ligne de commande minizinc avec le solveur Gecode (voir Figure.9), et renvoie le résultat au client.
+
+\begin{figure}
+  \centering
+\begin{lstlisting}[language=javascript]
+    const fs = require('fs');
+    const tmpFile = './temp.mzn';
+    fs.writeFileSync(tmpFile, code);
+    const cmd = `minizinc --solver Gecode ${tmpFile}`;
+    exec(cmd, (error, stdout, stderr) => {
+        fs.unlink('temp.mzn', (err) => {
+            if (err) throw err;
+        });
+    }
+\end{lstlisting}
+\caption{Exécution de code Minizinc}
+\end{figure}
 
 \iffalse
       \hypertarget{outils-et-technologies-utilisuxe9s-1}{%

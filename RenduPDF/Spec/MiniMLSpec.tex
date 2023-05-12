@@ -101,9 +101,10 @@
 \newcommand{\nTime}[1]{\; #1\text{*} \;}
 \newcommand{\nPlus}[1]{\; #1\text{+} \;}
 \newcommand{\isToken}[1]{\; \textit{`\textcolor{Maroon}{#1}`} \;}
+\newcommand{\isTokenLCBPV}[1]{\; \textit{`\textcolor{Green}{#1}`} \;}
 \newcommand{\isRangeToken}[2]{\; \textit{`\textcolor{Maroon}{#1} - \textcolor{Maroon}{#2}`} \;}
 
-Voici la grammaire BNF de notre langage MiniML.
+Voici la grammaire BNF du language MiniML.
 
 \hypertarget{Identificateurs}{%
   \subsection{Identificateurs}\label{Identificateurs}}
@@ -147,102 +148,114 @@ Voici la grammaire BNF de notre langage MiniML.
 \hypertarget{expressions}{%
   \subsection{Expressions}\label{expressions}}
 \begin{align*}
-  \grammarRule{Litteral}  \quad ::=  \quad       & |\quad \nPlus{[\isRangeToken{0}{9}]}                                                                                                                                                  \\
-                                                 & |\quad [\isToken{true}|\isToken{false}]                                                                                                                                               \\
-                                                 & |\quad \isToken{(} \isToken{)}                                                                                                                                                        \\
+  \grammarRule{Litteral}  \quad ::=  \quad & |\quad \nPlus{[\isRangeToken{0}{9}]}                                                                                                           \\
+                                           & |\quad [\isToken{true}|\isToken{false}]                                                                                                        \\
+                                           & |\quad \isToken{(} \isToken{)}                                                                                                                 \\
   \\
-  \grammarRule{Expr}  \quad ::=  \quad           & |\quad \grammarRule{Litteral}                                                                                                                                                         \\
-                                                 & |\quad \grammarRule{Id}                                                                                                                                                               \\
-                                                 & |\quad \grammarRule{UnaryOperator}                                                                                                                                                    \\
-                                                 & |\quad \grammarRule{BinaryOperator}                                                                                                                                                   \\
-                                                 & |\quad \isToken{(} \grammarRule{Expr}  \grammarRule{Expr}         \isToken{)}                                                                                                         \\
-                                                 & |\quad \isToken{let} \grammarRule{Id} \isToken{=} \grammarRule{Expr} \isToken{in} \grammarRule{Expr}                                                                                  \\
-                                                 & |\quad \isToken{fun} \grammarRule{Id} \rightarrow  \grammarRule{Expr}                                                                                                                 \\
-                                                 & |\quad \isToken{fun} \isToken{rec} \grammarRule{Id} \grammarRule{Id} \rightarrow  \grammarRule{Expr}                                                                                  \\
-                                                 & |\quad \grammarRule{Expr} \isToken{,} \grammarRule{Expr}                                                                                                                              \\
-                                                 & |\quad \grammarRule{ConstructeurId}  \grammarRule{Expr}                                                                                                                               \\
-                                                 & |\quad \isToken{match} \grammarRule{Expr} \isToken{with} \grammarRule{MatchCase}                                                                                                      \\
+  \grammarRule{Expr}  \quad ::=  \quad     & |\quad \grammarRule{Litteral}                                                                                                                  \\
+                                           & |\quad \grammarRule{Id}                                                                                                                        \\
+                                           & |\quad \grammarRule{Operator}                                                                                                                  \\
+                                           & |\quad \isToken{(} \grammarRule{Expr}  \grammarRule{Expr}         \isToken{)}                                                                  \\
+                                           & |\quad \isToken{let} \grammarRule{Id} \isToken{=} \grammarRule{Expr} \isToken{in} \grammarRule{Expr}                                           \\
+                                           & |\quad \isToken{fun} \grammarRule{Id} \isToken{->}  \grammarRule{Expr}                                                                         \\
+                                           & |\quad \isToken{fun} \isToken{rec} \grammarRule{Id} \grammarRule{Id} \isToken{->}  \grammarRule{Expr}                                          \\
+                                           & |\quad \grammarRule{ConstructeurId}  \nTime{\grammarRuleUnSpaced{Expr}}                                                                        \\
+                                           & |\quad \isToken{match} \grammarRule{Expr} \isToken{with} \grammarRule{MatchCase}                                                               \\
   \\
-  \grammarRule{UnaryOperator}  \quad ::=  \quad  & \isToken{not}                                                                                                                                                                         \\
-  \grammarRule{BinaryOperator}  \quad ::=  \quad & [\isToken{and} \,|\, \isToken{or} \,|\, \isToken{+} \,|\, \isToken{-} \,|\, \isToken{/} \,|\, \isToken{\%} \,|\, \isToken{*} \,|\, \isToken{<} \,|\, \isToken{>}  \,|\, \isToken{=} ] \\
+  \grammarRule{Operator}  \quad ::=  \quad & [\isToken{+} \,|\, \isToken{-} \,|\, \isToken{/} \,|\, \isToken{\%} \,|\, \isToken{*} \,|\, \isToken{<} \,|\, \isToken{>}  \,|\, \isToken{=} ] \\
 \end{align*}
 
 \hypertarget{filtrage-et-motifs}{%
   \subsection{Filtrage et Motifs}\label{filtrage-et-motifs}}
 \begin{align*}
-  \grammarRule{MatchCase}  \quad ::=  \quad & |\quad  \grammarRule{Pattern} \rightarrow  \grammarRule{Expr}      \\
-                                            & |\quad \grammarRule{MatchCase} \isToken{|} \grammarRule{MatchCase} \\
+  \grammarRule{MatchCase}  \quad ::=  \quad & |\quad  \grammarRule{Pattern} \isToken{->}  \grammarRule{Expr}               \\
+                                            & |\quad \grammarRule{MatchCase} \isToken{|} \grammarRule{MatchCase}           \\
   \\
-  \grammarRule{Pattern} \quad ::=  \quad    & |\quad \grammarRule{Litteral}                                      \\
-                                            & |\quad \grammarRule{Id}                                            \\
-                                            & |\quad  \grammarRule{Pattern} \isToken{,} \grammarRule{Pattern}    \\
-                                            & |\quad \grammarRule{ConstructeurId} \; \grammarRule{Pattern}       \\
+  \grammarRule{Pattern} \quad ::=  \quad    & |\quad \grammarRule{Litteral}                                                \\
+                                            & |\quad \grammarRule{Id}                                                      \\
+                                            & |\quad \grammarRule{ConstructeurId} \; \nTime{\grammarRuleUnSpaced{Pattern}} \\
 \end{align*}
 
-\pagebreak
 
 \hypertarget{types-1}{%
   \subsection{Types}\label{types-1}}
 
 \begin{align*}
-  \grammarRule{Type}    \quad ::=  \quad & |\quad \grammarRule{Vartype}                                        \\
-                                         & |\quad \grammarRule{Id}                                             \\
-                                         & |\quad\grammarRule{Type}  \isToken{*} \grammarRule{Type}            \\
-                                         & |\quad \isToken{(} \grammarRule{Type} \grammarRule{Type}\isToken{)} \\
+  \grammarRule{Type}    \quad ::=  \quad & |\quad \grammarRule{Vartype}                              \\
+                                         & |\quad \grammarRule{Id}                                   \\
+                                         & |\quad \nPlus{\grammarRuleUnSpaced{Type}}                 \\
+                                         & |\quad \grammarRule{Type} \isToken{->} \grammarRule{Type} \\
 \end{align*}
 
 \hypertarget{semantique-de-traduction}{%
   \section{Semantique de traduction}\label{semantique-de-traduction}}
 
-\hypertarget{programmes-1}{%
-  \subsection{Programmes}\label{programmes-1}}
-
-\[ Prog[cs] \rightarrow \llbracket Prog[cs] \rrbracket_{Prog}  \] Un programme MiniML
-est une suite de commandes \([cs]\) qui est traduite en un programme
-\(x\) en LCBPV. Un programme est dit traduisible si la suite de
-commandes \([cs]\) qui le compose peut-être traduite.
-\begin{align*}
-   & Prog[cs] \rightarrow  \llbracket Prog[cs] \rrbracket_{Cmds} \rightarrow Prog'(\llbracket cs \rrbracket_{Cmds} )
-\end{align*}
-
-\hypertarget{suites-de-commandes}{%
-  \subsection{Suites de commandes}\label{suites-de-commandes}}
-
-\[ cs \rightarrow \llbracket cs \rrbracket_{Cmds} \rightarrow (\gamma,\omega,\upsilon) \] Le
-resultat de la traduction d'une suite de commandes \(cs\) est un triplet
-\((\gamma,\omega,\upsilon)\) où:
-
+\newcommand{\translateNode}[2]{\llbracket #1 \rrbracket_{#2}}
+\newcommand{\translateResult}[1]{\llbracket #1 \rrbracket}
+\newcommand{\isElemMiniML}[1]{\textcolor{Maroon}{#1}}
+\newcommand{\isElemLCBPV}[1]{\textcolor{ForestGreen}{#1}}
+\newcommand{\Tab}{\quad \quad \quad \quad \quad \quad \;}
+\hypertarget{notation}{%
+  \subsection{Notation}\label{notation}}
+$ \translateNode{\isElemMiniML{Tuple}(e_1 e_2)}{Expr}  \rightarrow \isElemLCBPV{Tuple} (\translateResult{e_1}\translateResult{e_2})$
 \begin{itemize}
   \tightlist
   \item
-        \(\gamma\) est le resultat de la traduction des variables globales,
+        $\translateNode{\_}{Expr}  \rightarrow $ est la traduction d'un noeud expr du langage MiniML vers le langage LCBPV
   \item
-        \(\omega\) est le resultat de la traduction des definitions de types
+        En \isElemMiniML{Marron} les elements propre au langage MiniML
   \item
-        \(\upsilon\) est la dernière expression traduite.
+        En \isElemLCBPV{Vert} les elements propre au langage LCBPV
+  \item
+        $X_n$ est le n-ième sous-noeud de l'arbre de syntaxe abstrait \newline
+        Selon les cas $X$ peut être :
+        \begin{itemize}
+          \tightlist
+          \item
+                $e$ pour les expressions
+          \item
+                $p$ pour les motifs
+          \item
+                $t$ pour les types
+          \item
+                $d$ pour les définitions
+                \begin{itemize}
+                  \tightlist
+                  \item
+                        $dc$ pour les définitions de constructeurs
+                \end{itemize}
+          \item
+                $v$ pour les identificateurs
+          \item
+                $i$ pour les entiers
+          \item
+                $b$ pour les booléens
+        \end{itemize}
+  \item
+        $X_1 \dots X_n$ est la liste des sous-noeuds de type $X$ allant de $1$ à $n$
 \end{itemize}
 
-Ce triplet est rendu nécessaire par la sémantique de LCBPV qui ne permet
-pas de définir des variables globales comme en MiniML. Cela a aussi pour
-conséquence un changement de portée entre les déclarations de type en
-MiniML et en LCBPV.
+\hypertarget{programmes-1}{%
+  \subsection{Programmes}\label{programmes-1}}
+
+Un programme MiniML est une suite de taille arbitraire de définitions suivie d'une expression.
+La sémantique de LCBPV ne permettant pas de définir des variables globales comme en MiniML il est nécessaire de transformer le programme en une seule expression.
+
+On définit l'operation de traduction \(\translateNode{\_}{Prog}\) selon les cas de construction
+des définitions précisées par la règle de grammaire : \grammarRule{Prog}
+
 \begin{align*}
-  \text{(VAR DEFS)} \quad  & (Def(d); cs) \rightarrow \llbracket d \rrbracket_{Def} +  \llbracket cs \rrbracket_{Cmds} \rightarrow ((\gamma;\llbracket d \rrbracket_{Def}),\omega,\upsilon) \\
-  \\
-  \text{(TYPE DEFS)} \quad & (Def(d); cs) \rightarrow \llbracket d \rrbracket_{Def} + \llbracket cs \rrbracket_{Cmds} \rightarrow (\gamma,(\omega;\llbracket d \rrbracket_{Def}),\upsilon)  \\
-  \\
-  \text{(GLB EXPR)} \quad  & (Expr(b), cs) \rightarrow \llbracket b \rrbracket_{Expr} \times \llbracket cs \rrbracket_{Cmds}  \rightarrow (\gamma,\omega,\llbracket b \rrbracket_{Expr})
+  \translateNode{\isElemMiniML{Prog}(d_1 \dots d_n \, e)}{Prog} \rightarrow \isElemLCBPV{Prog} (\translateResult{d_1 \dots d_n}\,\isElemLCBPV{Do}(\translateResult{e}))
 \end{align*}
-\subsection{Définitions}\label{duxe9finitions}
 
-\[  d \rightarrow \llbracket d \rrbracket_{Def} \rightarrow \pi \] On définit la relation
-\(Def\) selon les cas de construction des définitions. Les cas de
-construction des définitions sont donnés par les clauses des règles
-syntaxiques.
+\pagebreak
 
-Une définition est dite traduisible si chacune de ses clauses peut être
-traduite. On distingue deux catégories de définitions:
+\subsection{Définitions}\label{def}
 
+On définit l'operation de traduction \(\translateNode{\_}{Def}\) selon les cas de construction
+des définitions précisées par la règle de grammaire : \grammarRule{Def}
+
+On distingue deux noeuds de types \grammarRule{Def}:
 \begin{itemize}
   \tightlist
   \item
@@ -250,65 +263,96 @@ traduite. On distingue deux catégories de définitions:
   \item
         Les définitions de \textbf{Types}.
 \end{itemize}
-
-Ces deux catégories de définitions sont traitées différemment par \({Cmds}\)
-
-\begin{itemize}
-  \tightlist
-  \item
-        \(\pi\) est donc la traduction de la définition \(d\) placée dans la
-        bonne catégorie.
-\end{itemize}
 \begin{align*}
-  \text{(VARDEF)}
-  \quad                  & VariableDef(v, e) \rightarrow  GLB(InsLet(v, \llbracket e \rrbracket_{Expr}))                                   \\
+  \text{(VARDEF)}  \quad & \translateNode{\isElemMiniML{VarDef}(v \; e)}{Def} \rightarrow   \isElemLCBPV{InsLet}(v, \translateResult{e})                                                   \\
   \\
-  \text{(TYPDEF) } \quad & TypeDef(n, [t_1,\dots,t_N], [c_1,\dots,c_N])                                                                    \\
-  \rightarrow \;         & \text{TYPE}(TypDef(n, [t_1,\dots,t_N], DefDatatype[\llbracket c_1 \rrbracket,\dots,\llbracket c_N \rrbracket]))
+  \text{(TYPDEF) } \quad & \translateNode{\isElemMiniML{TypeDef}(v \; t_1 \dots t_N \; c_1 \dots c_N)}{Def}                                                                                \\
+  \rightarrow \;         & \isElemLCBPV{TypDef}(v \, \translateResult{t_1 \dots t_N} \, \isElemLCBPV{DefDatatype}( \translateResult{c_1  \dots  c_N}))
 \end{align*}
 \subsection{Types}\label{types-2}
 
-\[  t \rightarrow \llbracket t \rrbracket_{Type} \rightarrow t' \] On définit la relation
-\({Type}\) selon les cas de construction des types. Les cas de
-construction des types sont donnés par les clauses des règles
-syntaxiques. Un type est dit traduisible si chacune de ses clauses peut
-être traduite.
+On définit l'operation de traduction \(\translateNode{\_}{Type}\) selon les cas de construction
+des types précisées par la règle de grammaire : \grammarRule{Type}
+
+On distingue 3 noeuds de types $Type$:
+\begin{itemize}
+  \tightlist
+  \item
+        Les \textbf{Variables de type}.
+  \item
+        Les \textbf{Applications de types}.
+  \item
+        Les \textbf{Lambda}
+\end{itemize}
 \begin{align*}
-  \text{(TLITT) }  & TypeInt \rightarrow \llbracket TypeInt \rrbracket_{Type}  \rightarrow TypInt                                                                                       \\
+  \text{(TVAR) }  & \translateNode{\isElemMiniML{TypeVar}(v)}{Type}  \rightarrow \isElemLCBPV{TypVar}(v)                                                                                       \\
   \\
-  \text{(TVAR) }   & TypeDefined(id) \rightarrow \llbracket TypeDefined(id) \rrbracket_{Type} \rightarrow TypVar(id)                                                                    \\ \\
-  \text{(TTUPLE) } & TypeTuple([t_1,\dots, t_N]) \rightarrow  TypTuple[\llbracket t_1 \rrbracket_{Type},\dots,\llbracket t_N \rrbracket_{Type}]                                         \\
+  \text{(TAPP) }  & \translateNode{\isElemMiniML{TypeConstructor}(v \; t_1 \, \dots \,t_N)}{Type} \rightarrow  \isElemLCBPV{TypApp}(v\; \translateResult{t_1 \dots t_N}) \\
   \\
-  \text{(TAPP) }   & TypeConstructor(t, [p_1,\dots,p_N]) \rightarrow  TypApp(\llbracket t \rrbracket_{Type}, [\llbracket p_1 \rrbracket_{Type},\dots,\llbracket p_N \rrbracket_{Type}]) \\
-  \\
-  \text{(TCLOS) }  & TypeLambda(a,ret)
-  \rightarrow \;               TypClosure(Exp, \, (TypFun(TypThunk(\llbracket ret \rrbracket_{Type}), \llbracket a \rrbracket_{Type})))
+  \text{(TCLOS) } & \translateNode{\isElemMiniML{TypeLambda}(t_1\,t_2) }{Type}                                                                                                                 \\
+  \rightarrow \;  & \isElemLCBPV{TypClosure}(                                                                                                                                                  \\
+                  & \Tab \isElemLCBPV{Exp}                                                                                                                                                     \\
+                  & \Tab \isElemLCBPV{TypFun}(\translateResult{t_1} \; \isElemLCBPV{TypThunk}(\translateResult{t_2}))                                                                          \\
+  )
 \end{align*}
-\subsection{Litteraux et Expressions}\label{litteraux-et-expressions}
 
-\[ e \rightarrow \llbracket e \rrbracket_{Expr} \rightarrow e'  \]
+\pagebreak
+\subsection{Expressions}\label{exprs}
 
-On définit la relation \({Expr}\) selon les cas de construction
-des expr. Les cas de construction des expressions sont donnés par les
-clauses des règles syntaxiques. Une expression est dite traduisible si
-chacune de ses clauses peut être traduite. \begin{align*}
-  \text{(CONSTR)} \quad & Construct(c,e) \rightarrow  ExprConstructor(ConsNamed(c), \llbracket e \rrbracket_{Expr})                                                                  \\
+On définit l'operation de traduction \(\translateNode{\_}{Expr}\) selon les cas de construction
+des expressions précisées par la règle de grammaire : \grammarRule{Expr}
+
+On distingue 8 noeuds de types $Expr$: \begin{itemize}
+  \tightlist
+  \item
+        Les \textbf{Litteraux}.
+  \item
+        Les \textbf{Variables}.
+  \item
+        Les \textbf{Appels de fonctions}.
+  \item
+        Les \textbf{Fixation}.
+  \item
+        Les \textbf{Lambda}.
+  \item
+        Les \textbf{Fonctions Recursive}.
+  \item
+        Les \textbf{Constructions}.
+  \item
+        Les \textbf{Correspondance de modèle}.
+\end{itemize}
+\begin{align*}
+  \text{(INT)} \quad       & \translateNode{\isElemMiniML{Integer}(i)}{Expr} \rightarrow \isElemLCBPV{ExprInteger}(i)                                                                                                        \\
+  \text{(BOOL)} \quad      & \translateNode{\isElemMiniML{Boolean}(b)}{Expr} \rightarrow \isElemLCBPV{ExprConstructor}(b)                                                                                                    \\
+  \text{(UNIT)} \quad      & \translateNode{\isElemMiniML{Unit}}{Expr} \rightarrow \isElemLCBPV{ExprConstructor}(\isElemLCBPV{Unit})                                                                                         \\
   \\
-  \text{(UNARY)} \quad  & CallUnary(op, [a]) \rightarrow  ExprMonPrim(op, \llbracket a \rrbracket_{Expr})                                                                            \\
+  \text{(VAR)} \quad       & \translateNode{\isElemMiniML{Variable}(v)}{Expr} \rightarrow \isElemLCBPV{ExprVar}(v)                                                                                                           \\
+  \text{(LAMBDA)} \quad    & \translateNode{\isElemMiniML{Lambda}(v \, e)}{Expr}                                                                                                                                             \\
+  \rightarrow  \;          & \isElemLCBPV{ExprClosure}(                                                                                                                                                                      \\
+                           & \Tab \isElemLCBPV{Exp}                                                                                                                                                                          \\
+                           & \Tab \isElemLCBPV{ExprGet}(\; \isElemLCBPV{GetPatTag} \; (\isElemLCBPV{Call}\; v \; ExprThunk(\translateResult{e}))\;)                                                                          \\
+  )                                                                                                                                                                                                                          \\
+  \text{(FUN REC)} \quad   & \translateNode{\isElemMiniML{FonctionRec}(v_1 \, v_2\, e)}{Expr}                                                                                                                                \\
+  \rightarrow  \;          & \isElemLCBPV{ExprClosure}(                                                                                                                                                                      \\
+                           & \Tab \isElemLCBPV{Exp}                                                                                                                                                                          \\
+                           & \Tab \isElemLCBPV{ExprRec}(v_1                                                                                                                                                                  \\
+                           & \Tab \Tab \isElemLCBPV{ExprGet}(\; \isElemLCBPV{GetPatTag} \; (\isElemLCBPV{Call}\; v_2 \; ExprThunk(\translateResult{e}))\;)                                                                   \\
+                           & \Tab)                                                                                                                                                                                           \\
+                           & )                                                                                                                                                                                               \\
+  \text{(CALL)} \quad      & \translateNode{\isElemMiniML{Call}(e_1 e_2)}{Expr}                                                                                                                                              \\
+  \rightarrow      \;      & \isElemLCBPV{ExprBlock}(                                                                                                                                                                        \\
+                           & \Tab \isElemLCBPV{InsOpen}(v_1 \; \isElemLCBPV{Exp} \; \translateResult{e_1} )                                                                                                                  \\
+                           & \Tab \isElemLCBPV{InsForce}\;( v_2 \; \isElemLCBPV{ExprMethod}(\; \isElemLCBPV{Call} \; \isElemLCBPV{ExprVar}(v_1) \; \translateResult{e_2}\;)\;)                                               \\
+                           & \Tab \isElemLCBPV{ExprVar}(v_2)                                                                                                                                                                 \\
+  )                                                                                                                                                                                                                          \\
+  \text{(BIND)} \quad      & \translateNode{\isElemMiniML{Binding}(v \, e_1 e_2)}{Expr}                                                                                                                                      \\
+  \rightarrow  \;          & \isElemLCBPV{ExprBlock}(                                                                                                                                                                        \\
+                           & \Tab \isElemLCBPV{InsLet}(v \; \translateResult{e_1})                                                                                                                                           \\
+                           & \Tab \translateResult{e_2}                                                                                                                                                                      \\
+  )                                                                                                                                                                                                                          \\
   \\
-  \text{(BINARY)} \quad & CallBinary(op, [a_1,a_2]) \rightarrow  ExprBinPrim(op, \llbracket a_1 \rrbracket_{Expr}, \llbracket a_2 \rrbracket_{Expr})                                 \\                                    \\
-  \text{(MATCH)} \quad  & Match(m,[m_1,\dots,m_N]) \rightarrow  ExprMatch(\llbracket m \rrbracket_{Expr}, [\llbracket m_1 \rrbracket_{Case},\dots,\llbracket m_N \rrbracket_{Case}]) \\
-  \\
-  \text{(BLOCK)} \quad  & Sequence([e_1,\dots,e_{N-1}, e_N])
-  \rightarrow  ExprBlock(Blk([\llbracket e_1 \rrbracket_{Expr}; \dots ; \llbracket e_{N-1} \rrbracket_{Expr}], e_N))                                                                 \\
-  \\
-  \text{(CALL)} \quad   & Call(f, a)                                                 \rightarrow  ExprBlock(Blk([InsOpen(Exp, \llbracket f \rrbracket_{Expr} ),                      \\ & InsForce(ExprMethod(Call, [\llbracket a \rrbracket_{Expr}]))]))                                       \\
-  \\
-  \text{(LAMBDA)} \quad & Lambda(a, b)                                                                                                                                               \\
-                        & \rightarrow  ExprClosure(Exp, ExprGet([GetPatTag(Call, [\llbracket a \rrbracket_{Expr}], ExprThunk(\llbracket b \rrbracket_{Expr}))]))                     \\
-  \\
-  \text{(REC)} \quad    & FunctionRec(v, a, b)
-  \rightarrow  ExprClosure(Exp,ExprRec(\llbracket v \rrbracket_{Expr},                                                                                                               \\  & ExprGet([GetPatTag(Call, [\llbracket a \rrbracket_{Expr}], ExprThunk(\llbracket b \rrbracket_{Expr}))])))
+  \text{(CONSTRUCT)} \quad & \translateNode{\isElemMiniML{Construct}(v \, e_1 \dots e_N)}{Expr}  \rightarrow \isElemLCBPV{ExprConstructor} (\isElemLCBPV{ConsNamed}(v) \, \translateResult{e_1 \dots e_N}) \\
+  \text{(MATCH)} \quad     & \translateNode{\isElemMiniML{Match}(e \,p_1 \, \dots \, p_N)}{Expr} \rightarrow  \isElemLCBPV{ExprMatch}(\translateResult{e} \, \translateResult{p_1 \dots p_N} )             \\
 \end{align*}
 \subsection{Motifs et Filtrage}\label{motifs-et-filtrage}
 

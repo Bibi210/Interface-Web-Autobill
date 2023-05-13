@@ -263,6 +263,8 @@ Cette technique suit un ensemble de règles d'inférences : chaque trait du lang
       \includegraphics[scale=0.55]{Figures/Schema_Autobill.png}
       \caption{Représentation simplifiée d'Autobill\label{fig1}}
 \end{figure*}
+
+\pagebreak
 \subsection{Historique et définitions}\label{historique-et-duxe9finitions}
 Des langages de programmation expérimentaux ont vu le jour et ont implémenté cette analyse comme Resource Aware ML \cite{RAML}, un langage fonctionnel à la ML créé par Jan Hoffmann, Klaus Aehlig et Martin Hofmann.
 
@@ -615,6 +617,7 @@ Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie 
                   contraintes, depuis n'importe quel navigateur Web moderne.
       \end{itemize}
 \fi
+\pagebreak
 
 \hypertarget{serveur-client}{%
       \subsection{Serveur + client}\label{serveur-client}}
@@ -630,17 +633,18 @@ développement, on peut facilement faire la bascule entre un mode de
 fonctionnement local/synchrone et un mode distant/asynchrone.
 
 \hypertarget{schuxe9ma-de-communication}{%
-      \subsubsection{MiniML}\label{schuxe9ma-de-communication}}
+      \subsubsection{Schema de Communication}\label{schuxe9ma-de-communication}}
 
-\begin{figure}
+\begin{figure}[!b]
       \centering
-      \includegraphics{Figures/Communication.png}
+      \includegraphics[scale=0.5]{Figures/Communication.png}
       \caption{Schéma de communication}
 \end{figure}
 
 \newpage
 
-Nous vouslons diviser notre architecture Client-Server en deux partie, la partie MiniML et la partie résolution de contraintes. Dans la partie MiniML, nous avons mis en place 5 services principaux en utilisant le protocole HTTP (voir Figure 8): \emph{'/MiniML/toMiniMLAST'}, \emph{'/MiniML/toLCBPV'}, \emph{'/MiniML/toAutobill'}, \emph{'/MiniML/toAutobillType'} et \emph{'/MiniML/toEquation'}. \\
+Nous vouslons diviser notre architecture Client-Server en deux partie, la partie MiniML et la partie résolution de contraintes. \\
+Dans la partie MiniML, nous avons mis en place 5 services principaux en utilisant le protocole HTTP (voir Figure 8): \emph{'/MiniML/toMiniMLAST'}, \emph{'/MiniML/toLCBPV'}, \emph{'/MiniML/toAutobill'}, \emph{'/MiniML/toAutobillType'} et \emph{'/MiniML/toEquation'}. \\
 Pour le service \emph{'/MiniML/toMiniMLAST'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers l'AST de MiniML et le renvoit au client.\\
 Pour le service \emph{'/MiniML/toLCBPV'},le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers l'AST de LCBPV et le renvoit au client.\\
 Pour le service \emph{'/MiniML/toAutobill'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers le code d'Autobill et le renvoit au client.\\
@@ -652,7 +656,7 @@ Pour le service \emph{'/MiniML/toAutobillType'}, le client envoit le code du Min
 
 Dans la partie résolution de contraintes, nous avons un service \emph{'/minizinc/gecode'} qui éxecute le code MiniZinc. Le client envoie le code de MiniZinc au serveur via une requête POST. Le serveur écrit le code dans un fichier temporaire puis l'exécuter à l'aide de l'exécutable de ligne de commande minizinc avec le solveur Gecode (voir Figure.9), et renvoie le résultat au client.
 
-\begin{figure}
+\begin{figure}[!b]
       \centering
       \begin{lstlisting}[language=javascript]
     const fs = require('fs');

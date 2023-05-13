@@ -817,10 +817,8 @@ Dans la partie résolution de contraintes, nous avons un service \emph{'/minizin
 
 \textbf{MiniML} émerge du choix par nos encadrants de créer un langage
 fonctionnel simple et accessible pour les utilisateurs d'Autobill
-servant d'abstraction à \textbf{CBPV}. Dans le cadre de ce projet
-MiniML, dispose d'une implémentation écrite en \textbf{OCaml}. Nous
-avons pris la décision de rendre la syntaxe MiniML parfaitement
-compatible avec OCaml simplifiant les comparaisons avec d'autre outils utilisant \textbf{OCaml} en entrée.
+servant d'abstraction à \textbf{CBPV}. Nous avons pris la décision de rendre la syntaxe MiniML parfaitement
+compatible avec OCaml simplifiant les comparaisons avec d'autres outils utilisant \textbf{OCaml} en entrée.
 
 Le développement de \textbf{MiniML} suivant les besoins de nos
 encadrants celui-ci est sans effets de bord.
@@ -928,8 +926,6 @@ Les extensions non compatibles avec Ocaml mais compatible avec \textbf{Autobill}
                                              & |\quad \grammarRule{Type} \isToken{*}  \grammarRule{Type} \\
 \end{align*}
 
-
-
 \hypertarget{call-by-push-value}{%
       \subsection{Call-By-Push-Value}\label{call-by-push-value}}
 
@@ -942,13 +938,28 @@ par \textbf{Haskell} pour mettre en place l'évaluation \emph{Lazy}.
 En CBPV, les valeurs et les calculs sont deux notion bien distincte, les calculs peuvent produire et donc être réduit on dit qu'ils "font",
 tandis que les valeurs sont des contenants et ne peuvent pas être réduit on dit qu'ils "sont".
 Lorsqu'on effectue la traduction depuis une autre sémantique, nous devons donc décider comment et quand nos calculs vont être effectuer.
-Puisque MiniML est un language \emph{Call By Value}, on va décider que toute traduction nécessitant le passage par la notion de calculs dans CBPV forcera immédiatement l'évaluation de ceux-ci.
-Permettant ainsi une equivalence parfaite entre tout comportement de MiniML traduit en CBPV.
 
-Voici donc en détail toutes les constructions de MiniML et leurs traductions en LCBPV.
+Dans le cadre de ce projet, 3 constructions de LCBPV nous intéressent particulièrement, les \textbf{Closure}, les \textbf{Thunks}.
+\begin{itemize}
+      \item
+            Les \textbf{Thunks} sont des expressions non evaluée, ils sont utilisés pour représenter un calcul qui n'a pas encore été effectué.
+            On peut donc les voir comme des lambdas sans arguments.
+            Pour forcer l'évaluation d'un \textbf{Thunk} il suffit d'utiliser l'instruction  \textbf{force}.
+      \item
+            Les \textbf{Closures} qui permettent de capturer un environnement et une expression et de les lier.
+      \item
+            Les \textbf{Methods} qui dans notre cas permettent de définir des calculs à effectuer avec des arguments.
+\end{itemize}
+Pour plus d'information sur LCBPV sa syntaxe, sa sémantique et ses constructions , vous pouvez vous référer à l'annexe de ce rapport.
 
 \hypertarget{semantique-de-traduction}{%
       \subsection{Semantique de traduction}\label{semantique-de-traduction}}
+
+Puisque MiniML est un language \emph{Call By Value},ici nous décidons que toute traduction nécessitant le passage par la notion de calculs dans CBPV forcera immédiatement l'évaluation de ceux-ci.
+Permettant ainsi une equivalence parfaite entre tout comportement de MiniML traduit en LCBPV.
+
+Pour décrire la traduction de MiniML en LCBPV, nous allons opté pour une traduction de syntaxe concrète à syntaxe concrète.
+Vous trouverez ci-dessous toutes les cas d'intérêts de la traduction.
 
 \newcommand{\translateNode}[2]{\llbracket #1 \rrbracket_{#2}}
 \newcommand{\translateResult}[1]{\llbracket #1 \rrbracket}
@@ -966,9 +977,9 @@ $ \translateNode{let \; v \; = \; e_1 \; in \; e_2}{Expr}  \rightarrow let \; v 
             \begin{itemize}
                   \tightlist
                   \item
-                        À l'interieur des $\translateResult{}$, on trouve les elements propre au langage MiniML qui sont traduit vers le langage LCBPV.
+                        À l'interieur des $\translateResult{}$, nous trouvons les elements propre au langage MiniML qui sont traduit vers le langage LCBPV.
                   \item
-                        À l'exterieur des $\translateResult{}$, on trouve les elements propre au langage LCBPV.
+                        À l'exterieur des $\translateResult{}$, nous trouvons les elements propre au langage LCBPV.
             \end{itemize}
       \item
             $X_n$ est le n-ième sous-noeud de l'arbre de syntaxe abstrait. \newline
@@ -1112,6 +1123,30 @@ On distingue 8 noeuds d'intérêts de types \grammarRule{Expr}:
       \text{(MATCH)} \quad     & \translateNode{match \, e \, with \, p_1 \dots p_N }{Expr}\rightarrow  match \, \translateResult{e} \, with \, \translateResult{p_1} \dots \translateResult{p_N} \; end        \\
 \end{align*}
 
+Les cas les plus intéressants sont les cas de \textbf{Fonctions} et les \textbf{Appels de Fonctions}.
+La traduction d'une fonction ce déroule ainsi:
+\begin{enumerate}
+      \tightlist
+      \item
+            A l'aide de l'instruction \textbf{get} on crée une methode \textbf{call} qui prend en paramètre un argument.
+      \item
+            Ensuite dans le corps de cette methode on crée un \textbf{Thunk} qui contient la traduction du corps de la fonction.
+      \item
+            Puis on crée une \textbf{Closure} qui contient la methode ainsi créée et son environnement.
+\end{enumerate}
+Au vu de la traduction des fonctions, on peut en déduire la traduction des appels:
+\begin{enumerate}
+      \tightlist
+      \item
+            On ouvre la \textbf{Closure} de la fonction.
+            Pour récupérer la méthode \textbf{call} et l'environnement.
+      \item
+            On applique la méthode \textbf{call} sur l'argument fourni au moment de l'appel.
+            Pour récupérer un \textbf{Thunk} sur le corps de la fonction  avec l'environnement enrichi de l'argument.
+      \item
+            On force le \textbf{Thunk} ainsi obtenu pour avoir l'evalution immédiate du corps de la fonction.
+\end{enumerate}
+
 \subsubsection*{Motifs et Filtrage}\label{motifs-et-filtrage}
 
 On définit l'operation de traduction \(\translateNode{\_}{Case}\) selon les cas de construction
@@ -1139,6 +1174,15 @@ On distingue 4 noeuds d'intérêt de types \grammarRule{MatchCase}:
 
 On notera que la traduction des patterns ne prend pas en compte les patterns profonds, c'est à dire les patterns imbriqués dans d'autres patterns.
 En effet, les patterns profonds ne sont pas encore supportés par le language cible.
+
+
+\hypertarget{Implémentation}{%
+      \subsection{Implémentation}\label{Implementation}}
+Dans le cadre de ce projet MiniML, dispose d'une implémentation écrite en \textbf{OCaml} nous avons utilisé ce langage pour deux raisons principales.
+Permmettre une meilleure intégration avec autobill qui est écrit en OCaml et permettre une compatibilité avec les deux architectures du projet.
+Cela nous a permis d'effectuer la traduction non pas de syntaxe concrète à syntaxe concrète mais de syntaxe abstraite à syntaxe abstraite.
+Nous epargnant ainsi une nouvelle étape de parsing.
+Une autre divergence avec la spécification est que nous avons utilisé une traduction recursive terminale par soucis d'optmisation.
 
 
 \hypertarget{conclusion}{%
@@ -1169,7 +1213,7 @@ solution avec celle de Jan Hoffmann et l'interface de RAML
 
 \newpage
 
-\section*{Annexe}
+\section*{Annexe}\label{annexe}
 \addcontentsline{toc}{section}{\protect\numberline{}Annexe}%
 
 % Add ',fontsize=\small' for more characters per line
@@ -1630,5 +1674,136 @@ toutes de type \texttt{Exp(...)}. Donc, les fermetures partagées ne
 peuvent dépendre que d'autres fermetures partagées, ou ne pas avoir de
 variables libres.
 
+\pagebreak
+
+\hypertarget{tout-les-tokens}{%
+      \subsubsection*{Tout les tokens}\label{tout-les-tokens}}
+
+\begin{itemize}
+      \tightlist
+      \item
+            \texttt{x} un nom de variable,
+      \item
+            \texttt{litt} est un littéral \texttt{true}, \texttt{false}, ou un des
+            entiers
+      \item
+            \texttt{op} est une opération primitive sur les entiers et les
+            booléens (voir plus haut).
+      \item
+            \texttt{k} un nom de constructeur, dont \texttt{unit}, \texttt{tuple}
+            et \texttt{inj\{i,n\}}.
+      \item
+            \texttt{m} un nom de méthode, dont \texttt{call} et
+            \texttt{proj\{i,n\}}
+      \item
+            \texttt{A} un nom de variable de type, dont:
+            \texttt{Int\ Bool\ Unit\ Zero\ Top\ Bottom}
+      \item
+            \texttt{K} un nom de constructeur de type, dont:
+            \texttt{Tupple\ Sum\ Choice\ Thunk\ Closure\ Exp}.
+      \item
+            Le constructeur de type \texttt{Fun} avec syntaxe spécifique.
+      \item
+            plus les symboles et mots-clés de la syntaxe si dessous.
+\end{itemize}
+
+\hypertarget{syntaxe-formelle}{%
+      \subsubsection*{Syntaxe formelle}\label{syntaxe-formelle}}
+
+Notes: - dans \texttt{match}, \texttt{get}, \texttt{data} et
+\texttt{comput}, les cas sont séparés par des \texttt{\textbar{}}, et le
+premier est optionel. On peut donc écrire
+\texttt{match\ e\ with\ k()\ -\textgreater{}\ ...\ \textbar{}\ ...\ \ \ end}
+pour
+\texttt{match\ e\ with\ \textbar{}\ k()\ -\textgreater{}\ ...\ \textbar{}\ ...\ end}.
+
+\begin{verbatim}
+T ::= T+ | T- | A | K(T_1, ..., T_n) | Fun(T_1, ..., T_n) -> T'
+
+
+x ::= x | x : T 
+
+
+expr ::= 
+
+  x                      (variables)
+    
+  litt                   (littéraux) 
+    
+  op(e, ..., e)          (primitives)
+  
+  e : T                  (expression avec une annotation de type)
+  
+  k(e_1, ..., e_n)       (constructeur (comme Some, Cons, Nil, etc.))
+  
+  thunk(e)               (thunks renvoyant une valeur `e`)
+  
+  closure(e)             (fermeture sur un calcul `e`)
+  
+  exp(e)                 (fermeture partagée)
+  
+  e.m(e_1, ..., e_n)   (appel de méthode sur un calcul (à utiliser avec `get ... end`))
+  
+  if e then e else e     (conditionelle)
+  
+  match e with           (pattern matching (à utiliser avec `e` = `k(...)`)) 
+    | k_1(x_1, ..., x_n) -> e_1
+    | k_2(y_1, ..., y_n) -> e_2
+    ...
+  end
+  
+  get                    (définition de calcul)
+    | m_1(x_1, ..., x_n) -> e_1
+    | m_2(y_1, ..., y_n) -> e_2
+    ...
+  end
+  
+  { block }             (exécution de bloc)
+  
+  rec x is e            (calculs récursifs)
+  
+  absurd(e)             (indique que le code `e` est mort (jamais accessible au runtime))
+
+
+block ::= 
+  
+  return e              (retour)
+  
+  let x = e; block      (asignement)
+  
+  force thunk(x) = e; block   (forçage de thunk, à utiliser avec thunk(e)) 
+  
+  open closure(x) = e; block  (ouverture de fermeture, à utiliser avec closure(e))
+
+  open exp(x) = e; block    (ouverture de fermeture partagée)
+  
+decl ::=
+ 
+  data K(A_1 : ±, ..., A_n : ±) = 
+    | k_1(T_1+, ..., T_n+)
+    | k_2(U_1+, ..., U_n+)
+    | ...
+  end
+     
+  comput K(A_1 : ±, ..., A_n : ±) = 
+    | m_1(T_1+, ..., T_n+) -> T-
+    | m_2(U_1+, ..., U_n+) -> U-
+    | ... 
+  end
+   
+  type K(A_1 : ±, ..., A_n : ±) = T
+     
+  decl type K : (±, ..., ±) -> ±
+
+  decl x : T
+
+program ::=
+
+  decl 
+  decl
+  ...
+  decl
+  block 
+\end{verbatim}
 
 \end{document}

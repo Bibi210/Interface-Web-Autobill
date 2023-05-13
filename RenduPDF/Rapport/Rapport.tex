@@ -1,7 +1,9 @@
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \documentclass[12pt]{article}
 \usepackage[french]{babel}
 \usepackage[utf8]{inputenc}
-\usepackage{hyperref}
 \usepackage{url}
 \usepackage{array}
 \usepackage{tabularx}
@@ -11,6 +13,9 @@
 \usepackage{listings}
 \usepackage{amsmath}
 \usepackage{graphicx}
+\usepackage{iftex}
+\usepackage{stmaryrd}
+\usepackage[colorlinks]{hyperref}
 \usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
 \usepackage{titlesec}           % Pour changer la tailles ses sections/subsections...
 \usepackage{algorithmic}        % Pour manipuler les algorithmes
@@ -20,7 +25,23 @@
 \usepackage[nottoc]{tocbibind} %Includes "References" in the table of contents
 \usepackage{listings}
 \usepackage{xcolor}
-
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+  \setmainfont[]{Palatino}
+  \setsansfont[]{Helvetica}
+  \setmonofont[]{Menlo}
+\fi
+\allowdisplaybreaks
 \colorlet{punct}{red!60!black}
 \definecolor{background}{HTML}{EEEEEE}
 \definecolor{delim}{RGB}{20,105,176}
@@ -223,7 +244,7 @@
 
 \section{Contexte du projet}\label{contexte-du-projet}
 Dans le cadre de sa thèse sur l'analyse statique de consommation
-mémoire d'un programme, notre tuteur de projet, Hector Suzanne, membre de l'équipe APR du laboratoire LIP6, a développé \textbf{Autobill}. \\
+mémoire d'un programme, notre tuteur de projet, Hector Suzanne, membre de l'équipe APR du laboratoire LIP6, a développé \cite{autobill}. \\
 L'analyse statique est un ensemble de méthodes formelles permettant de
 mesurer et détecter automatiquement des comportements ou des erreurs dans un
 programme en examinant son code source. Parmi les usages les plus courants
@@ -232,7 +253,7 @@ syntaxiques (fautes de frappe) ou l'usage de variables non déclarées ou
 non-initialisées. D'autres outils emploient des heuristiques et des règles pour répondre à des problématiques d'optimisation de code ou de fiabilité/sécurité. Ces analyseurs statiques sont conçus dans le but d'améliorer la maintenabilité du code. \\
 Autobill s'intéresse particulièrement à l'occupation mémoire d'un programme. Historiquement,
 ce sujet de recherche a été plusieurs fois abordé dans divers travaux scientifiques, parmi eux, ceux de Jan Hoffmann et Steffen Jost sur l'analyse de consommation de ressources automatisé AARA
-\protect\hyperlink{ref-Hoffmann}{{[}2{]}} (\emph{Automatic Amortized
+\cite{Hoffmann} (\emph{Automatic Amortized
       Resource Analysis}).\\
 Cette technique suit un ensemble de règles d'inférences : chaque trait du langage analysé est annoté par ses bornes mémoire et on peut déduire la consommation mémoire que ce trait va engendrer. Pour déterminer ces bornes, l'AARA s'aide de l'analyse amortie par la méthode du potentiel. En effet, l'analyse amortie exploite la structure séquentielle des opérations sur des structures de données dynamiques pour calculer le coût total de cette séquence. Avec la méthode du potentiel, on attribue un potentiel aux structures de données manipulées, ce qui va affecter le coût que va avoir une opération sur cette structure. L’application de ces règles d'inférence sur l'ensemble des expressions du programme fournit une estimation correcte de ses bornes mémoires.
 \begin{figure*}[!b]
@@ -241,7 +262,7 @@ Cette technique suit un ensemble de règles d'inférences : chaque trait du lang
       \caption{Représentation simplifiée d'Autobill\label{fig1}}
 \end{figure*}
 \subsection{Historique et définitions}\label{historique-et-duxe9finitions}
-Des langages de programmation expérimentaux ont vu le jour et ont implémenté cette analyse comme Resource Aware ML \protect\hyperlink{ref-RAML}{{[}3{]}}, un langage fonctionnel à la ML créé par Jan Hoffmann, Klaus Aehlig et Martin Hofmann.
+Des langages de programmation expérimentaux ont vu le jour et ont implémenté cette analyse comme Resource Aware ML \cite{RAML}, un langage fonctionnel à la ML créé par Jan Hoffmann, Klaus Aehlig et Martin Hofmann.
 
 \hypertarget{quest-ce-quautobill}{%
       \subsection{Qu'est-ce qu'Autobill ?}\label{quest-ce-quautobill}}
@@ -252,12 +273,12 @@ fonctionnels d'un programme par rapport à RAML. D'abord, parmi les entrées pos
 illustrées sur la gauche de la figure \ref{fig1}, Autobill ne supporte
 uniquement que des programmes écrits soit en modèle machine propre à
 Autobill, soit en \textbf{Call-By-Push-Value} (CBPV)
-\protect\hyperlink{ref-Levy}{{[}4{]}}, avec ou sans continuation
+\cite{Levy}, avec ou sans continuation
 explicite. \\
 
 Call-By-Push-Value est un langage qui utilise un paradigme déjà éprouvé,
 décrit dans la thèse de Paul Blain Lévy
-\protect\hyperlink{ref-Levy}{{[}4{]}}. Dans CBPV, toutes les valeurs et fonctions sont stockées dans une pile. Lorsqu'une fonction est appelée, ses arguments sont placés sur la pile avant que la fonction elle-même ne soit ajoutée à la pile. Ce mécanisme permet de suivre de manière explicite les quantités de mémoire pour chaque valeur introduite/éliminée ou fonction appelée/terminée. Aussi,
+\cite{Levy}. Dans CBPV, toutes les valeurs et fonctions sont stockées dans une pile. Lorsqu'une fonction est appelée, ses arguments sont placés sur la pile avant que la fonction elle-même ne soit ajoutée à la pile. Ce mécanisme permet de suivre de manière explicite les quantités de mémoire pour chaque valeur introduite/éliminée ou fonction appelée/terminée. Aussi,
 le langage permet d'exprimer clairement les stratégies d'évaluation utilisées dans le code source : soit en \textbf{\textit{call-by-value}}, en évaluant les arguments avant de lancer l'opération, soit en \textbf{\textit{call-by-name}}, en évaluant les arguments uniquement lorsqu’ils seront effectivement utilisés dans la fonction appelée. Ainsi, on fixe quand les évaluations se déroulent, afin de mieux prédire la consommation de mémoire à chaque
 étape du programme. Ces traits font de CBPV un langage de choix à analyser pour Autobill. \\
 
@@ -277,8 +298,8 @@ expressions ainsi que leurs polarités, pour démarquer les calculs et les
 valeurs dans l'AST. Enfin, en sortie, on remarque dans la figure
 \ref{fig1} la possibilité de tirer une interprétation du programme, mais
 surtout de récupérer les contraintes dans un format MiniZinc
-\protect\hyperlink{ref-minizinc}{{[}5{]}} ou Coq
-\protect\hyperlink{ref-coq}{{[}6{]}}. Ce sont des outils des assistants
+\cite{minizinc} ou Coq
+\cite{coq}. Ce sont des outils des assistants
 de preuve qui permettent, à l'aide d'un langage dédié, d'exprimer
 explicitement des contraintes logiques. Autobill s'en sert pour décrire
 les bornes mémoires nécessaires au fonctionnement d'un programme. On
@@ -291,7 +312,7 @@ spatiale.
 \subsection{Objectifs du projet}\label{objectifs-du-projet}
 
 Notre démarche se rapproche de celle de RAML
-\protect\hyperlink{ref-RAML}{{[}3{]}} avec leur site officiel: offrir
+\cite{RAML} avec leur site officiel: offrir
 une interface Homme-Machine accessible à tous et illustrant un sujet de
 recherche en analyse statique.
 
@@ -496,7 +517,7 @@ Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie 
                   apporter l'interactivité et les fonctionnalités en les programmant
                   avec Javascript, complété par la librairie React.
             \item
-                  \textbf{React.js} \protect\hyperlink{ref-react}{{[}7{]}}: React.js est
+                  \textbf{React.js} \cite{react}: React.js est
                   une bibliothèque JavaScript \emph{open-source} pour la création
                   d'interfaces utilisateur,utilisée pour la création d'applications web
                   modernes et interactives. Parmi les avantages de cette technologie, il
@@ -514,15 +535,15 @@ Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie 
                   de manière indépendante et peut être utilisé à plusieurs endroits dans
                   une application. Cette approche modulaire rend l'interface plus
                   flexible et maintenable. D'autres solutions concurrentes et valables
-                  telles que Angular.js \protect\hyperlink{ref-angularjs}{{[}8{]}} ou
-                  Vue.js \protect\hyperlink{ref-vuejs}{{[}9{]}} proposent une expérience
+                  telles que Angular.js \cite{angularjs} ou
+                  Vue.js \cite{vuejs} proposent une expérience
                   développeur similaire.\newline  Néanmoins, ces dernières sont bien
                   moins recherchées sur le marché du travail que React. Nous voulions à
                   travers ce projet nous former et pratiquer une technologie très en
                   vogue et que l'on pourra facilement réinvestir plus tard dans notre
                   parcours professionnel.
             \item
-                  \textbf{CodeMirror} \protect\hyperlink{ref-codemirror}{{[}10{]}}:
+                  \textbf{CodeMirror} \cite{codemirror}:
                   C'est une librairie Javascript permettant d'intégrer un éditeur de
                   code puissant, incluant le support de la coloration syntaxique, de
                   l'autocomplétion ou encore le surlignage d'erreurs. Les
@@ -531,10 +552,10 @@ Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie 
                   comme MiniML. Enfin, CodeMirror est disponible sous licence MIT, libre
                   de droits.
             \item
-                  \textbf{OCaml} \protect\hyperlink{ref-Minsky_Ocaml}{{[}11{]}}
-                  \protect\hyperlink{ref-chailloux}{{[}12{]}}
-                  \protect\hyperlink{ref-Leroy}{{[}13{]}} + \textbf{Js\_of\_OCaml}
-                  \protect\hyperlink{ref-js_of_ocaml}{{[}14{]}}: Afin de manipuler la
+                  \textbf{OCaml} \cite{Minsky_Ocaml}
+                  \cite{chailloux}
+                  \cite{Leroy} + \textbf{Js\_of\_OCaml}
+                  \cite{js_of_ocaml}: Afin de manipuler la
                   librairie d'Autobill, il est nécessaire de passer par OCaml pour
                   traiter le code en entrée et en sortir des équations à résoudre ou des
                   résultats d'interprétations. Pour faire le pont entre Javascript et
@@ -558,8 +579,8 @@ Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie 
                   être convertis en chaînes de caractères et retournés au client par la
                   suite.\newline  La question s'est posée de l'intérêt de Js\_of\_OCaml
                   comparé à d'autres technologies comme ReasonML
-                  \protect\hyperlink{ref-reasonml}{{[}15{]}} ou Rescript
-                  \protect\hyperlink{ref-rescript}{{[}16{]}}. En effet, ce sont tout
+                  \cite{reasonml} ou Rescript
+                  \cite{rescript}. En effet, ce sont tout
                   deux des langages qui ont émergé d'Ocaml et permettent de créer dans
                   un paradigme fonctionnel des applications web complexes. Des
                   compilateurs pour transpiler du code Rescript (Bucklescript) ou
@@ -573,7 +594,7 @@ Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie 
       \end{itemize}
       \begin{itemize}
             \item
-                  \textbf{MiniZinc} \protect\hyperlink{ref-minizinc}{{[}5{]}} : À la
+                  \textbf{MiniZinc} \cite{minizinc} : À la
                   génération des expressions de contraintes, Autobill retourne une
                   sortie au format MiniZinc. Ce langage permet de décrire des problèmes
                   de manière déclarative à l'aide de contraintes logiques. L'objectif
@@ -594,7 +615,7 @@ Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie 
 \fi
 
 \hypertarget{serveur-client}{%
-  \subsection{Serveur + client}\label{serveur-client}}
+      \subsection{Serveur + client}\label{serveur-client}}
 
 Dans le stade actuel d'Autobill, une architecture avec un client seul
 peut répondre aux exigences du projet STL. Néanmoins, au fur et à mesure que le projet avançait, nous nous sommes rendu compte d'un problème. Autobill évolue constamment et rien ne garantit que ses itérations suivantes puissent
@@ -607,12 +628,12 @@ développement, on peut facilement faire la bascule entre un mode de
 fonctionnement local/synchrone et un mode distant/asynchrone.
 
 \hypertarget{schuxe9ma-de-communication}{%
-  \subsubsection{MiniML}\label{schuxe9ma-de-communication}}
+      \subsubsection{MiniML}\label{schuxe9ma-de-communication}}
 
 \begin{figure}
-  \centering
-  \includegraphics{Figures/Communication.png}
-  \caption{Schéma de communication}
+      \centering
+      \includegraphics{Figures/Communication.png}
+      \caption{Schéma de communication}
 \end{figure}
 
 \newpage
@@ -630,8 +651,8 @@ Pour le service \emph{'/MiniML/toAutobillType'}, le client envoit le code du Min
 Dans la partie résolution de contraintes, nous avons un service \emph{'/minizinc/gecode'} qui éxecute le code MiniZinc. Le client envoie le code de MiniZinc au serveur via une requête POST. Le serveur écrit le code dans un fichier temporaire puis l'exécuter à l'aide de l'exécutable de ligne de commande minizinc avec le solveur Gecode (voir Figure.9), et renvoie le résultat au client.
 
 \begin{figure}
-  \centering
-\begin{lstlisting}[language=javascript]
+      \centering
+      \begin{lstlisting}[language=javascript]
     const fs = require('fs');
     const tmpFile = './temp.mzn';
     fs.writeFileSync(tmpFile, code);
@@ -642,7 +663,7 @@ Dans la partie résolution de contraintes, nous avons un service \emph{'/minizin
         });
     }
 \end{lstlisting}
-\caption{Exécution de code Minizinc}
+      \caption{Exécution de code Minizinc}
 \end{figure}
 
 \iffalse
@@ -652,7 +673,7 @@ Dans la partie résolution de contraintes, nous avons un service \emph{'/minizin
 
       \begin{itemize}
             \item
-                  \textbf{Node.js} \protect\hyperlink{ref-Node_js}{{[}17{]}} : Node.js
+                  \textbf{Node.js} \cite{Node_js} : Node.js
                   permet une gestion asynchrone des opérations entrantes, ce qui permet
                   d'exécuter plusieurs opérations simultanément sans bloquer le fil
                   d'exécution principal. Par exemple, si deux requêtes sont envoyées au
@@ -667,7 +688,7 @@ Dans la partie résolution de contraintes, nous avons un service \emph{'/minizin
                   NPM (le gestionnaire de packages de Node.js) permet de gagner beaucoup
                   de temps de développement et de faciliter notre tâche. Par example, le
                   module Child processes
-                  \protect\hyperlink{ref-Child_Processes}{{[}18{]}} nous permet
+                  \cite{Child_Processes} nous permet
                   d'exécuter le code MiniZinc en passant les commandes directement. Cela
                   nous permet d'éviter les restrictions du côté tout-client au niveau du
                   solveur de contraintes notamment. Enfin, un des avantages de Node.js
@@ -676,13 +697,13 @@ Dans la partie résolution de contraintes, nous avons un service \emph{'/minizin
                   et de la compatibilité entre deux instances codées dans des langages
                   différents.
             \item
-                  \textbf{Express.js} \protect\hyperlink{ref-Express_js}{{[}19{]}} :
+                  \textbf{Express.js} \cite{Express_js} :
                   Express.js est une bibliothèque d'application web populaire basée sur
                   la plateforme Node.js, utilisé pour construire des applications web et
                   des API évolutives. Il fournit de nombreux middlewares, tels que
-                  morgan \protect\hyperlink{ref-morgan}{{[}20{]}} pour enregistrer les
+                  morgan \cite{morgan} pour enregistrer les
                   journaux de session HTTP et helmet
-                  \protect\hyperlink{ref-helmet}{{[}21{]}} pour garantir la sécurité.
+                  \cite{helmet} pour garantir la sécurité.
                   Avec Express.js, nous pouvons facilement ajouter des middlewares en
                   utilisant directement \texttt{app.use()} sans avoir à les ajouter
                   manuellement. De plus, Express.js dispose d'un puissant routeur qui
@@ -700,7 +721,7 @@ Dans la partie résolution de contraintes, nous avons un service \emph{'/minizin
 
       \begin{itemize}
             \item
-                  \textbf{REST API} \protect\hyperlink{ref-PC3R}{{[}22{]}} : L'API REST
+                  \textbf{REST API} \cite{PC3R} : L'API REST
                   est un modèle de conception d'interface de programmation d'application
                   Web (API) utilisé pour fournir un accès aux ressources sur le Web. Il
                   est basé sur le protocole HTTP et utilise des requêtes et des réponses
@@ -717,7 +738,7 @@ Dans la partie résolution de contraintes, nous avons un service \emph{'/minizin
                   pour transférer des informations, l'API REST simplifie et facilite
                   l'échange de données entre les clients et les serveurs.
             \item
-                  \textbf{Morgan} \protect\hyperlink{ref-morgan}{{[}20{]}} : Morgan est
+                  \textbf{Morgan} \cite{morgan} : Morgan est
                   un middleware JavaScript permettant d'enregistrer les journaux de
                   session HTTP. Elle peut produire des informations dans plusieurs
                   endroits (la console, les fichiers, les en-têtes HTTP\ldots) pour nous
@@ -725,18 +746,18 @@ Dans la partie résolution de contraintes, nous avons un service \emph{'/minizin
                   applications. De plus, Morgan peut être facilement ajouté aux
                   applications Node.js en installant simplement les dépendances à l'aide
                   de npm et en les introduisant dans l'application à l'aide d'Express.js
-                  \protect\hyperlink{ref-Express_js}{{[}19{]}}. Par rapport à d'autres
+                  \cite{Express_js}. Par rapport à d'autres
                   outils similaires, Morgan est plus facile à utiliser, car il ne
                   nécessite pas d'écriture de code supplémentaire. Ainsi, Morgan produit
                   une plus grande variété des cibles de sortie.
             \item
-                  \textbf{Helmet} \protect\hyperlink{ref-helmet}{{[}21{]}} : Helmet est
+                  \textbf{Helmet} \cite{helmet} : Helmet est
                   un middleware pour les applications Node.js, conçu pour aider à
                   protéger les applications Web contre certaines attaques Web courantes.
                   De plus, l'utilisation de Helmet est très facile, en installant
                   simplement les dépendances à l'aide de npm et en les introduisant dans
                   l'application à l'aide d'Express.js
-                  \protect\hyperlink{ref-Express_js}{{[}19{]}}. Et Helmet est un
+                  \cite{Express_js}. Et Helmet est un
                   middleware populaire pour Node.js, bénéficiant d'une maintenance
                   actifs de la communauté, ce qui nous permet de bénéficier facilement
                   d'aide et de support dans la communauté.
@@ -797,14 +818,119 @@ fonctionnel simple et accessible pour les utilisateurs d'Autobill
 servant d'abstraction à \textbf{CBPV}. Dans le cadre de ce projet
 MiniML, dispose d'une implémentation écrite en \textbf{OCaml}. Nous
 avons pris la décision de rendre la syntaxe MiniML parfaitement
-compatible avec OCaml simplifiant les comparaisons avec RAML
-\protect\hyperlink{ref-RAML}{{[}3{]}}.
+compatible avec OCaml simplifiant les comparaisons avec d'autre outils utilisant \textbf{OCaml} en entrée.
 
 Le développement de \textbf{MiniML} suivant les besoins de nos
-encadrants celui-ci est pour l'instant sans effets de bord.
+encadrants celui-ci est sans effets de bord.
+
+\hypertarget{grammaire}{%
+      \subsection{Grammaire}\label{grammaire}}
+
+
+\newcommand{\grammarRule}[1]{\; \textbf{<\textcolor{Blue}{#1}>} \;}
+\newcommand{\grammarRuleUnSpaced}[1]{\textbf{<\textcolor{Blue}{#1}>}}
+\newcommand{\nTime}[1]{\; #1\text{*} \;}
+\newcommand{\nPlus}[1]{\; #1\text{+} \;}
+\newcommand{\isToken}[1]{\; \textit{`\textcolor{Maroon}{#1}`} \;}
+\newcommand{\isTokenLCBPV}[1]{\; \textit{`\textcolor{Green}{#1}`} \;}
+\newcommand{\isRangeToken}[2]{\; \textit{`\textcolor{Maroon}{#1} - \textcolor{Maroon}{#2}`} \;}
+\newcommand{\isExtentionML}[1]{ \textit{\textcolor{Orange}{#1}} \quad }
+
+Voici la grammaire BNF du language MiniML.\
+Pour des raisons de lisibilité, tout les éléments de sucre syntaxique ne seront pas détaillés ici.\
+Les extensions non compatibles avec Ocaml mais compatible avec \textbf{Autobill} sont en \textcolor{Orange}{Orange}.
+
+\hypertarget{Elements Nommés}{%
+      \subsubsection*{Elements Nommés}\label{Elements Nommés}}
+
+\begin{align*}
+      \grammarRule{Id} ::= \quad             & \nPlus{[\isRangeToken{a}{z} \isRangeToken{A}{Z} \isRangeToken{0}{9} \isToken{\_}]} \\
+      \grammarRule{ConstructeurId} ::= \quad & [\isRangeToken{A}{Z}] \grammarRule{Id}                                             \\
+      \grammarRule{Vartype} ::= \quad        & \isToken{'}[\isRangeToken{a}{z}] \; \nTime{[\isRangeToken{0}{9}]}
+\end{align*}
+
+\hypertarget{programmes}{%
+      \subsubsection*{Programmes}\label{programmes}}
+
+
+\begin{align*}
+      \grammarRule{Prog} ::= \quad & |\quad \grammarRule{Expr}                                  \\
+                                   & |\quad \grammarRule{Def}  \isToken{;;}  \grammarRule{Prog}
+\end{align*}
+
+\hypertarget{definitions}{%
+      \subsubsection*{Definitions}\label{definitions}}
+
+\begin{align*}
+      \grammarRule{Def} ::= \quad              & |\quad \isToken{let} \grammarRule{Id} \isToken{=} \grammarRule{Expr}                                                  \\
+                                               & |\quad \isToken{type} \nTime{\grammarRuleUnSpaced{Vartype}} \grammarRule{Id} \isToken{=} \grammarRule{NewContructors} \\
+      \\
+      \grammarRule{NewContructors} ::=   \quad & |\quad  \grammarRule{ConstructeurId} \isToken{of} \grammarRule{Type}                                                  \\
+                                               & |\quad  \grammarRule{NewContructors} \isToken{|} \grammarRule{NewContructors}                                         \\
+      \isExtentionML{Debut Extension}          & |\quad \grammarRule{ConstructeurId} \isToken{of} \grammarRule{Type}  \isToken{with}  \grammarRule{ParamAssigns}       \\
+      \\
+      \grammarRule{ParamAssigns} ::= \quad     & |\quad \grammarRule{VarType} \isToken{=} \grammarRule{ParmExpr}                                                       \\
+                                               & |\quad \grammarRule{ParamAssigns} \isToken{,} \grammarRule{ParamAssigns}                                              \\
+      \grammarRule{ParmExpr} ::= \quad
+                                               & |\quad \isToken{1}                                                                                                    \\
+                                               & |\quad \grammarRule{VarType}                                                                                          \\
+                                               & |\quad \grammarRule{ParmExpr} \isToken{+} \grammarRule{ParmExpr}                                                      \\
+      \isExtentionML{Fin Extension}            & |\quad \grammarRule{ParmExpr} \isToken{*} \grammarRule{ParmExpr}                                                      \\
+\end{align*}
+
+\hypertarget{expressions}{%
+      \subsubsection*{Expressions}\label{expressions}}
+\begin{align*}
+      \grammarRule{Litteral}  \quad ::=  \quad       & |\quad \nPlus{[\isRangeToken{0}{9}]}                                                                                                                                                  \\
+                                                     & |\quad [\isToken{true}|\isToken{false}]                                                                                                                                               \\
+                                                     & |\quad \isToken{(} \isToken{)}                                                                                                                                                        \\
+      \\
+      \grammarRule{Expr}  \quad ::=  \quad           & |\quad \grammarRule{Litteral}                                                                                                                                                         \\
+                                                     & |\quad \grammarRule{Id}                                                                                                                                                               \\
+                                                     & |\quad \grammarRule{UnaryOperator}  \grammarRule{Expr}                                                                                                                                \\
+                                                     & |\quad  \grammarRule{Expr} \grammarRule{BinaryOperator}    \grammarRule{Expr}                                                                                                         \\
+                                                     & |\quad \grammarRule{Expr}  \grammarRule{Expr}                                                                                                                                         \\
+                                                     & |\quad \grammarRule{Expr} \isToken{,}  \grammarRule{Expr}                                                                                                                             \\
+                                                     & |\quad \isToken{let} \grammarRule{Id} \isToken{=} \grammarRule{Expr} \isToken{in} \grammarRule{Expr}                                                                                  \\
+                                                     & |\quad \isToken{fun} \grammarRule{Id} \isToken{->}  \grammarRule{Expr}                                                                                                                \\
+                                                     & |\quad \isToken{fun} \isToken{rec} \grammarRule{Id} \grammarRule{Id} \isToken{->}  \grammarRule{Expr}                                                                                 \\
+                                                     & |\quad \grammarRule{ConstructeurId}  \grammarRule{Expr}                                                                                                                               \\
+                                                     & |\quad \isToken{match} \grammarRule{Expr} \isToken{with} \grammarRule{MatchCase}                                                                                                      \\
+      \\
+      \grammarRule{UnaryOperator}  \quad ::=  \quad  & \isToken{not}                                                                                                                                                                         \\
+      \grammarRule{BinaryOperator}  \quad ::=  \quad & [\isToken{and} \,|\, \isToken{or} \,|\, \isToken{+} \,|\, \isToken{-} \,|\, \isToken{/} \,|\, \isToken{\%} \,|\, \isToken{*} \,|\, \isToken{<} \,|\, \isToken{>}  \,|\, \isToken{=} ] \\
+\end{align*}
+
+\pagebreak
+
+\hypertarget{filtrage-et-motifs}{%
+      \subsubsection*{Filtrage et Motifs}\label{filtrage-et-motifs}}
+\begin{align*}
+      \grammarRule{MatchCase}  \quad ::=  \quad & |\quad  \grammarRule{Pattern} \isToken{->}  \grammarRule{Expr}     \\
+                                                & |\quad \grammarRule{MatchCase} \isToken{|} \grammarRule{MatchCase} \\
+      \\
+      \grammarRule{Pattern} \quad ::=  \quad    & |\quad \grammarRule{Litteral}                                      \\
+                                                & |\quad \grammarRule{Id}                                            \\
+                                                & |\quad \grammarRule{Pattern}  \isToken{,} \grammarRule{Pattern}    \\
+                                                & |\quad \grammarRule{ConstructeurId} \; \grammarRule{Pattern}       \\
+\end{align*}
+
+
+\hypertarget{types-1}{%
+      \subsubsection*{Types}\label{types-1}}
+
+\begin{align*}
+      \grammarRule{Type}    \quad ::=  \quad & |\quad \grammarRule{Vartype}                              \\
+                                             & |\quad \grammarRule{Id}                                   \\
+                                             & |\quad \grammarRule{Type}   \grammarRule{Type}            \\
+                                             & |\quad \grammarRule{Type} \isToken{->} \grammarRule{Type} \\
+                                             & |\quad \grammarRule{Type} \isToken{*}  \grammarRule{Type} \\
+\end{align*}
+
+
 
 \hypertarget{call-by-push-value}{%
-      \subsubsection{Call-By-Push-Value}\label{call-by-push-value}}
+      \subsection{Call-By-Push-Value}\label{call-by-push-value}}
 
 Le paradigme de traitement de langage \textbf{Call-By-Push-Value}
 utilisé par \textbf{Autobill} permet à l'aide d'une seule sémantique de
@@ -816,116 +942,214 @@ de décider en détail comment ceux-ci sont évalués. Nous permettant, lors
 de la traduction depuis un autre langage, de choisir le type de
 stratégie utilisée.
 
-\hypertarget{contenu-actuel}{%
-      \subsubsection{Contenu actuel}\label{contenu-actuel}}
+\hypertarget{semantique-de-traduction}{%
+      \subsection{Semantique de traduction}\label{semantique-de-traduction}}
 
-Le contenu actuel de \textbf{MiniML} est divisé en deux. Une partie
-noyau qui contient les éléments de base du langage servant de briques de
-construction pour la second partie ou se trouvent les types de données
-et les fonctions de haut niveau.
-
-Le noyau de \textbf{MiniML} contenant deux types de base les entiers et
-les booléens ainsi que les opérateurs de base. À partir de ces éléments,
-il est possible de construire des types de données plus complexes en
-exprimant des types paramétrés et en les combinant. Les listes sont un
-exemple de typique de structures de données construit à partir de ces
-mécanismes. Comme dans tout langage fonctionnel, il est possible de
-définir des fonctions anonymes ou non et de les passer en paramètre à
-d'autres fonctions. Il est également possible de définir des variables
-globales et locales.
-
-La partie contenant les types de données et les fonctions de haut niveau
-est la plus importante, car elle agit en tant que vitrine
-d'\textbf{Autobill} avec pour but de fournir un ensemble de types de
-données complexes dont l'analyse amortie est possible et mettant en
-lumière les apports d'\textbf{Autobill}. \newline Toujours en cours de
-développement, cette partie, basée sur le noyau, contient pour l'instant
-trois types de données les listes, les files et les arbres binaires.
-
-\hypertarget{duxe9pendances}{%
-      \subsubsection{Dépendances}\label{duxe9pendances}}
-
-À l'instar du développement de l'interface web, la question des
-dépendances est cruciale pour MiniML. En effet pour n'avoir qu'une seule
-implémentation de MiniML et donc limiter l'effort de développement, il
-est nécessaire de ne choisir que des librairies qui sont parfaitement
-compatibles avec les deux architectures du projet.
-
+\newcommand{\translateNode}[2]{\llbracket #1 \rrbracket_{#2}}
+\newcommand{\translateResult}[1]{\llbracket #1 \rrbracket}
+\newcommand{\isElemMiniML}[1]{\; \textcolor{Maroon}{#1} \;}
+\newcommand{\isElemLCBPV}[1]{\textcolor{ForestGreen}{#1}}
+\newcommand{\spaced}[1]{\; #1 \;}
+\newcommand{\Tab}{\quad \quad \quad \quad \quad \quad \;}
+\hypertarget{notation}{%
+      \subsubsection*{Notation}\label{notation}}
+$ \translateNode{let \; v \; = \; e_1 \; in \; e_2}{Expr}  \rightarrow let \; v = \; \translateResult{e_1} \; in \; \translateResult{e_2}$
 \begin{itemize}
       \tightlist
       \item
-            \textbf{Menhir} \protect\hyperlink{ref-menhir}{{[}23{]}}:
-            \emph{Menhir} est l'unique dépendance de l'implémentation de MiniML.
-            C'est une librairie qui génère des analyseurs syntaxiques en OCaml et
-            nous évitant le développement d'un analyseur syntaxique rigide. C'est
-            à la suite de différents tests de compatibilité avec les deux
-            architectures du projet que nous avons choisi cette librairie nous
-            permettant un gain en temps et en flexibilité non négligeable. Menhir
-            est disponible sous licence GPL
+            $\translateNode{\_}{Expr}  \rightarrow $ est la traduction d'un noeud expr du langage MiniML vers le langage LCBPV
+            \begin{itemize}
+                  \tightlist
+                  \item
+                        À l'interieur des $\translateResult{}$, on trouve les elements propre au langage MiniML qui sont traduit vers le langage LCBPV.
+                  \item
+                        À l'exterieur des $\translateResult{}$, on trouve les elements propre au langage LCBPV.
+            \end{itemize}
+      \item
+            $X_n$ est le n-ième sous-noeud de l'arbre de syntaxe abstrait. \newline
+            Selon les cas $X$ peut être :
+            \begin{itemize}
+                  \tightlist
+                  \item
+                        $e$ pour les expressions
+                  \item
+                        $p$ pour les motifs
+                  \item
+                        $t$ pour les types
+                  \item
+                        $d$ pour les définitions
+                        \begin{itemize}
+                              \tightlist
+                              \item
+                                    $dc$ pour les définitions de constructeurs
+                        \end{itemize}
+                  \item
+                        $v$ pour les elements nommées
+                  \item
+                        $op$ pour les opérateurs
+                  \item
+                        $l$ pour les litteraux
+            \end{itemize}
+      \item
+            $X_1 \dots X_n$ est la liste des sous-noeuds de type $X$ allant de $1$ à $n$
 \end{itemize}
 
-\hypertarget{un-exemple-de-code-miniml}{%
-      \subsection{Un exemple de code MiniML}\label{un-exemple-de-code-miniml}}
+\pagebreak
 
-Cet exemple est une implémentation possible d'une file d'attente en
-\textbf{MiniML}. Dans le prochain rapport, nous allons nous baser sur
-une variante de ce code pour décrire, avec des schémas de traduction
-basés sur la spécification du langage, comment l'on passe d'un code
-\textbf{MiniML} à un code \textbf{Call-By-Push-Value} reçu en entrée par
-\textbf{Autobill}.
+\hypertarget{programmes-1}{%
+      \subsubsection*{Programmes}\label{programmes-1}}
 
-Le choix de ce code est motivé par le fait qu'il est assez simple et que
-ce dernier peut mettre en avant les résultats plus précis qu'une analyse
-amortie permet d'obtenir.
+Un programme MiniML est une suite de taille arbitraire de définitions suivie d'une expression.
 
-\begin{Shaded}
-      \begin{Highlighting}[]
-            \KeywordTok{type}\NormalTok{ \textquotesingle{}a }\DataTypeTok{option}\NormalTok{ =}
-            \NormalTok{  | }\DataTypeTok{None}
-            \NormalTok{  | }\DataTypeTok{Some} \KeywordTok{of}\NormalTok{ \textquotesingle{}a}
-            \NormalTok{  ;;}
+\begin{align*}
+      \translateNode{d_1 \dots d_n \, e}{Prog} \rightarrow \translateResult{d_1 \dots d_n}\; return \; \translateResult{e}
+\end{align*}
 
-            \KeywordTok{let}\NormalTok{ createQueue = ([],[]);;}
+\subsubsection*{Définitions}\label{def}
 
-            \KeywordTok{let}\NormalTok{ push file elem = }
-            \NormalTok{  (}\KeywordTok{match}\NormalTok{ file }\KeywordTok{with}
-            \NormalTok{  | (a,b) {-}\textgreater{} (a,(elem::b)))}
-            \NormalTok{  ;;}
+On définit l'operation de traduction \(\translateNode{\_}{Def}\) selon les cas de construction
+des définitions précisées par la règle de grammaire : \grammarRule{Def}
 
-            \KeywordTok{let}\NormalTok{ pop file =}
-            \NormalTok{    (}\KeywordTok{match}\NormalTok{ file }\KeywordTok{with}
-            \NormalTok{    | (debut, fin) {-}\textgreater{} }
-            \NormalTok{      (}\KeywordTok{match}\NormalTok{ debut }\KeywordTok{with}
-            \NormalTok{      | [] {-}\textgreater{} (}
-            \KeywordTok{match}\NormalTok{ (rev fin) }\KeywordTok{with}
-            \NormalTok{                | [] {-}\textgreater{} (}\DataTypeTok{None}\NormalTok{,debut,fin)}
-            \NormalTok{                | (hd :: tail) {-}\textgreater{} ((}\DataTypeTok{Some}\NormalTok{(hd)), tail ,[])}
-            \NormalTok{              )}
-            \NormalTok{      | (hd::tail) {-}\textgreater{} ((}\DataTypeTok{Some}\NormalTok{(hd)),tail,fin ))}
-            \NormalTok{    )}
-            \NormalTok{  ;;}
+On distingue deux noeuds de types \grammarRule{Def}:
+\begin{itemize}
+      \tightlist
+      \item
+            Les définitions de \textbf{Variables Globales},
+      \item
+            Les définitions de \textbf{Types}.
+\end{itemize}
+\begin{align*}
+      \text{(VARDEF)}  \quad & \translateNode{let \, v \, = \, e}{Def} \rightarrow   let \, v \, = \; \translateResult{e}       \\
+      \text{(TYPDEF) } \quad & \translateNode{type \, \, v_1 \dots v_N \, = \, dc_1 \dots  dc_N}{Def}                           \\
+      \rightarrow \;         & data \translateResult{v_1} (\translateResult{\dots v_N} : +) = \translateResult{dc_1 \dots dc_N} \\
+\end{align*}
+\subsubsection*{Définitions de Constructeurs}\label{defConstruct} \hfill \break
 
-            \KeywordTok{let}\NormalTok{ elems = [}\DecValTok{1}\NormalTok{;}\DecValTok{2}\NormalTok{;}\DecValTok{3}\NormalTok{;}\DecValTok{4}\NormalTok{;}\DecValTok{5}\NormalTok{;}\DecValTok{6}\NormalTok{;}\DecValTok{7}\NormalTok{];;}
-            \KeywordTok{let}\NormalTok{ queue = (fold\_left push createFile elems);;}
-            \NormalTok{  (pop queue)}
-      \end{Highlighting}
-\end{Shaded}
+On définit l'operation de traduction \(\translateNode{\_}{DefContructors}\) selon les cas de construction précisées par la règle de grammaire : \grammarRule{NewContructors}
 
-\hypertarget{conclusion-et-tuxe2ches-uxe0-ruxe9aliser}{%
-      \section{Conclusion et tâches à
-        réaliser}\label{conclusion-et-tuxe2ches-uxe0-ruxe9aliser}}
+On distingue deux noeuds de types \grammarRule{NewContructors}:
+\begin{itemize}
+      \tightlist
+      \item
+            Les définitions de \textbf{Constructeurs Classiques} qui sont compatibles avec OcamL.
+      \item
+            Les définitions de \textbf{Constructeurs Equationnels} qui sont une extension spécifique pour \textbf{Autobill} incompatible avec OcamL et dont la traduction n'est pas encore totalement définie.
+\end{itemize}
+\begin{align*}
+      \text{(MLCONSTRUCTDEF)} \quad & \translateNode{v \; of \; t}{DefContructors}   \rightarrow   v\translateResult{t} \\
+\end{align*}
+
+\subsubsection*{Types}\label{types-2}
+
+On définit l'operation de traduction \(\translateNode{\_}{Type}\) selon les cas de construction
+des types précisées par la règle de grammaire : \grammarRule{Type}
+
+On distingue 4 noeuds de types $Type$:
+\begin{itemize}
+      \tightlist
+      \item
+            Les \textbf{Variables de types}.
+      \item
+            Les \textbf{Applications de types}.
+      \item
+            Les \textbf{Lambda}.
+      \item
+            Les \textbf{Tuples}.
+\end{itemize}
+\begin{align*}
+      \text{(TVAR) }  & \translateNode{v}{Type} \rightarrow  v                                                                                          \\
+      \text{(TAPP) }  & \translateNode{t_1 t_2}{Type} \rightarrow  \translateResult{t_1} \, \translateResult{t_2}                                       \\
+      \text{(TCLOS) } & \translateNode{t_1 \text{->} t_2}{Type} \rightarrow  Exp (Fun\translateResult{t_1} \, \text{->} \, Thunk\translateResult{t_2} ) \\
+      \text{(TTUPLE)} & \translateNode{t_1 * t_2}{Type} \rightarrow  \translateResult{t_1} \,  \, \translateResult{t_2}
+\end{align*}
+
+\subsubsection*{Expressions}\label{exprs}
+
+On définit l'operation de traduction \(\translateNode{\_}{Expr}\) selon les cas de construction
+des expressions précisées par la règle de grammaire : \grammarRule{Expr}
+
+On distingue 8 noeuds d'intérêts de types \grammarRule{Expr}:
+\begin{itemize}
+      \tightlist
+      \item
+            Les \textbf{Tuples}.
+      \item
+            Les \textbf{Appels de fonctions}.
+      \item
+            Les \textbf{Fixation}.
+      \item
+            Les \textbf{Lambda}.
+      \item
+            Les \textbf{Fonctions Recursive}.
+      \item
+            Les \textbf{Constructions}.
+      \item
+            Les \textbf{Correspondance de motifs}.
+      \item
+            Les \textbf{Appels d'operateurs}.
+\end{itemize}
+\textbf{Note:} On ne prend pas en compte les \textbf{Litteraux} et les \textbf{Variables} dans ce descriptif car leurs traductions sont directes.
+\begin{align*}
+      \text{(BINARY)} \quad    & \translateNode{e_1 \, op \, e_2}{Expr} \rightarrow \translateResult{e_1} \, \, op \, \, \translateResult{e_2}                                                                  \\
+      \text{(UNARY)} \quad     & \translateNode{op \, e}{Expr} \rightarrow op \, \, \translateResult{e}                                                                                                         \\
+      \text{(TUPLE)} \quad     & \translateNode{e_1 \, , \, e_2}{Expr} \rightarrow \text{Tuple}(\translateResult{e_1} \, \, \translateResult{e_2})                                                              \\
+      \text{(LAMBDA)} \quad    & \translateNode{fun \, v \, \rightarrow \, e}{Expr}    \rightarrow  exp(  \; get \; | \; call(v) \; \text{->}  \; thunk\translateResult{e}  )                                   \\
+      \text{(FUN REC)} \quad   & \translateNode{fun \, rec \, v_1 \, v_2 \rightarrow \, e}{Expr}      \rightarrow exp( \; rec \; v_1 \; is \; get \; | \; call(v_2) \; \text{->}  \; thunk\translateResult{e} ) \\
+      \text{(CALL)} \quad      & \translateNode{e_1 e_2}{Expr}     \rightarrow  \{                                                                                                                              \\
+                               & \Tab open \; exp \; v_1  = \translateResult{e_1}                                                                                                                               \\
+                               & \Tab force \; thunk(v_2) = (v_1).call\translateResult{e_2}                                                                                                                     \\
+                               & \Tab return \; v_2                                                                                                                                                             \\
+                               & \}                                                                                                                                                                             \\
+      \text{(BIND)} \quad      & \translateNode{let \; v \; = \; e_1 \; in \; e_2}{Expr}  \rightarrow  \{                                                                                                       \\
+                               & \Tab let \; v = \translateResult{e_1}                                                                                                                                          \\
+                               & \Tab return \;\translateResult{e_2}                                                                                                                                            \\
+                               & \}                                                                                                                                                                             \\
+      \text{(CONSTRUCT)} \quad & \translateNode{v \, e}{Expr} \rightarrow v\translateResult{e}                                                                                                                  \\
+      \text{(MATCH)} \quad     & \translateNode{match \, e \, with \, p_1 \dots p_N }{Expr}\rightarrow  match \, \translateResult{e} \, with \, \translateResult{p_1} \dots \translateResult{p_N} \; end        \\
+\end{align*}
+
+\pagebreak
+\subsubsection*{Motifs et Filtrage}\label{motifs-et-filtrage}
+
+On définit l'operation de traduction \(\translateNode{\_}{Case}\) selon les cas de construction
+des expressions précisées par la règle de grammaire : \grammarRule{MatchCase}
+
+On distingue 4 noeuds d'intérêt de types \grammarRule{MatchCase}:
+\begin{itemize}
+      \tightlist
+      \item
+            Les patterns sur \textbf{Litteraux}.
+      \item
+            Les patterns sur \textbf{Variables}.
+      \item
+            Les patterns sur \textbf{Tuple}.
+      \item
+            Les patterns sur \textbf{Constructeurs}.
+\end{itemize}
+
+\begin{align*}
+      \text{(PATTERN LIT)} \quad    & \translateNode{l \; \text{->} \; e}{MatchCase} \rightarrow \translateResult{l} \; \text{->} \; \translateResult{e}                \\
+      \text{(PATTERN VAR)} \quad    & \translateNode{v \; \text{->} \; e}{MatchCase} \rightarrow v \; \text{->} \; \translateResult{e}                                  \\
+      \text{(PATTERN TUPLE)} \quad  & \translateNode{v_1 \, , \, v_2 \, \text{->} \; e}{MatchCase} \rightarrow Tuple(v_1 \, \, v_2) \; \text{->} \; \translateResult{e} \\
+      \text{(PATTERN CONSTR)} \quad & \translateNode{v_1 \, v_2 \, \text{->} \; e}{MatchCase} \rightarrow v_1 \, v_2 \; \text{->} \; \translateResult{e}                \\
+\end{align*}
+
+On notera que la traduction des patterns ne prend pas en compte les patterns profonds, c'est à dire les patterns imbriqués dans d'autres patterns.
+En effet, les patterns profonds ne sont pas encore supportés par le language cible.
+
+\pagebreak
 
 \hypertarget{conclusion}{%
-      \subsection{Conclusion}\label{conclusion}}
+      \section{Conclusion}\label{conclusion}}
 
 La réalisation de cette interface a fait intervenir un large panel de
 sujets en lien avec la formation du Master d'informatique STL et mis à
 profit les connaissances acquises lors de ce semestre. En premier lieu,
 le cours d'analyse de programme statique
-\protect\hyperlink{ref-APS}{{[}24{]}} pour toute la partie MiniML et le
+\cite{APS} pour toute la partie MiniML et le
 processus de transformation vers CBPV. Puis, les cours de programmation
 concurrente répartie, réactive et réticulaire
-\protect\hyperlink{ref-PC3R}{{[}22{]}}, notamment pour la partie
+\cite{PC3R}, notamment pour la partie
 réticulaire et l'architecture d'applications Web modernes.
 
 Le projet est à un stade d'avancement satisfaisant. Autobill étant
@@ -935,73 +1159,10 @@ surtout à consolider les bases établies sur tous les aspects du projet
 présentés dans ce rapport et les adapter aux changements d'Autobill.
 Aussi, il serait intéressant à titre de démonstration de comparer notre
 solution avec celle de Jan Hoffmann et l'interface de RAML
-\protect\hyperlink{ref-RAML}{{[}3{]}}, mentionnée en section 1.
-
-\hypertarget{miniml-1}{%
-      \subsection{MiniML}\label{miniml-1}}
-
-\begin{itemize}
-      \tightlist
-      \item
-            Ajout de sucre syntaxique. (Records, Operateurs Infixes, \ldots)
-      \item
-            Ajout d'une librairie standard.
-      \item
-            Spécification complète du langage.
-      \item
-            Bibliothèque de structures de données complexes
-      \item
-            Règles de traduction de \textbf{MiniML} vers \textbf{Autobill}
-      \item
-            Schémas de traduction d'une structure \emph{FIFO} vers \textbf{LCBPV}
-\end{itemize}
-
-\hypertarget{serveur}{%
-      \subsection{Serveur}\label{serveur}}
-
-\begin{itemize}
-      \tightlist
-      \item
-            Affichage des erreurs
-      \item
-            Réalisation des autres services pour MiniML
-      \item
-            Réalisation de génération de solution depuis le code Autobill
-\end{itemize}
-
-\hypertarget{client}{%
-      \subsection{Client}\label{client}}
-
-\begin{itemize}
-      \tightlist
-      \item
-            Retouches esthétiques
-      \item
-            Affichage des erreurs sur plusieurs lignes
-      \item
-            Couverture d'erreurs à traiter la plus grande possible, afin d'éviter
-            les blocages du client
-      \item
-            ``Benchmark'' la résolution d'équations plus complexes avec le
-            MiniZinc client
-      \item
-            Proposer des programmes d'exemples à lancer, demandant des lourdes
-            allocations mémoires.
-\end{itemize}
-
-\hypertarget{tests}{%
-      \subsection{Tests}\label{tests}}
-
-\begin{itemize}
-      \item
-            Comparaison d'architectures Full-Client vs Client-Serveur
-      \item
-            Comparaison \textbf{RAML} vs \textbf{Autobill}
-\end{itemize}
+\cite{RAML}, mentionnée en section 1.
 
 \newpage
-
-\bibliographystyle{acm}
-\bibliography{biblio}
+\bibliographystyle{ieeetr}
+\bibliography{biblio}{}
 
 \end{document}

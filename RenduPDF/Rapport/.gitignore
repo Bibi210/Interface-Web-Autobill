@@ -1,5 +1,7 @@
 *.aux
 *.log
 *.gz
+*.bbl
+*.blg
 *.toc
-Jetable.*
+*.out

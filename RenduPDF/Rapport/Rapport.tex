@@ -1185,10 +1185,11 @@ En effet, les patterns profonds ne sont pas encore supportés par le language ci
 \hypertarget{Implémentation}{%
       \subsection{Implémentation}\label{Implementation}}
 Dans le cadre de ce projet, MiniML dispose d'une implémentation écrite en OCaml nous avons utilisé ce langage pour deux raisons principales.
-Permettre une meilleure intégration avec autobill qui est écrit en OCaml et permettre une compatibilité avec les deux architectures du projet.
-Cela nous a permis d'effectuer la traduction non pas de syntaxe concrète à syntaxe concrète mais de syntaxe abstraite à syntaxe abstraite.
+Permettre une meilleure intégration avec autobill qui est écrit dans le même language ce qui a permis d'unifier la gestion d'erreurs
+et la seconde raison est la double compatibilité avec les deux architectures cibles.
+Cette forte proximité avec le code d'autobill a rendu possible la traduction non pas de syntaxe concrète à syntaxe concrète comme décrite ci-dessus mais de syntaxe abstraite à syntaxe abstraite.
 Nous épargnant ainsi une nouvelle étape d'analyse syntaxique.
-Une autre divergence avec la spécification est que nous avons utilisé une traduction récursive terminale par souci d'optimisation.
+Deux autres divergences avec la spécification est l'utilisation d'une fonction de traduction récursive terminale par souci d'optimisation et l'ajout de nombreux sucres syntaxiques pour faciliter l'écriture de programmes Mini Ml.
 
 
 \hypertarget{conclusion}{%

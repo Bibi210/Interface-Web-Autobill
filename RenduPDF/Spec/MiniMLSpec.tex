@@ -96,7 +96,7 @@
 \hypertarget{grammaire}{%
   \section{Grammaire}\label{grammaire}}
 
-  
+
 \newcommand{\grammarRule}[1]{\; \textbf{<\textcolor{Blue}{#1}>} \;}
 \newcommand{\grammarRuleUnSpaced}[1]{\textbf{<\textcolor{Blue}{#1}>}}
 \newcommand{\nTime}[1]{\; #1\text{*} \;}
@@ -107,7 +107,7 @@
 \newcommand{\isExtentionML}[1]{ \textit{\textcolor{Orange}{#1}} \quad }
 
 Voici la grammaire BNF du language MiniML.\
-Les extensions non compatibles avec Ocaml mais compatible avec \textbf{Autobill} sont en \isExtentionML{Orange}.
+Les extensions non compatibles avec Ocaml mais compatible avec \textbf{Autobill} sont en \textcolor{Orange}{Orange}.
 
 \hypertarget{Elements Nommés}{%
   \subsection{Elements Nommés}\label{Elements Nommés}}
@@ -215,12 +215,12 @@ $ \translateNode{let \; v \; = \; e_1 \; in \; e_2}{Expr}  \rightarrow let \; v 
         \begin{itemize}
           \tightlist
           \item
-                A l'interieur des $\translateResult{}$  les elements propre au langage MiniML qui sont traduit vers le langage LCBPV
+                À l'interieur des $\translateResult{}$, on trouve les elements propre au langage MiniML qui sont traduit vers le langage LCBPV.
           \item
-                A l'exterieur des $\translateResult{}$  les elements propre au langage LCBPV
+                À l'exterieur des $\translateResult{}$, on trouve les elements propre au langage LCBPV.
         \end{itemize}
   \item
-        $X_n$ est le n-ième sous-noeud de l'arbre de syntaxe abstrait \newline
+        $X_n$ est le n-ième sous-noeud de l'arbre de syntaxe abstrait. \newline
         Selon les cas $X$ peut être :
         \begin{itemize}
           \tightlist
@@ -239,6 +239,8 @@ $ \translateNode{let \; v \; = \; e_1 \; in \; e_2}{Expr}  \rightarrow let \; v 
                 \end{itemize}
           \item
                 $v$ pour les elements nommées
+          \item
+                $l$ pour les litteraux
         \end{itemize}
   \item
         $X_1 \dots X_n$ est la liste des sous-noeuds de type $X$ allant de $1$ à $n$
@@ -269,10 +271,9 @@ On distingue deux noeuds de types \grammarRule{Def}:
         Les définitions de \textbf{Types}.
 \end{itemize}
 \begin{align*}
-  \text{(VARDEF)}  \quad & \translateNode{let \, v \, = \, e}{Def} \rightarrow   let \, v \, = \; \translateResult{e}     \\
-  \\
-  \text{(TYPDEF) } \quad & \translateNode{type \, \, v_1 \dots v_N \, = \, dc_1 \dots  dc_N}{Def}                         \\
-  \rightarrow \;         & data \translateResult{v_1} \translateResult{\dots v_N} : + = \translateResult{dc_1 \dots dc_N} \\
+  \text{(VARDEF)}  \quad & \translateNode{let \, v \, = \, e}{Def} \rightarrow   let \, v \, = \; \translateResult{e}       \\
+  \text{(TYPDEF) } \quad & \translateNode{type \, \, v_1 \dots v_N \, = \, dc_1 \dots  dc_N}{Def}                           \\
+  \rightarrow \;         & data \translateResult{v_1} (\translateResult{\dots v_N} : +) = \translateResult{dc_1 \dots dc_N} \\
 \end{align*}
 \subsubsection{Définitions de Constructeurs}\label{defConstruct}
 
@@ -282,23 +283,20 @@ On distingue deux noeuds de types \grammarRule{NewContructors}:
 \begin{itemize}
   \tightlist
   \item
-        Les définitions de \textbf{Constructeurs Classiques} qui sont compatibles avec OcamL
+        Les définitions de \textbf{Constructeurs Classiques} qui sont compatibles avec OcamL.
   \item
-        Les définitions de \textbf{Constructeurs Equationnels} qui sont une extension spécifique pour \textbf{Autobill} dont la traduction n'est pas encore mise en place
+        Les définitions de \textbf{Constructeurs Equationnels} qui sont une extension spécifique pour \textbf{Autobill} incompatible avec OcamL et dont la traduction n'est pas encore totalement définie.
 \end{itemize}
-
-
 \begin{align*}
-  \\\text{(MLCONSTRUCTDEF)} \quad & \translateNode{v \; of \; t}{DefContructors}   \rightarrow   v\translateResult{t}                \\
+  \text{(MLCONSTRUCTDEF)} \quad & \translateNode{v \; of \; t}{DefContructors}   \rightarrow   v\translateResult{t} \\
 \end{align*}
 
-\pagebreak
 \subsection{Types}\label{types-2}
 
 On définit l'operation de traduction \(\translateNode{\_}{Type}\) selon les cas de construction
 des types précisées par la règle de grammaire : \grammarRule{Type}
 
-On distingue 4 noeuds d'interêt de types $Type$:
+On distingue 4 noeuds de types $Type$:
 \begin{itemize}
   \tightlist
   \item
@@ -306,15 +304,15 @@ On distingue 4 noeuds d'interêt de types $Type$:
   \item
         Les \textbf{Applications de types}.
   \item
-        Les \textbf{Lambda}
+        Les \textbf{Lambda}.
   \item
         Les \textbf{Tuples}.
 \end{itemize}
 \begin{align*}
-  \text{(TVAR) }  & \translateNode{v}{Type} \rightarrow  v                                                                           \\
-  \text{(TAPP) }  & \translateNode{t_1 t_2}{Type} \rightarrow  \translateResult{t_1} \, \translateResult{t_2}                        \\
-  \text{(TCLOS) } & \translateNode{t_1 \text{->} t_2}{Type} \rightarrow  \translateResult{t_1} \, \text{->} \, \translateResult{t_2} \\
-  \text{(TTUPLE)} & \translateNode{t_1 * t_2}{Type} \rightarrow  \translateResult{t_1} \, , \, \translateResult{t_2}                 
+  \text{(TVAR) }  & \translateNode{v}{Type} \rightarrow  v                                                                                          \\
+  \text{(TAPP) }  & \translateNode{t_1 t_2}{Type} \rightarrow  \translateResult{t_1} \, \translateResult{t_2}                                       \\
+  \text{(TCLOS) } & \translateNode{t_1 \text{->} t_2}{Type} \rightarrow  Exp (Fun\translateResult{t_1} \, \text{->} \, Thunk\translateResult{t_2} ) \\
+  \text{(TTUPLE)} & \translateNode{t_1 * t_2}{Type} \rightarrow  \translateResult{t_1} \,  \, \translateResult{t_2}
 \end{align*}
 
 \subsection{Expressions}\label{exprs}
@@ -322,13 +320,11 @@ On distingue 4 noeuds d'interêt de types $Type$:
 On définit l'operation de traduction \(\translateNode{\_}{Expr}\) selon les cas de construction
 des expressions précisées par la règle de grammaire : \grammarRule{Expr}
 
-On distingue 8 noeuds d'Intérêt de types \grammarRule{Expr}:
+On distingue 7 noeuds d'intérêts de types \grammarRule{Expr}:
 \begin{itemize}
   \tightlist
   \item
         Les \textbf{Tuples}.
-  \item
-        Les \textbf{Variables}.
   \item
         Les \textbf{Appels de fonctions}.
   \item
@@ -342,9 +338,9 @@ On distingue 8 noeuds d'Intérêt de types \grammarRule{Expr}:
   \item
         Les \textbf{Correspondance de motifs}.
 \end{itemize}
+\textbf{Note:} On ne prend pas en compte les \textbf{Litteraux} et les \textbf{Variables} dans ce descriptif car leurs traductions sont directes.
 \begin{align*}
-  \text{(TUPLE)} \quad     & \translateNode{e_1 \, , \, e_2}{Expr} \rightarrow \text{Tuple}(\translateResult{e_1} \, , \, \translateResult{e_2})                                                          \\
-  \text{(VAR)} \quad       & \translateNode{v}{Expr} \rightarrow v                                                                                                                                          \\
+  \text{(TUPLE)} \quad     & \translateNode{e_1 \, , \, e_2}{Expr} \rightarrow \text{Tuple}(\translateResult{e_1} \, \, \translateResult{e_2})                                                            \\
   \text{(LAMBDA)} \quad    & \translateNode{fun \, v \, \rightarrow \, e}{Expr}    \rightarrow  exp(  \; get \; | \; call(v) \; \text{->}  \; thunk\translateResult{e}  )                                   \\
   \text{(FUN REC)} \quad   & \translateNode{fun \, rec \, v_1 \, v_2 \rightarrow \, e}{Expr}      \rightarrow exp( \; rec \; v_1 \; is \; get \; | \; call(v_2) \; \text{->}  \; thunk\translateResult{e} ) \\
   \text{(CALL)} \quad      & \translateNode{e_1 e_2}{Expr}     \rightarrow  \{                                                                                                                              \\
@@ -357,30 +353,36 @@ On distingue 8 noeuds d'Intérêt de types \grammarRule{Expr}:
                            & \Tab return \;\translateResult{e_2}                                                                                                                                            \\
                            & \}                                                                                                                                                                             \\
   \text{(CONSTRUCT)} \quad & \translateNode{v \, e}{Expr} \rightarrow v(\translateResult{e})                                                                                                                \\
-  \text{(MATCH)} \quad     & \translateNode{match \, e \, with \, c_1 \dots c_N }{Expr}\rightarrow  match \, \translateResult{e} \, with \, \translateResult{c_1} \dots \translateResult{c_N} \; end                        \\
+  \text{(MATCH)} \quad     & \translateNode{match \, e \, with \, p_1 \dots p_N }{Expr}\rightarrow  match \, \translateResult{e} \, with \, \translateResult{p_1} \dots \translateResult{p_N} \; end        \\
 \end{align*}
+
+\pagebreak
 \subsection{Motifs et Filtrage}\label{motifs-et-filtrage}
 
-\[ Case(p,e) \rightarrow \llbracket Case(p,e) \rrbracket_{Case} \rightarrow \alpha \]
+On définit l'operation de traduction \(\translateNode{\_}{Case}\) selon les cas de construction
+des expressions précisées par la règle de grammaire : \grammarRule{MatchCase}
 
-On définit la relation \({Case}\) selon les cas de construction
-des motif de correspondance. Les cas de construction des motif de
-correspondance sont donnés par les clauses des règles syntaxiques. Un
-motif de correspondance est dit traduisible si chacune de ses clauses
-peut être traduite.
+On distingue 4 noeuds d'intérêt de types \grammarRule{MatchCase}:
 \begin{itemize}
   \tightlist
   \item
-        \(p\) est un motif
+        Les patterns sur \textbf{Litteraux}.
   \item
-        \(e\) est l'expression qui sera évaluée si le motif est vérifié
+        Les patterns sur \textbf{Variables}.
+  \item
+        Les patterns sur \textbf{Tuple}.
+  \item
+        Les patterns sur \textbf{Constructeurs}.
 \end{itemize}
+
 \begin{align*}
-  \text{(PATTAG)} \quad & Case(ConstructorPattern((n,c)), e)
-  \\ &\rightarrow  MatchPatTag(ConsNamed(n), \llbracket c \rrbracket_{Case}, \llbracket e \rrbracket_{Expr})        \\
-  \\
-  \text{(PATVAR)} \quad & Case(VarPattern(x), e, l)
-  \rightarrow  MatchPatVar((x, l), \llbracket e \rrbracket_{Expr}, l)
+  \text{(PATTERN LIT)} \quad    & \translateNode{l \; \text{->} \; e}{MatchCase} \rightarrow \translateResult{l} \; \text{->} \; \translateResult{e}                             \\
+  \text{(PATTERN VAR)} \quad    & \translateNode{v \; \text{->} \; e}{MatchCase} \rightarrow v \; \text{->} \; \translateResult{e}                             \\
+  \text{(PATTERN TUPLE)} \quad  & \translateNode{v_1 \, , \, v_2 \, \text{->} \; e}{MatchCase} \rightarrow Tuple(v_1 \, \, v_2) \; \text{->} \; \translateResult{e}            \\
+  \text{(PATTERN CONSTR)} \quad & \translateNode{v_1 \, v_2 \, \text{->} \; e}{MatchCase} \rightarrow v_1 \, v_2 \; \text{->} \; \translateResult{e} \\
 \end{align*}
+
+On notera que la traduction des patterns ne prend pas en compte les patterns profonds, c'est à dire les patterns imbriqués dans d'autres patterns.
+En effet, les patterns profonds ne sont pas encore supportés par le language cible.
 
 \end{document}

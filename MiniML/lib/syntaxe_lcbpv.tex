@@ -1,0 +1,659 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\hypertarget{syntaxe-et-suxe9mantique-informelle-de-ux3bb-cbpv}{%
+\section{Syntaxe et sémantique informelle de
+λ-CBPV}\label{syntaxe-et-suxe9mantique-informelle-de-ux3bb-cbpv}}
+
+\hypertarget{call-by-push-value-en-bref}{%
+\subsection{Call-By-Push-Value En
+Bref}\label{call-by-push-value-en-bref}}
+
+Le langage λ-CBPV (``lambda-call-by-push-value'', ou juste LCBPV pour
+les intimes) est une réprésentation intermédiaire de haut niveau, dans
+laquel on peut compiler les langages à la ML (avec évaluation stricte),
+ou à la Haskell (avec évaluation paresseuse), ou mélanger les deux pour
+compiler des fonctionalités avancées (comme certaines concept de
+programmation objets).
+
+Dans LCBPV, on a des valeurs et des calculs. Les valeurs \emph{sont} des
+choses mais de font rien, les calculs \emph{font} des choses mais ne
+contiennent pas de données. On a donc deux \emph{sortes} de type: si
+\texttt{T} est type de valeur, on le défini comme \texttt{T\ :\ +} , et
+de même, \texttt{T\ :\ -} est un type de calcul. Pour aider la
+compréhension, quand \texttt{T} est un type de valeur, on le notera
+parfois \texttt{T+}, et \texttt{T-} si c'est un type de calcul.
+
+\hypertarget{les-types-de-valeurs}{%
+\subsection{Les types de valeurs}\label{les-types-de-valeurs}}
+
+\hypertarget{les-entiers}{%
+\subsubsection{les entiers}\label{les-entiers}}
+
+Classique. On les écrits en base 10, avec un `-' devant pour les
+négatifs. On dispose des opérations classiques: addition, substraction,
+division euclidienne, reste, et négation. On peut tester pour l'égalité
+et l'ordre. Le type de valeur des entier est \texttt{Int\ :\ +}
+
+\begin{verbatim}
+0 1 2 3530530899 -2 -4343  (littéraux)
+1+1 2-2 3*3 4*4 -5         (opérations)
+6==6 7!=7 8<8 9=<9 10>10 11<=11 (tests)
+\end{verbatim}
+
+\hypertarget{les-booluxe9ens}{%
+\subsubsection{Les booléens}\label{les-booluxe9ens}}
+
+Encore classique. \texttt{true}, \texttt{false}, \texttt{and},
+\texttt{or} et \texttt{not}. Le type de valeur des booléens est
+\texttt{Bool\ :\ +}
+
+\begin{verbatim}
+true false 
+&& || ! == !=
+\end{verbatim}
+
+On a un if/then/else:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{if 1\textgreater{}0 then 45 else 422 }
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{les-tuples}{%
+\subsubsection{Les tuples}\label{les-tuples}}
+
+On les note \texttt{(e\_1,\ ...,\ e\_n)}, et ils ont le type
+\texttt{Tuple(T\_1+,\ ...,\ T\_n+)}. Chacun des \texttt{n} composant est
+une valeur \texttt{e\_i\ :\ T\_i\ :\ +}. Le 0-uplet/tuple vide est noté
+\texttt{()} de type de valeur\texttt{Unit}. On accède aux composants
+\texttt{e\_1},\ldots,\texttt{e\_n} des tuples par pattern matching:
+
+\begin{verbatim}
+match e_tuple with
+ | (x_1, ..., x_n) -> ... 
+end
+\end{verbatim}
+
+\hypertarget{les-types-sommes}{%
+\subsubsection{Les types sommes}\label{les-types-sommes}}
+
+Les sommes binaires on le type de valeur \texttt{Sum(T+,U+)\ :\ +}. Ces
+deux constructeurs sont
+\texttt{inj\{1,2\}\ :\ T\ -\textgreater{}\ sum(T,U)} et
+\texttt{inj\{2,2\}\ :\ U+\ -\textgreater{}\ Sum(T+,U+)}. En général, on
+peut faire des sommes avec \emph{n} types \texttt{T\_1+,\ ...,\ T\_n+}.
+On note le type de valeurs correspondant
+\texttt{Sum(T\_1+,\ ...,T\_n+)\ :\ +} et on a des constructeurs
+\texttt{inj\{i,n\}} pour tout \emph{i} entre 1 et \emph{n}. On peut
+pattern matcher sur les sommes:
+
+\begin{verbatim}
+match e_sum with
+  | inj{1,n}(x) -> ...
+  | inj{2,n}(x) -> ...
+  ...
+  | inj{n,n} -> ...
+end
+\end{verbatim}
+
+\hypertarget{duxe9finir-des-types-de-valeurs}{%
+\subsubsection{Définir des types de
+valeurs}\label{duxe9finir-des-types-de-valeurs}}
+
+On peut, comme en OCaml, définir des types par cas. Par exemple, le type
+des listes et le type option sont définis de la manière suivante:
+
+\begin{verbatim}
+data List(A : +) =
+  | nil()
+  | cons(A, List(A));
+
+data Option(A : +) =
+  | none()
+  | some(A);
+\end{verbatim}
+
+On peut alors créer des listes en utilisant les constructeurs
+\texttt{Cons} et \texttt{Nil}, par exemple, la liste {[}1,2,3{]} sera
+encodée par \texttt{Cons(1,Cons(3,Cons(3,Nil)))}. On peut aussi faire du
+fitrage par motif sur les listes. Par exemple, si on a une liste
+d'entiers \texttt{l}, l'expression ci-dessous renvoit la tête de la
+liste dans un type option.
+
+\begin{verbatim}
+match l with 
+  | nil() -> {return none()}
+  | cons(h,t) -> {return some(h)}
+end 
+\end{verbatim}
+
+\hypertarget{les-blocs-thunks-et-fermetures}{%
+\subsection{Les blocs, thunks, et
+fermetures}\label{les-blocs-thunks-et-fermetures}}
+
+\hypertarget{blocs}{%
+\subsubsection{Blocs}\label{blocs}}
+
+LCBPV utilise des blocs pour séquencer les opérations. Un bloc est une
+séquence d'instruction, séparées par un point-virgule, et terminé par un
+\texttt{return\ e} qui évalue \texttt{e} et renvoie et renvoie la valeur
+correspondante. On a trois instructions: \texttt{let\ open\ force}. La
+première est \texttt{let\ x\ =\ e;}, elle évalue \texttt{e}, et affecte
+le résulat à \texttt{x}. \texttt{x} est en portée dans les instruction
+suivantes dans le bloc et dans l'expression de retour. Par exemple:
+
+\begin{verbatim}
+let x = 2+2;
+let y = 3+1;
+return x + y
+\end{verbatim}
+
+On peut remplacer une expression par bloc avec des allocades. C'est à
+dire, les expressions \texttt{e}, \texttt{\{return\ e\}}, et
+\texttt{\{let\ x\ =\ e;\ return\ x\}} sont interchangeables. On va
+maintenant voir \texttt{force} et \texttt{open}, qui gèrent les
+\emph{thunks} et les \emph{fermetures}.
+
+\hypertarget{les-thunks}{%
+\subsubsection{Les thunks}\label{les-thunks}}
+
+Quand un calcul renvoie une valeur, il la renvoi encapsulée dans un
+calcul nommé \emph{thunk} et noté \texttt{thunk(e)}, où est une
+expression quelqueonque qui renvoie une valeur. Il faut \emph{forcer} le
+thunk avec \texttt{force\ x\ =\ thunk(e)} pour calculer effectivement la
+valeur de \texttt{e}, et l'affecter à \texttt{x}. Pour l'exemple,
+comparez les deux fragments de code suivants, qui calculent différement
+le même résultat. Dans le premier, on calcule 2+2 avant de calculer 3+1,
+et dans le second on calcule 3+1 en premier et 2+2 après.
+
+\begin{verbatim}
+// fragment 1:
+let x = 2+2;
+let y = 3+1;
+return x + y 
+  
+//fragment 2:
+let x = thunk(2+2);
+let y = thunk(3+1);
+force y' = y;
+force x' = x;
+return x'+y'
+\end{verbatim}
+
+Si une expression \texttt{e\ :\ T\ :\ +} renvoie une valeur de type de
+valeur \texttt{T}, alors le thunk \texttt{thunk(e)\ :\ Thunk(T)\ :\ -}
+est une valeur de type de calcul \texttt{Thunk(T)}
+
+\hypertarget{les-fermetures}{%
+\subsubsection{Les fermetures}\label{les-fermetures}}
+
+Comme les thunks qui sont des calculent qui renvoient une valeur après
+évaluation, on peut créer des valeurs qui stockent un calcul avant son
+évaluation. si on a un calcul \texttt{f}, on peut le mettre dans une
+\emph{fermeture} \texttt{closure(f)} qui bloque son évaluation et stocke
+les valeurs de ses variables libres. Quand on \emph{ouvre} la fermeture
+avec \texttt{open\ g\ =\ closure(f)}, on assigne \texttt{g=f} et on
+remet les valeurs dont \texttt{f} dépend sur la pile. On peut alors
+accéder à \texttt{g} correctment (sans segfault).
+
+Par exemple, dans le code suivant, un créé une fermeture sur un calcul
+qui renvoi un entier. Comme les entiers sont des valeurs, on créé une
+fermeture autour d'un trunk qui renvoi un entier. On voit que quand on
+définit un calcul, on peut évaluer les calculs en plusieurs morceaux:
+quand ils sont définis, quand on ouvre leur fermeture, et quand on les
+force.
+
+\begin{verbatim}
+// Au début, je n'ai pas encore évalué `a=2+2` ni `b=3+1`
+let f = {
+
+  let a = 2+2;
+  // Ici, j'ai évalué 'a' mais pas `b`
+    
+  // la fermeture capture la variable `a=4` qui est libre dans son corps 
+  return closure({
+  
+      // ce bloc est bloqué par la fermeture
+      let b = 3+1;
+      return thunk(a+b)
+  })
+};
+  
+// Ici, je n'ai toutjours pas évalué `b`
+open f' = f;
+// Après l'ouverture de `f`, `b` est évalué et on a assigné `f' = thunk(a+b)` 
+  
+// Puis on force le thunk pour évaluer `a+b` et récupérer 8
+force x = f';
+return x
+\end{verbatim}
+
+Si \texttt{e\ :\ T\ :\ -} est une expression qui renvoie un calcul de
+type \texttt{T}, alors \texttt{closure(e)\ =\ Closure(T)\ :\ +} est une
+valeur de type de valeur \texttt{Closure(T)}
+
+\hypertarget{les-autres-types-de-calculs}{%
+\subsection{Les autres types de
+calculs}\label{les-autres-types-de-calculs}}
+
+\hypertarget{les-fonctions}{%
+\subsubsection{Les fonctions}\label{les-fonctions}}
+
+Les fonctions en LCBPV sont des calculs. Comme en Java ou C++, on les
+réprésente par des ``objets'' avec une méthode \texttt{call}. Par
+exemple, la fonction ``f : x → 2x+3'' sera écrite et appelée de la
+manière suivante. Notons que les fonctions qui renvoient des types de
+valeurs doivent encapsuler leur valeur de retour dans un thunk, et qu'il
+faut forcer le thunk pour terminer l'appel.
+
+\begin{verbatim}
+// `y` est défini comme un calcul, avec une méthode `call`:
+let f = get 
+    | call(x) -> thunk(2 * x + 3)
+  end;
+  
+// `y` est un thunk qui calcule "f(1)". On a pas encore évalué f !
+let y = f.call(1);
+
+// Ici on calcule l'appel "f(1)", qui renvoie 2*1+3 = 5
+force z = y;
+
+return z // on renvoie z = 5
+\end{verbatim}
+
+Le type des fonctions est
+\texttt{Fun(T\_1+,\ ...,\ T\_n+)\ -\textgreater{}\ T-}, avec chaque
+argument un type de valeur et le résultat un type de calcul. Les
+fonctions en LCBPV ne sont pas currifiés. Une fontion de type
+\texttt{Fun(A+,\ B+)\ -\textgreater{}\ C-} doit recevoir ces deux
+arguments simultanément. Cette fonction, currifiée, serait de type
+\texttt{Fun(A+)\ -\textgreater{}\ Fun(B+)\ -\textgreater{}\ C-}, ou
+encore
+\texttt{Fun(A+)\ -\textgreater{}\ Thunk(Closure(Fun(B+)\ -\textgreater{}\ C-))}.
+
+\hypertarget{les-paires-paresseuses}{%
+\subsubsection{Les ``paires
+paresseuses''}\label{les-paires-paresseuses}}
+
+Les paires paresseuses sont des objets avec plusieurs méthodes qui
+renvoient chacune un type différent. Au final, seul(s) le(s) élément(s)
+accédé(s) sont effectivement calculées, d'où le coté paresseux. Si on a
+une paire paresseuse \texttt{p} avec \emph{n}, éléments, on appele la
+méthode \texttt{p.proj\{i,n\}()} pour sélectionner le \emph{i}-ème.
+Notons que qu'aucune des méthodes ne prend d'arguments, et qu'il faut
+forcer le thunk pour effectivement calculer le \emph{i}-ème élément.
+
+On défini une paire paresseuse en spécifiant chacune des méthodes
+\texttt{proj\{i,n\}} dans une clause \texttt{get\ ...\ end} comme pour
+les functions:
+
+\begin{verbatim}
+let douzaines = get
+  | proj{1,3} -> 12
+  | proj{2,3} -> 24
+  | proj{3,3} -> 36
+end;
+
+force x = douzaine.proj{1,3}();
+
+return x // renvoie 12
+\end{verbatim}
+
+\hypertarget{duxe9finir-des-types-de-calculs}{%
+\subsubsection{Définir des types de
+calculs}\label{duxe9finir-des-types-de-calculs}}
+
+On peut aussi définir des types de calcul au cas-par-cas, c'est à dire
+en définissant chaque méthode. Par exemple, on peut définir le type des
+itérateurs sur les listes de la manière suivante: un itérateur est un
+objet avec deux méthodes, une qui consome un élément de liste et renoie
+un nouvel itérateur, et une second qui termine l'itération quand on
+croise \texttt{nil()}. On définit alors un type \texttt{Iter(A,\ B)} qui
+consome des listes de type \texttt{A} et renvoi un \texttt{B}. La
+méthode \texttt{use\_nil()} renvoie une thunk sur le \texttt{B} final,
+et \texttt{use\_cons} prend un \texttt{A} et renvoi un
+\texttt{Iter(A,B)}. Notons que comme \texttt{Iter(A,B)\ :\ -} est un
+type de calcul, on a pas besoin de renvoyer un thunk dans
+\texttt{use\_cons}.
+
+\begin{verbatim}
+comput Iter(A : +, B : +) =
+  | use_nil() -> Thunk(B)
+  | use_cons(A) -> Iter(A,B);
+\end{verbatim}
+
+On définit souvent les itérateurs par récurrence, et on vera cela plus
+bas.
+
+\hypertarget{le-reste-des-fonctionalituxe9s}{%
+\subsection{Le reste des
+fonctionalités}\label{le-reste-des-fonctionalituxe9s}}
+
+\hypertarget{duxe9finitions-ruxe9cursives}{%
+\subsubsection{Définitions
+récursives}\label{duxe9finitions-ruxe9cursives}}
+
+On peut définir des calculs récursifs avec le constructeur spécial
+\texttt{rec\ x\ is\ ...}. Par exemple, en OCaml on écrirai la fonction
+factorielle:
+
+\begin{verbatim}
+let rec fact n = 
+  if n = 0 then
+    1 
+  else 
+    n * (fact (n-1))
+\end{verbatim}
+
+On écrirai globalement la même chose en LCBPV, mais en séparent le
+\texttt{let} et le \texttt{rec}: on définit
+\texttt{let\ fact\ =\ rec\ self\ is\ ...}. \texttt{self} est alors une
+fermeture sur la fonction récursive, et est en portée dans la définition
+de \texttt{f}. Formellement, \texttt{fact} doit avoir un type de calcul
+\texttt{T-}, et \texttt{self} sera de type \texttt{Closure(T-)}. Il est
+essentiel que \texttt{self} soit une fermeture pour des raisons
+techniques, et donc doit être d'un type différent de \texttt{f}.
+
+Par exemple, on définit une function récursive \texttt{fact} de type
+\texttt{Fun(Int)-\textgreater{}Thunk(Int)}. Dans la définition,
+\texttt{self} est une fermeture
+\texttt{Closure(Fun(Int)\ -\textgreater{}\ Thunk(Int))}, et on l'ouvre
+pour retrouver \texttt{fact}.
+
+\begin{verbatim}
+let fact = rec self is
+    get
+    | call(n) -> 
+         if n==0 then 
+           thunk(1) 
+         else {
+           open f = self;
+           force m = f.call(n-1);
+           return thunk(m * n)
+         }
+    end
+\end{verbatim}
+
+\hypertarget{duxe9clarations}{%
+\subsubsection{Déclarations}\label{duxe9clarations}}
+
+Pour simuler des bibliothèques, on peut déclarer des types et des
+valeurs au toplevel sans les définir. Quand on déclare une valeur, on
+doit spécifier son type, et quand on déclare un type, on doit déclarer
+la sorte (valeur/calcul) de ces argument et la sort du type. Par
+exemple, pour déclarer les tableaux:
+
+\begin{verbatim}
+decl type Array : (+) -> +
+decl array_init : Fun(Int, A) -> Thunk(Array(A))
+decl array_read : Fun(Array(A), Int) -> Thunk(Option(A))
+decl array_write : Fun(Array(A), A, Int) -> Thunk(Unit)
+\end{verbatim}
+
+Notons que la variable de type \texttt{A} n'est pas déclarée, c'est
+implicitement une variable de type polymorphique. La fonction
+\texttt{array\_read} aurait en OCaml le type
+\texttt{\textquotesingle{}a.\ \textquotesingle{}a\ array\ *\ int\ -\textgreater{}\ \textquotesingle{}a\ option\ thunk}.
+
+\hypertarget{types-linuxe9aires-optionels}{%
+\subsubsection{Types linéaires
+(optionels)}\label{types-linuxe9aires-optionels}}
+
+Finalement, LCBPV supporte optionellement les types linéaires. C'est à
+dire que les variables ne peuvent être utilisées qu'une fois ni plus ni
+moins dans chaque execution du programme. Pour pouvoir interpréter les
+languages normaux (sans types linéaires), on introduit des
+\emph{fermetures partageables}.
+
+Les fermetures partagées fonctionnent exactement comme les fermetures: -
+Si \texttt{e\ :\ T-} est une expression de calcul,
+\texttt{exp(e)\ :\ Exp(T-)} est une valeur de tpye \texttt{Exp(T-)}.
+Pour les fermetures normales, on a \texttt{closure(e)\ :\ Closure(T-)}.
+- On peut accéder le caclul sous-jaçant avec l'instruction
+\texttt{unexp\ x\ =\ e;}, qui évalue le calcul dans la fermeture et
+l'assigne à \texttt{x}.
+
+Quand on a pas activé les types linéaires dans LCPBV, on peut remplacer
+chaque \texttt{exp} par un \texttt{closure} et rien ne change. Mais avec
+les types linéaires, on a deux différences: - On doit utiliser toutes
+les variables une fois, ni plus \emph{ni moins}. - On peut néanmoins
+partager les \texttt{exp} librement, c'est à dire les utiliser zéro ou
+plus de une fois. - On peut créer des \texttt{closure(e)} pour n'importe
+quel \texttt{e\ :\ T-}, mais pas pour \texttt{exp}. Si on veut mettre
+une expression \texttt{e\ :\ T-} dans une fermeture partagée
+\texttt{exp(e)}, il faut que les variable libres dans \texttt{e} soient
+toutes de type \texttt{Exp(...)}. Donc, les fermetures partagées ne
+peuvent dépendre que d'autres fermetures partagées, ou ne pas avoir de
+variables libres.
+
+\hypertarget{tout-les-tokens}{%
+\subsection{Tout les tokens}\label{tout-les-tokens}}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{x} un nom de variable,
+\item
+  \texttt{litt} est un littéral \texttt{true}, \texttt{false}, ou un des
+  entiers
+\item
+  \texttt{op} est une opération primitive sur les entiers et les
+  booléens (voir plus haut).
+\item
+  \texttt{k} un nom de constructeur, dont \texttt{unit}, \texttt{tuple}
+  et \texttt{inj\{i,n\}}. L'expression \texttt{(e\_1,\ ...,\ e\_n)}
+  signifie \texttt{tuple(e\_1,\ ...,e\_n)}, et \texttt{()} signifie
+  \texttt{unit()}.
+\item
+  \texttt{m} un nom de méthode, dont \texttt{call} et
+  \texttt{proj\{i,n\}}
+\item
+  \texttt{A} un nom de variable de type, dont:
+  \texttt{Int\ Bool\ Unit\ Zero\ Top\ Bottom}
+\item
+  \texttt{K} un nom de constructeur de type, dont:
+  \texttt{Tupple\ Sum\ Fun\ Choice\ Thunk\ Closure\ Exp}
+\item
+  Tout les mots-clés dans la syntaxe ci-dessous:
+  \texttt{thunk\ closure\ exp\ match\ get\ end\ \ \ absurd\ return\ let\ letrec\ force\ open\ unexp\ data\ comput\ Int\ Bool\ Unit\ Zero\ Top\ Bottom\ \ \ Tupple\ Sum\ Fun\ Choice\ Thunk\ Closure}
+\item
+  Les symboles
+  \texttt{.\ ,\ +\ -\ *\ /\ \%\ :\ ;\ \textbar{}\ (\ )\ \{\ \}\ =\ ==\ !=\ \textless{}\ \textgreater{}\ \textgreater{}=\ \textless{}=\ !\ \&\&\ \textbar{}\textbar{}\ -\textgreater{}}
+\end{itemize}
+
+\hypertarget{syntaxe-formelle}{%
+\subsection{Syntaxe formelle}\label{syntaxe-formelle}}
+
+Notes: - On peut aussi écrire \texttt{(e,\ ...)} pour
+\texttt{tuple(e,\ ...)} et \texttt{()} pour \texttt{unit()} - dans
+\texttt{match}, \texttt{get}, \texttt{data} et \texttt{comput}, les cas
+sont séparés par des \texttt{\textbar{}}, et le premier est optionel. On
+peut donc écrire
+\texttt{match\ e\ with\ k()\ -\textgreater{}\ ...\ \textbar{}\ ...\ \ \ end}
+pour
+\texttt{match\ e\ with\ \textbar{}\ k()\ -\textgreater{}\ ...\ \textbar{}\ ...\ end}.
+
+\begin{verbatim}
+T ::= T+ | T- | A | K(T_1, ..., T_n)
+
+
+x ::= x | x : T 
+
+
+expr ::= 
+
+  x                      (variables)
+    
+  litt                   (littéraux) 
+    
+  op(e, ..., e)          (primitives)
+  
+  e : T                  (expression avec une annotation de type)
+  
+  k(e_1, ..., e_n)       (constructeur (comme Some, Cons, Nil, etc.))
+  
+  thunk(e)               (thunks renvoyant une valeur `e`)
+  
+  closure(e)             (fermeture sur un calcul `e`)
+  
+  exp(e)                 (fermeture partagée)
+  
+  (e).m(e_1, ..., e_n)   (appel de méthode sur un calcul (à utiliser avec `get ... end`))
+  
+  if e then e else e     (conditionelle)
+  
+  match e with           (pattern matching (à utiliser avec `e` = `k(...)`)) 
+    | k_1(x_1, ..., x_n) -> e_1
+    | k_2(y_1, ..., y_n) -> e_2
+    ...
+  end
+  
+  get                    (définition de calcul)
+    | m_1(x_1, ..., x_n) -> e_1
+    | m_2(y_1, ..., y_n) -> e_2
+    ...
+  end
+  
+  { block }             (exécution de bloc)
+  
+  rec x is e            (calculs récursifs)
+  
+  absurd(e)             (indique que le code `e` est mort (jamais accessible au runtime))
+
+
+block ::= 
+  
+  return e              (retour)
+  
+  let x = e; block      (asignement)
+  
+  force x = e; block    (ouverture de fermeture, à utiliser avec closure(e))
+  
+  open x = e; block  (forçage de thunk, à utiliser avec thunk(e))
+  
+  unexp x = e; block    (ouverture de fermeture partagée)
+  
+decl ::=
+ 
+  data K(A_1 : ±, ..., A_n : ±) = 
+    | k_1(T_1+, ..., T_n+)
+    | k_2(U_1+, ..., U_n+)
+    | ...
+  end
+     
+  comput K(A_1 : ±, ..., A_n : ±) = 
+    | m_1(T_1+, ..., T_n+) -> T-
+    | m_2(U_1+, ..., U_n+) -> U-
+    | ... 
+  end
+   
+  type K(A_1 : ±, ..., A_n : ±) = T
+     
+  decl type K : (±, ..., ±) -> ±
+
+  decl x : T
+
+program ::=
+
+  decl 
+  decl
+  ...
+  decl
+  block 
+\end{verbatim}
+
+\end{document}

@@ -841,8 +841,8 @@ encadrants celui-ci est sans effets de bord.
 \newcommand{\isExtentionML}[1]{ \textit{\textcolor{Orange}{#1}} \quad }
 
 Voici la grammaire BNF du language MiniML.\
-Pour des raisons de lisibilité, tout les éléments de sucre syntaxique ne seront pas détaillés ici.\
-Les extensions non compatibles avec Ocaml mais compatible avec \textbf{Autobill} sont en \textcolor{Orange}{Orange}.
+Pour des raisons de lisibilité, tous les éléments de sucre syntaxiques ne seront pas détaillés ici.\
+Les extensions non compatibles avec Ocaml mais compatibles avec \textbf{Autobill} sont en \textcolor{Orange}{Orange}.
 
 \hypertarget{Elements Nommés}{%
       \subsubsection*{Elements Nommés}\label{Elements Nommés}}
@@ -939,31 +939,31 @@ traiter deux types de stratégies d'évaluation différentes, \textbf{Call
       By Value} utilisée par \textbf{OCaml} et \textbf{Call By Name} utilisée
 par \textbf{Haskell} pour mettre en place l'évaluation \emph{Lazy}.
 
-En CBPV, les valeurs et les calculs sont deux notion bien distincte, les calculs peuvent produire et donc être réduit on dit qu'ils "font",
+En CBPV, les valeurs et les calculs sont deux notions bien distinctes, les calculs peuvent produire et donc être réduit on dit qu'ils "font";
 tandis que les valeurs sont des contenants et ne peuvent pas être réduit on dit qu'ils "sont".
-Lorsqu'on effectue la traduction depuis une autre sémantique, nous devons donc décider comment et quand nos calculs vont être effectuer.
+Lorsqu'on effectue la traduction depuis une autre sémantique, nous devons donc décider comment et quand nos calculs vont être effectués.
 
-Dans le cadre de ce projet, 3 constructions de LCBPV nous intéressent particulièrement, les \textbf{Closure}, les \textbf{Thunks}.
+Dans le cadre de ce projet, 3 constructions de LCBPV nous intéressent particulièrement, les \textbf{Closure}, les \textbf{Thunks} et les \textbf{Methods}.
 \begin{itemize}
       \item
-            Les \textbf{Thunks} sont des expressions non evaluée, ils sont utilisés pour représenter un calcul qui n'a pas encore été effectué.
+            Les \textbf{Thunks} sont des expressions non évaluées, ils sont utilisés pour représenter un calcul qui n'a pas encore été effectué.
             On peut donc les voir comme des lambdas sans arguments.
             Pour forcer l'évaluation d'un \textbf{Thunk} il suffit d'utiliser l'instruction  \textbf{force}.
       \item
             Les \textbf{Closures} qui permettent de capturer un environnement et une expression et de les lier.
       \item
-            Les \textbf{Methods} qui dans notre cas permettent de définir des calculs à effectuer avec des arguments.
+            Les \textbf{Methods} qui dans notre cas permet de définir des calculs à effectuer avec des arguments.
 \end{itemize}
-Pour plus d'information sur LCBPV sa syntaxe, sa sémantique et ses constructions , vous pouvez vous référer à l'annexe de ce rapport.
+Pour plus d'informations sur LCBPV sa syntaxe, sa sémantique et ses constructions, vous pouvez vous référer à l'annexe de ce rapport.
 
 \hypertarget{semantique-de-traduction}{%
       \subsection{Semantique de traduction}\label{semantique-de-traduction}}
 
-Puisque MiniML est un language \emph{Call By Value},ici nous décidons que toute traduction nécessitant le passage par la notion de calculs dans CBPV forcera immédiatement l'évaluation de ceux-ci.
-Permettant ainsi une equivalence parfaite entre tout comportement de MiniML traduit en LCBPV.
+Puisque MiniML est un language \emph{Call By Value}, ici nous décidons que toute traduction nécessitant le passage par la notion de calculs dans CBPV forcera immédiatement l'évaluation de ceux-ci.
+Permettant ainsi une équivalence parfaite entre tout comportement de MiniML traduit en LCBPV.
 
-Pour décrire la traduction de MiniML en LCBPV, nous allons opté pour une traduction de syntaxe concrète à syntaxe concrète.
-Vous trouverez ci-dessous toutes les cas d'intérêts de la traduction.
+Pour décrire la traduction de MiniML en LCBPV, nous allons opter pour une traduction de syntaxe concrète à syntaxe concrète.
+Vous trouverez ci-dessous tous les cas d'intérêts de la traduction.
 
 \newcommand{\translateNode}[2]{\llbracket #1 \rrbracket_{#2}}
 \newcommand{\translateResult}[1]{\llbracket #1 \rrbracket}
@@ -971,6 +971,8 @@ Vous trouverez ci-dessous toutes les cas d'intérêts de la traduction.
 \newcommand{\isElemLCBPV}[1]{\textcolor{ForestGreen}{#1}}
 \newcommand{\spaced}[1]{\; #1 \;}
 \newcommand{\Tab}{\quad \quad \quad \quad \quad \quad \;}
+
+\pagebreak
 \hypertarget{notation}{%
       \subsubsection*{Notation}\label{notation}}
 $ \translateNode{let \; v \; = \; e_1 \; in \; e_2}{Expr}  \rightarrow let \; v = \; \translateResult{e_1} \; in \; \translateResult{e_2}$
@@ -1026,10 +1028,10 @@ Un programme MiniML est une suite de taille arbitraire de définitions suivie d'
 
 \subsubsection*{Définitions}\label{def}
 
-On définit l'operation de traduction \(\translateNode{\_}{Def}\) selon les cas de construction
+On définit l'opération de traduction \(\translateNode{\_}{Def}\) selon les cas de construction
 des définitions précisées par la règle de grammaire : \grammarRule{Def}
 
-On distingue deux noeuds de types \grammarRule{Def}:
+On distingue deux noeuds du type \grammarRule{Def}:
 \begin{itemize}
       \tightlist
       \item
@@ -1044,9 +1046,9 @@ On distingue deux noeuds de types \grammarRule{Def}:
 \end{align*}
 \subsubsection*{Définitions de Constructeurs}\label{defConstruct} \hfill \break
 
-On définit l'operation de traduction \(\translateNode{\_}{DefContructors}\) selon les cas de construction précisées par la règle de grammaire : \grammarRule{NewContructors}
+On définit l'opération de traduction \(\translateNode{\_}{DefContructors}\) selon les cas de construction précisées par la règle de grammaire : \grammarRule{NewContructors}
 
-On distingue deux noeuds de types \grammarRule{NewContructors}:
+On distingue deux noeuds du type \grammarRule{NewContructors}:
 \begin{itemize}
       \tightlist
       \item
@@ -1060,10 +1062,10 @@ On distingue deux noeuds de types \grammarRule{NewContructors}:
 
 \subsubsection*{Types}\label{types-2}
 
-On définit l'operation de traduction \(\translateNode{\_}{Type}\) selon les cas de construction
+On définit l'opération de traduction \(\translateNode{\_}{Type}\) selon les cas de construction
 des types précisées par la règle de grammaire : \grammarRule{Type}
 
-On distingue 4 noeuds de types $Type$:
+On distingue 4 noeuds du type $Type$:
 \begin{itemize}
       \tightlist
       \item
@@ -1084,10 +1086,10 @@ On distingue 4 noeuds de types $Type$:
 
 \subsubsection*{Expressions}\label{exprs}
 
-On définit l'operation de traduction \(\translateNode{\_}{Expr}\) selon les cas de construction
+On définit l'opération de traduction \(\translateNode{\_}{Expr}\) selon les cas de construction
 des expressions précisées par la règle de grammaire : \grammarRule{Expr}
 
-On distingue 8 noeuds d'intérêts de types \grammarRule{Expr}:
+On distingue 8 noeuds d'intérêts du type \grammarRule{Expr}:
 \begin{itemize}
       \tightlist
       \item
@@ -1107,7 +1109,7 @@ On distingue 8 noeuds d'intérêts de types \grammarRule{Expr}:
       \item
             Les \textbf{Appels d'operateurs}.
 \end{itemize}
-\textbf{Note:} On ne prend pas en compte les \textbf{Litteraux} et les \textbf{Variables} dans ce descriptif car leurs traductions sont directes.
+\textbf{Note:} On ne prend pas en compte les \textbf{Littéraux} et les \textbf{Variables} dans ce descriptif car leurs traductions sont directes.
 \begin{align*}
       \text{(BINARY)} \quad    & \translateNode{e_1 \, op \, e_2}{Expr} \rightarrow \translateResult{e_1} \, \, op \, \, \translateResult{e_2}                                                                  \\
       \text{(UNARY)} \quad     & \translateNode{op \, e}{Expr} \rightarrow op \, \, \translateResult{e}                                                                                                         \\
@@ -1127,16 +1129,16 @@ On distingue 8 noeuds d'intérêts de types \grammarRule{Expr}:
       \text{(MATCH)} \quad     & \translateNode{match \, e \, with \, p_1 \dots p_N }{Expr}\rightarrow  match \, \translateResult{e} \, with \, \translateResult{p_1} \dots \translateResult{p_N} \; end        \\
 \end{align*}
 
-Les cas les plus intéressants sont les cas de \textbf{Fonctions} et les \textbf{Appels de Fonctions}.
-La traduction d'une fonction ce déroule ainsi:
+Les cas de traductions les plus intéressants sont ceux des \textbf{Fonctions} et les \textbf{Appels de Fonctions}.
+La traduction d'une fonction se déroule ainsi:
 \begin{enumerate}
       \tightlist
       \item
-            A l'aide de l'instruction \textbf{get} on crée une methode \textbf{call} qui prend en paramètre un argument.
+            À l'aide de l'instruction \textbf{get} on crée une méthode \textbf{call} qui prend en paramètre un argument.
       \item
-            Ensuite dans le corps de cette methode on crée un \textbf{Thunk} qui contient la traduction du corps de la fonction.
+            Ensuite dans le corps de cette méthode on crée un \textbf{Thunk} qui contient la traduction du corps de la fonction.
       \item
-            Puis on crée une \textbf{Closure} qui contient la methode ainsi créée et son environnement.
+            Puis on crée une \textbf{Closure} qui contient la méthode ainsi créée et son environnement.
 \end{enumerate}
 Au vu de la traduction des fonctions, on peut en déduire la traduction des appels:
 \begin{enumerate}
@@ -1148,15 +1150,15 @@ Au vu de la traduction des fonctions, on peut en déduire la traduction des appe
             On applique la méthode \textbf{call} sur l'argument fourni au moment de l'appel.
             Pour récupérer un \textbf{Thunk} sur le corps de la fonction  avec l'environnement enrichi de l'argument.
       \item
-            On force le \textbf{Thunk} ainsi obtenu pour avoir l'evalution immédiate du corps de la fonction.
+            On force le \textbf{Thunk} ainsi obtenu pour avoir l'évaluation immédiate du corps de la fonction.
 \end{enumerate}
 
 \subsubsection*{Motifs et Filtrage}\label{motifs-et-filtrage}
 
-On définit l'operation de traduction \(\translateNode{\_}{Case}\) selon les cas de construction
+On définit l'opération de traduction \(\translateNode{\_}{Case}\) selon les cas de construction
 des expressions précisées par la règle de grammaire : \grammarRule{MatchCase}
 
-On distingue 4 noeuds d'intérêt de types \grammarRule{MatchCase}:
+On distingue 4 noeuds d'intérêt du type \grammarRule{MatchCase}:
 \begin{itemize}
       \tightlist
       \item
@@ -1176,17 +1178,17 @@ On distingue 4 noeuds d'intérêt de types \grammarRule{MatchCase}:
       \text{(PATTERN CONSTR)} \quad & \translateNode{v_1 \, v_2 \, \text{->} \; e}{MatchCase} \rightarrow v_1 \, v_2 \; \text{->} \; \translateResult{e}                \\
 \end{align*}
 
-On notera que la traduction des patterns ne prend pas en compte les patterns profonds, c'est à dire les patterns imbriqués dans d'autres patterns.
+On notera que la traduction des patterns ne prend pas en compte les patterns profonds, c'est-à-dire les patterns imbriqués dans d'autres patterns.
 En effet, les patterns profonds ne sont pas encore supportés par le language cible.
 
 
 \hypertarget{Implémentation}{%
       \subsection{Implémentation}\label{Implementation}}
-Dans le cadre de ce projet MiniML, dispose d'une implémentation écrite en \textbf{OCaml} nous avons utilisé ce langage pour deux raisons principales.
-Permmettre une meilleure intégration avec autobill qui est écrit en OCaml et permettre une compatibilité avec les deux architectures du projet.
+Dans le cadre de ce projet, MiniML dispose d'une implémentation écrite en OCaml nous avons utilisé ce langage pour deux raisons principales.
+Permettre une meilleure intégration avec autobill qui est écrit en OCaml et permettre une compatibilité avec les deux architectures du projet.
 Cela nous a permis d'effectuer la traduction non pas de syntaxe concrète à syntaxe concrète mais de syntaxe abstraite à syntaxe abstraite.
-Nous epargnant ainsi une nouvelle étape de parsing.
-Une autre divergence avec la spécification est que nous avons utilisé une traduction recursive terminale par soucis d'optmisation.
+Nous épargnant ainsi une nouvelle étape d'analyse syntaxique.
+Une autre divergence avec la spécification est que nous avons utilisé une traduction récursive terminale par souci d'optimisation.
 
 
 \hypertarget{conclusion}{%

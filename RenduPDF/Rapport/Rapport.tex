@@ -1194,11 +1194,12 @@ Deux autres divergences avec la spécification est l'utilisation d'une fonction 
 
 \hypertarget{conclusion}{%
       \section{Conclusion}\label{conclusion}}
-      
 \hypertarget{conclusion}{%
   \subsection{Avancement du projet}\label{Avancement du Projet}}
 
-Dans ce projet, nous avons utilisé MiniML pour rédiger le lexer et le parser pour Autobill, ainsi que pour compléter la traduction de MiniML vers CBPV. Parallèlement, nous avons développé une interface web en utilisant React et NodeJS, en mode seul client et de client-server, qui présente de manière satisfaisante les résultats des étapes précédentes. Cette interface utilise également Minizinc pour analyser l'équation de l'analyse statique, afin d'obtenir les bornes mémoire du programme. Nous avons fait la comparaision sur les resultats obtenu par côte client et côte server, et nous avons eu le même resultat.\\
+L'objective de notre projet STL est construire un pipeline du MiniML à la résolution de contrainte ( MiniML $\rightarrow$ LCBPV $\rightarrow$ Autobill $\rightarrow$ Équation $\rightarrow$ Résolution). Dans la partie MiniML, nous avons utilisé MiniML pour rédiger le lexer et le parser pour Autobill, ainsi que pour finir la traduction de MiniML vers CBPV. Ce qui complète la partie MiniML $\rightarrow$ LCBPV $\rightarrow$ Autobill dans la pipeline, et produire l'entrée d'Autobill pour faire l'analyse à la suite. Parallèlement, nous avons développé une interface web en utilisant React et NodeJS, en mode client-seulement et de client-server. Le service "MiniML $\rightarrow$ LCBPV" du interface présente de manière satisfaisante les résultats des étapes précédentes. Cet interface utilise également Minizinc pour analyser l'équation de l'analyse statique, afin d'obtenir les bornes sur la consommation de mémoire du programme dans le service "Équation $\rightarrow$ Solution". Ce qui complète la partie Équation $\rightarrow$ Résolution de la pipeline. Nous avons utilisé quelque programmes pour comparer  les resultats obtenu par côte client et côte server, et nous avons eu le même resultat.\\
+
+Cependant, la partie Autobill $\rightarrow$ Équation est toujours en progress. H.Suzanne travaille encore sur les détails de l'Autobill afin de obtenir l'équation parfaitement. Donc nous ne pouvons pas finalement construire la pipeline entière, pour obtenire le borne de mémoire à patir de la programme MiniML. Mais notre avancement de ce projet STL a pu répondre à la plupart des besoins de la section 1 du rapport.\\
       
 La réalisation de cette interface a fait intervenir un large panel de
 sujets en lien avec la formation du Master d'informatique STL et mis à
@@ -1210,12 +1211,12 @@ concurrente répartie, réactive et réticulaire
 \protect\hyperlink{ref-PC3R}{{[}22{]}}, notamment pour la partie
 réticulaire et l'architecture d'applications Web modernes.\\
 
-      \subsection{Difficulté rencontré}\label{Difficulté rencontré}}
+\subsection{Difficulté rencontré}\label{Difficulté rencontré}}
 
-Nous avons également rencontré quelques difficultés pour faire avancer le projet. Tout d'abord, nous n'avons pas été en mesure de construire un pipeline MiniML $\rightarrow$ LCBPV $\rightarrow$ Autobill $\rightarrow$ Équation $\rightarrow$ Résolution, avec le lien Autobill $\rightarrow$ Équation est toujours en progress. Et finalement nous ne pouvons pas comparer notre solution avec celle de J.Hoffmann et l'interface de RAML. Deuxièmement, notre projet avance en parallèle avec H.Suzanne et nous devons être totalement immergés dans le sujet de recherche. Mais nous devions aussi travailler sur plusieurs projets en même temps, et nous avons eu beaucoup de challenge de gestion de temps. \\
+Nous avons également rencontré quelques difficultés pour faire avancer le projet. Tout d'abord, nous n'avons pas été en mesure de construire un pipeline MiniML $\rightarrow$ LCBPV $\rightarrow$ Autobill $\rightarrow$ Équation $\rightarrow$ Résolution, avec le lien Autobill $\rightarrow$ Équation est toujours en progress. Et finalement nous ne pouvons pas comparer notre solution avec celle de J.Hoffmann et l'interface de RAML. Deuxièmement, notre projet avance en parallèle avec H.Suzanne et nous devons être totalement concentré dans le recherche, et nous accommoder mutuellement des progrès réalisés par les deux parties. Aussi nous avons plusieurs projets en même temps, et nous avons eu beaucoup de challenge de gestion de temps. \\
 
 \subsection{Ce qu'on a appris}\label{Ce qu'on a appris}}
-Cependant, ce projet nous a beaucoup apporté. Tout d'abord, notre capacité à écrire du code a été améliorée et nous avons acquis une meilleure compréhension des principes de compilation et de la composition des langages de programmation. Deuxièmement, nous avons lu un certain nombre d'articles dans lesquels nous avons appris la grande contribution de Jan Hofmann à l'étude de l'analyse automatique des ressources amorties et les principes de call-by-push-value. Notre capacité à gérer le temps et à travailler en mode multiple-threads, comme mentionné ci-dessus, a également été améliorée, de même que notre capacité d'introduire des références de manière disciplinement.\\
+Cependant, ce projet nous a beaucoup apporté. Tout d'abord, notre capacité à écrire du code a été améliorée et nous avons acquis une meilleure compréhension des principes de compilation et de la composition des langages de programmation. Deuxièmement, nous avons lu un certain nombre d'articles dans lesquels nous avons appris la grande contribution de J.Hoffmann à l'étude de l'analyse automatique des ressources amorties et les principes de call-by-push-value. Notre capacité à gérer le temps et à travailler en mode multiple-threads, comme mentionné ci-dessus, a également été améliorée.\\
 
 \subsection{Pour aller plus loin...}\label{Pour aller plus loin...}}
 Le projet est à un stade d'avancement satisfaisant. Autobill étant

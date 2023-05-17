@@ -637,11 +637,10 @@ fonctionnement local/synchrone et un mode distant/asynchrone.
 
 \begin{figure}[!b]
       \centering
-      \includegraphics[scale=0.5]{Figures/Communication.png}
+      \includegraphics[scale=0.5]{Figures/CommunicationMiniML.png}
       \caption{Schéma de communication}
 \end{figure}
 
-\newpage
 
 Nous vouslons diviser notre architecture Client-Server en deux partie, la partie MiniML et la partie résolution de contraintes. \\
 Dans la partie MiniML, nous avons mis en place 5 services principaux en utilisant le protocole HTTP (voir Figure 8): \emph{'/MiniML/toMiniMLAST'}, \emph{'/MiniML/toLCBPV'}, \emph{'/MiniML/toAutobill'}, \emph{'/MiniML/toAutobillType'} et \emph{'/MiniML/toEquation'}. \\
@@ -670,6 +669,15 @@ Dans la partie résolution de contraintes, nous avons un service \emph{'/minizin
     }
 \end{lstlisting}
       \caption{Exécution de code Minizinc}
+\end{figure}
+
+\hypertarget{schuxe9ma-de-communication}{%
+      \subsubsection{Schema de Communication}\label{schuxe9ma-de-communication}}
+
+\begin{figure}[!b]
+      \centering
+      \includegraphics[scale=0.5]{Figures/CommunicationMiniZinc.png}
+      \caption{Schéma de communication}
 \end{figure}
 
 \iffalse

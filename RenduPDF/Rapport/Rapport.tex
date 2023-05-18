@@ -619,21 +619,21 @@ Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie 
 \fi
 \pagebreak
 
+
 \hypertarget{serveur-client}{%
       \subsection{Serveur + client}\label{serveur-client}}
 
 Dans le stade actuel d'Autobill, une architecture avec un client seul
 peut répondre aux exigences du projet STL. Néanmoins, au fur et à mesure que le projet avançait, nous nous sommes rendu compte d'un problème. Autobill évolue constamment et rien ne garantit que ses itérations suivantes puissent
-être supportées par notre solution. Par exemple, la utilisation de la librairie core de Mini-Zinc peut échouer en mode client unique. Dans l'optique de rendre notre solution plus flexible et \emph{futureproof}, une nouvelle version de notre interface, qui déporte les tâches complexes vers un serveur
-distant, a été développée.
+être supportées par notre solution. Par exemple, la utilisation de la librairie core de Mini-Zinc peut échouer en mode client unique. Dans l'optique de rendre notre solution plus flexible et \emph{futureproof}, une nouvelle version de notre interface, qui déporte les tâches complexes vers un serveur distant, a été développée.
 
 On a souhaité aussi adapter le client pour qu'il opère dans ces deux
 architectures différentes. Ainsi, dans notre environnement de
 développement, on peut facilement faire la bascule entre un mode de
-fonctionnement local/synchrone et un mode distant/asynchrone.
+fonctionnement local/synchrone et un mode distant/asynchrone. Pour ce architecture de client-server, on decide de utiliser le méthode POST de HTTP, pour envoyer une rêquete qui contient le code écrit dans l'éditeur du code à server. Le server traite le code soit en utilisant le module généré par Js$\textunderscore$of$\textunderscore$Ocaml (Pour la partie MiniML, voir section 2.2.1), soit en utilisant la bibliothèque Childprocess, qui peut lancé l'éxecution en passant les lignes de commande ( Pour la partie Résolution de contraintes, voir section 2.2.2 ). Après le traitement du code, le server renvoie le résultat au client.
 
 \hypertarget{schuxe9ma-de-communication}{%
-      \subsubsection{Schema de Communication}\label{schuxe9ma-de-communication}}
+      \subsubsection{MiniML}\label{schuxe9ma-de-communication}}
 
 \begin{figure}[!b]
       \centering
@@ -644,16 +644,21 @@ fonctionnement local/synchrone et un mode distant/asynchrone.
 
 Nous vouslons diviser notre architecture Client-Server en deux partie, la partie MiniML et la partie résolution de contraintes. \\
 Dans la partie MiniML, nous avons mis en place 5 services principaux en utilisant le protocole HTTP (voir Figure 8): \emph{'/MiniML/toMiniMLAST'}, \emph{'/MiniML/toLCBPV'}, \emph{'/MiniML/toAutobill'}, \emph{'/MiniML/toAutobillType'} et \emph{'/MiniML/toEquation'}. \\
+
 Pour le service \emph{'/MiniML/toMiniMLAST'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers l'AST de MiniML et le renvoit au client.\\
 Pour le service \emph{'/MiniML/toLCBPV'},le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers l'AST de LCBPV et le renvoit au client.\\
-Pour le service \emph{'/MiniML/toAutobill'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers le code d'Autobill et le renvoit au client.\\
-Pour le service \emph{'/MiniML/toAutobillType'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers le code d'Autobill typé et le renvoit au client.\\
-Pour le service \emph{'/MiniML/toAutobillType'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers l'équation résultant de l'analyse statique et le renvoit au client.\\
+Ce deux service génére l'AST de MiniML et de LCBPV. La côté client affiche les noeuds d'AST en côté après recevoir la réponse. L'objectif principal de ces deux services est de valider les résultats du lexer, du parser et de la traduction, en nous aidant à compléter ces trois parties de l'écriture.\\
+
+Pour le service \emph{'/MiniML/toAutobill'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers le code de LCBPV et le renvoit au client.\\
+Pour le service \emph{'/MiniML/toAutobillType'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers le code de LCBPV typé et le renvoit au client.\\
+La côté client affiche les code généré par le server après le recevoir dans la réponse. Ce deux service génére le code de LCBPV traduire par MiniML, ce la produit l'entrée d'Autobill et compléte la pipeline MiniML $\rightarrow$ LCBPV $\rightarrow$ Autobill.
+
+Pour le service \emph{'/MiniML/toAutobillType'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers l'équation résultant de l'analyse statique et le renvoit au client. Ce service permet de générer les équation de l'analyse statique en utilisant le service correspondant dans Autobill. Ces équations seront utilisées pour obtenir les bornes de consommation de mémoire dans les service suivant, mentionné dans la section 2.2.2. Mais ce service dans Autobill est toujours en progress, donc on ne peut pas encore obtenir les équation directement depuis le code MiniML.
 
 
-\subsubsection{La résolution de contraintes}\
-
-Dans la partie résolution de contraintes, nous avons un service \emph{'/minizinc/gecode'} qui éxecute le code MiniZinc. Le client envoie le code de MiniZinc au serveur via une requête POST. Le serveur écrit le code dans un fichier temporaire puis l'exécuter à l'aide de l'exécutable de ligne de commande minizinc avec le solveur Gecode (voir Figure.9), et renvoie le résultat au client.
+\subsubsection{La résolution des contraintes}\
+L'objective de cette partie la résolution de contraintes est qu'on éxecute des équation en format code de MiniZinc généré par Autobill, et obtient les bornes de consommation de mémoire de programme. Pour éxecuter le code MiniZinc, on a trouvé deux moyens. Le premier est utiliser la librairie de MiniZinc généré par bytecode WebAssembly comme mentionné dans la section 2.1.3. Et l'autre est utilise la librairie child$\textunderscore$process. Le module child$\textunderscore$process est un module intégré à Node.js qui permet d'exécuter des processus enfants (child processes). Il fournit une interface permettant de lancer d'autres programmes ou scripts à partir de notre application Node.js. Cela nous permet d'effectuer l'exécution des programme MiniZinc en passant les lignes de commande.
+Dans la partie résolution de contraintes, nous avons un service \emph{'/minizinc/gecode'} qui éxecute le code MiniZinc (Voir figure 10). Le client envoie le code de MiniZinc au serveur via une requête POST. Le serveur écrit le code dans un fichier temporaire puis l'exécuter à l'aide de l'exécutable de ligne de commande minizinc avec le solveur Gecode (voir Figure.9), et renvoie le résultat au client.
 
 \begin{figure}[!b]
       \centering
@@ -671,8 +676,7 @@ Dans la partie résolution de contraintes, nous avons un service \emph{'/minizin
       \caption{Exécution de code Minizinc}
 \end{figure}
 
-\hypertarget{schuxe9ma-de-communication}{%
-      \subsubsection{Schema de Communication}\label{schuxe9ma-de-communication}}
+
 
 \begin{figure}[!b]
       \centering

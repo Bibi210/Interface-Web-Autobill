@@ -224,6 +224,3 @@ let trans_prog p =
   in
   Prog (List.rev progItemLs @ [ Do (Blk (List.rev glbVar, last_expr, dummy_pos)) ])
 ;;
-
-
-let a = 1,3

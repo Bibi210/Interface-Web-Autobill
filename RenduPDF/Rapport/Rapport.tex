@@ -403,23 +403,23 @@ projet. Celle-ci permettait de garantir une facilité dans le déploiement
 en ligne de notre solution. Cette partie se concentra sur la présentation de
 notre client Web, de l'implémentation des fonctionnalités importantes et des problèmes rencontrés ainsi que leurs résolutions.
 
-\subsubsection{Interopérabilité Web-Ocaml}\
+\subsubsection{Interopérabilité Web-OCaml}\
 
-Autobill est un projet entièrement codé en Ocaml, un langage de programmation multiparadigme compilé, et notre projet STL impose un environnement sur navigateur Web, fonctionnant exclusivement avec son langage de script Javascript. Avant de commencer tout codage, il est nécessaire de passer en revue l'état de l'art autour de la compilation et d'exécution de programmes Ocaml sur le Web. De ces recherches vont découler  des choix de conception qui vont nous impacter tout le long du semestre. \\
+Autobill est un projet entièrement codé en OCaml, un langage de programmation multiparadigme compilé, et notre projet STL impose un environnement sur navigateur Web, fonctionnant exclusivement avec son langage de script Javascript. Avant de commencer tout codage, il est nécessaire de passer en revue l'état de l'art autour de la compilation et d'exécution de programmes OCaml sur le Web. De ces recherches vont découler  des choix de conception qui vont nous impacter tout le long du semestre. \\
 
 D'abord, il y'avait la piste des compilateurs vers WebAssembly. WebAssembly est un standard du W3C (World Wide Consortium) qui regroupe un bytecode (.wasm) et un environnement d'exécution compatible avec les navigateurs modernes Javascript. Le bytecode étant une représentation très bas niveau de l'exécutable, l'idée principale est de compiler un langage de programmation plus haut niveau, comme C/C++, Rust,.. vers bytecode. Ce bytecode est par la suite compilé par l'environnement d'exécution dans le langage machine de l'hôte. Tant que le support d'un langage de programmation est garanti par un compilateur WebAssembly, il est possible de programmer des applications web complètes dans le langage de son choix ou réinvestir des programmes codés dans ces langages dans une application codée avec des technologies Web. \\
-Pour le cas d'Ocaml, cette possibilité est offerte grâce au post-processeur Wasicaml : il offre un binaire qui prend en entrée un bytecode Ocaml et un fichier .wasm de destination pour traduire chaque instruction dans son équivalent en WebAssembly. Ainsi, on pourrait générer nos fichiers .wasm à partir des binaires d'Autobill et de notre compilateur MiniML, les intégrer à notre applicatiton Web et les appeler avec Javascript en leur fournissant les options nécessaires. Cette solution demande néanmoins une dépendance à un projet encore en phase expérimentale, avec certains traits d'Ocaml non intégrés (notamment certaines fonctions du module Unix).\\
+Pour le cas d'OCaml, cette possibilité est offerte grâce au post-processeur Wasicaml : il offre un binaire qui prend en entrée un bytecode OCaml et un fichier .wasm de destination pour traduire chaque instruction dans son équivalent en WebAssembly. Ainsi, on pourrait générer nos fichiers .wasm à partir des binaires d'Autobill et de notre compilateur MiniML, les intégrer à notre applicatiton Web et les appeler avec Javascript en leur fournissant les options nécessaires. Cette solution demande néanmoins une dépendance à un projet encore en phase expérimentale, avec certains traits d'OCaml non intégrés (notamment certaines fonctions du module Unix).\\
 \begin{figure}
       \begin{lstlisting}
-$ ocamlc -o hello hello.ml
+$ OCamlc -o hello hello.ml
 $ wasicaml -o hello_wasm hello
 \end{lstlisting}
       \caption{Chaine d'instructions pour générer le bytecode WebAssembly}
 \end{figure}
 
-La seconde piste émise par nos tuteurs de projet était l'utilisation de compilateurs Ocaml vers Javascript. La présentation du projet nous a notamment pointé vers Js\_of\_Ocaml. C'est une librairie contenant, entre autres, un compilateur qui transpile du bytecode OCaml en Javascript et propose une grande variété de primitives et de type pour manipuler des éléments Javascript depuis OCaml. L'API de Js\_of\_OCaml est suffisamment fournie pour développer entièrement des applications web complètes et fonctionnelles. On profite alors de l'expérience développeur offerte par Ocaml avec son style de programmation fonctionnelle en y intégrant les traits nécessaires pour construire des pages Web dynamiques.\\
+La seconde piste émise par nos tuteurs de projet était l'utilisation de compilateurs OCaml vers Javascript. La présentation du projet nous a notamment pointé vers Js\_of\_OCaml. C'est une librairie contenant, entre autres, un compilateur qui transpile du bytecode OCaml en Javascript et propose une grande variété de primitives et de type pour manipuler des éléments Javascript depuis OCaml. L'API de Js\_of\_OCaml est suffisamment fournie pour développer entièrement des applications web complètes et fonctionnelles. On profite alors de l'expérience développeur offerte par OCaml avec son style de programmation fonctionnelle en y intégrant les traits nécessaires pour construire des pages Web dynamiques.\\
 
-Il est aussi possible de l'utiliser en coopération avec une base de code Javascript déjà rédigée grâce à la fonctionnalité d'export offerte par Js\_of\_Ocaml. En effet, on pourrait avoir dans un objet Javascript plusieurs méthodes correspondant chacune à un mode d'exécution différent d'Autobill. Chaque méthode prend en entrée le code MiniML à traiter et réalise les transformations nécessaires pour générer la sortie demandée. On peut aussi tirer profit des exceptions d'Ocaml et de la capture des sorties d'erreurs offerte par Js\_of\_Ocaml pour rediriger les messages d'erreurs et les afficher à l'utilisateur. Une fois l'objet exporté et le fichier Ocaml compilé vers Javascript, n'importe quel fichier Javascript du projet pourra ensuite importer l'objet et accéder aux méthodes définies précédemment. On garde ainsi une liberté sur le choix de technologies pour construire notre application.\\
+Il est aussi possible de l'utiliser en coopération avec une base de code Javascript déjà rédigée grâce à la fonctionnalité d'export offerte par Js\_of\_OCaml. En effet, on pourrait avoir dans un objet Javascript plusieurs méthodes correspondant chacune à un mode d'exécution différent d'Autobill. Chaque méthode prend en entrée le code MiniML à traiter et réalise les transformations nécessaires pour générer la sortie demandée. On peut aussi tirer profit des exceptions d'OCaml et de la capture des sorties d'erreurs offerte par Js\_of\_OCaml pour rediriger les messages d'erreurs et les afficher à l'utilisateur. Une fois l'objet exporté et le fichier OCaml compilé vers Javascript, n'importe quel fichier Javascript du projet pourra ensuite importer l'objet et accéder aux méthodes définies précédemment. On garde ainsi une liberté sur le choix de technologies pour construire notre application.\\
 
 \begin{figure*}[!b]
       \begin{lstlisting}[language=caml]
@@ -439,9 +439,9 @@ Js.export
 \end{lstlisting}
       \caption{Création et exportation d'un objet Javascript avec une méthode de traduction de MiniML vers CBPV}
 \end{figure*}
-Enfin, une dernière piste suggérée a été l'utilisation de langages de programmation camélien compilables vers Javascript, comme ReasonML ou Rescript. En effet, ce sont tout deux des langages qui ont émergé d'Ocaml et permettent de créer dans un paradigme fonctionnel des applications web complexes. Ils profitent d'une syntaxe ML, d'outils et d'un support communautaire intéressant, faisant des deux langages des alternatives intéressantes pour le Web. Néanmoins, notre objectif principal est la manipulation de la librairie d'Autobill ainsi que celle de MiniML depuis le Web. La compatibilité avec les librairies en Ocaml n'est cependant pas garantie dans le contexte d'une compilation vers Javascript. \\
+Enfin, une dernière piste suggérée a été l'utilisation de langages de programmation camélien compilables vers Javascript, comme ReasonML ou Rescript. En effet, ce sont tout deux des langages qui ont émergé d'OCaml et permettent de créer dans un paradigme fonctionnel des applications web complexes. Ils profitent d'une syntaxe ML, d'outils et d'un support communautaire intéressant, faisant des deux langages des alternatives intéressantes pour le Web. Néanmoins, notre objectif principal est la manipulation de la librairie d'Autobill ainsi que celle de MiniML depuis le Web. La compatibilité avec les librairies en OCaml n'est cependant pas garantie dans le contexte d'une compilation vers Javascript. \\
 
-Notre groupe a donc opté pour un choix de conception assez flexible afin de nous adapter aux situations que l'on pourrait rencontrée dans le projet. Le client fonctionnera conjointement grâce à une partie Ocaml servie à l'aide de Js\_of\_Ocaml et une partie en Javascript, plus précisément en React.js, pour assurer les fonctionnalités propres à notre IDE.
+Notre groupe a donc opté pour un choix de conception assez flexible afin de nous adapter aux situations que l'on pourrait rencontrée dans le projet. Le client fonctionnera conjointement grâce à une partie OCaml servie à l'aide de Js\_of\_OCaml et une partie en Javascript, plus précisément en React.js, pour assurer les fonctionnalités propres à notre IDE.
 
 \subsubsection{L'éditeur de code}\
 
@@ -464,9 +464,9 @@ En premier lieu, l'effort de développement a été mis dans la construction \te
 \end{figure}
 L'examen de nos besoins nous a donc contraints à repousser l'idée d'une création d'un éditeur en partant de zéro. Délivrer les fonctionnalités citées plus haut tout en assurant la stabilité de la solution serait complexe et concentrerait beaucoup d'efforts sur ce composant, au détriment de chantiers clés comme le MiniML. C'est un élément de l'application d'autant plus important qu'il ne doit pas être négligé et demande à lui seul l'effort et le temps nécessaires à un projet universitaire. pour être réalisé. Nous nous sommes donc tournés vers des librairies et solutions déjà existantes afin de les intégrer dans notre projet. \\
 
-Parmi les librairies disponibles, nous avons choisi CodeMirror. C'est un éditeur de code pour navigateur Web, disponible en libre de droits, qui peut s'intégrer à n'importe quelle application Web. Ses fonctionnalités sont exhaustives et il offre de multiples choix de personnalisations pour l'adapter à un langage spécifique. Nativement, il y'a le support intégré pour la syntaxe de langage à la ML comme Ocaml ou F\# : MiniML étant un substrat, on peut aisément créer notre fichier de configuration pour ne garder que les mots clés essentiels de notre langage et Codemirror s'occupe du parsing du code et de la coloration de chaque caractère. \\
+Parmi les librairies disponibles, nous avons choisi CodeMirror. C'est un éditeur de code pour navigateur Web, disponible en libre de droits, qui peut s'intégrer à n'importe quelle application Web. Ses fonctionnalités sont exhaustives et il offre de multiples choix de personnalisations pour l'adapter à un langage spécifique. Nativement, il y'a le support intégré pour la syntaxe de langage à la ML comme OCaml ou F\# : MiniML étant un substrat, on peut aisément créer notre fichier de configuration pour ne garder que les mots clés essentiels de notre langage et Codemirror s'occupe du parsing du code et de la coloration de chaque caractère. \\
 
-Enfin, le \textit{linting} est disponible et permet de dynamiquement surligner des lignes de l'éditeur. Comme illustré dans la Figure 3, on peut, à la volée, afficher directement les parties du programme concernées par une erreur de l'analyse. En effet, quand une méthode de Js\_of\_Ocaml est appelée et qu'une exception est levée durant l'exécution, sa sortie d'erreur peut être redirigée et retournée directement au client. Côté Ocaml, on peut alors formater la sortie d'erreur avec les données de l'exception : la ligne de début et de fin, le type d'erreur rencontrée, la phase de l'analyse durant laquelle l'exception a été levée... \\
+Enfin, le \textit{linting} est disponible et permet de dynamiquement surligner des lignes de l'éditeur. Comme illustré dans la Figure 3, on peut, à la volée, afficher directement les parties du programme concernées par une erreur de l'analyse. En effet, quand une méthode de Js\_of\_OCaml est appelée et qu'une exception est levée durant l'exécution, sa sortie d'erreur peut être redirigée et retournée directement au client. Côté OCaml, on peut alors formater la sortie d'erreur avec les données de l'exception : la ligne de début et de fin, le type d'erreur rencontrée, la phase de l'analyse durant laquelle l'exception a été levée... \\
 \begin{figure}
       \centering
       \begin{lstlisting}[language=json,firstnumber=1]
@@ -478,7 +478,7 @@ Enfin, le \textit{linting} est disponible et permet de dynamiquement surligner d
     "info": "Error on line 10 col 19: Syntax error."
 }
 \end{lstlisting}
-      \caption{Sortie d'erreur Ocaml parsée}
+      \caption{Sortie d'erreur OCaml parsée}
 \end{figure}
 
 Côté Web, on peut parser la chaîne de caractères et récupérer le JSON parsé pour manipuler les informations sur l'erreur rencontrée (voir Figure 4). CodeMirror offre des fonctions permettant de manipuler l'état global de l'éditeur: son thème, son contenu, le langage de la coloration syntaxique, les options activées... On y retrouve surtout la liste des lignes qui composent l'éditeur. On peut alors leur affecter des changements de style pour les mettre en lumière ou faire apparaître une infobulle avec le message d'erreur si on passe la souris dessus... \\
@@ -556,10 +556,10 @@ Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie 
                   comme MiniML. Enfin, CodeMirror est disponible sous licence MIT, libre
                   de droits.
             \item
-                  \textbf{OCaml} \cite{Minsky_Ocaml}
+                  \textbf{OCaml} \cite{Minsky_OCaml}
                   \cite{chailloux}
                   \cite{Leroy} + \textbf{Js\_of\_OCaml}
-                  \cite{js_of_ocaml}: Afin de manipuler la
+                  \cite{js_of_OCaml}: Afin de manipuler la
                   librairie d'Autobill, il est nécessaire de passer par OCaml pour
                   traiter le code en entrée et en sortir des équations à résoudre ou des
                   résultats d'interprétations. Pour faire le pont entre Javascript et
@@ -575,9 +575,9 @@ Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie 
                   mode d'exécution différent d'Autobill. Chaque méthode prend en entrée
                   le code MiniML à traiter et réalise les transformations nécessaires
                   pour générer la sortie demandée.\newline  Néanmoins, en l'absence de
-                  sortie standard ou d'erreurs, les messages d'exceptions d'Ocaml, par
+                  sortie standard ou d'erreurs, les messages d'exceptions d'OCaml, par
                   exemple, n'apparaissent que dans la console Javascript du navigateur.
-                  Js\_of\_ocaml met à notre disposition un module \texttt{Sys\_js} qui
+                  Js\_of\_OCaml met à notre disposition un module \texttt{Sys\_js} qui
                   offre des primitives permettant de capturer les possibles messages sur
                   les sorties et les rediriger dans des buffers. Ces buffers peuvent
                   être convertis en chaînes de caractères et retournés au client par la
@@ -585,7 +585,7 @@ Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie 
                   comparé à d'autres technologies comme ReasonML
                   \cite{reasonml} ou Rescript
                   \cite{rescript}. En effet, ce sont tout
-                  deux des langages qui ont émergé d'Ocaml et permettent de créer dans
+                  deux des langages qui ont émergé d'OCaml et permettent de créer dans
                   un paradigme fonctionnel des applications web complexes. Des
                   compilateurs pour transpiler du code Rescript (Bucklescript) ou
                   ReasonML vers Javascript existent et ReasonML permet même de compiler
@@ -630,19 +630,19 @@ peut répondre aux exigences du projet STL. Néanmoins, au fur et à mesure que 
 On a souhaité aussi adapter le client pour qu'il opère dans ces deux
 architectures différentes. Ainsi, dans notre environnement de
 développement, on peut facilement faire la bascule entre un mode de
-fonctionnement local/synchrone et un mode distant/asynchrone. Pour ce architecture de client-server, on decide de utiliser le méthode POST de HTTP, pour envoyer une rêquete qui contient le code écrit dans l'éditeur du code à server. Le server traite le code soit en utilisant le module généré par Js$\textunderscore$of$\textunderscore$Ocaml (Pour la partie MiniML, voir section 2.2.1), soit en utilisant la bibliothèque Childprocess, qui peut lancé l'éxecution en passant les lignes de commande ( Pour la partie Résolution de contraintes, voir section 2.2.2 ). Après le traitement du code, le server renvoie le résultat au client.
+fonctionnement local/synchrone et un mode distant/asynchrone. Pour ce architecture de client-server, on decide de utiliser le méthode POST de HTTP, pour envoyer une rêquete qui contient le code écrit dans l'éditeur du code à server. Le server traite le code soit en utilisant le module généré par Js$\textunderscore$of$\textunderscore$OCaml (Pour la partie MiniML, voir section 2.2.1), soit en utilisant la bibliothèque Childprocess, qui peut lancé l'éxecution en passant les lignes de commande ( Pour la partie Résolution de contraintes, voir section 2.2.2 ). Après le traitement du code, le server renvoie le résultat au client.
 
-\hypertarget{schuxe9ma-de-communication}{%
-      \subsubsection{MiniML}\label{schuxe9ma-de-communication}}
+\hypertarget{schema-de-communication-MINIML}{%
+      \subsubsection{MiniML}\label{schema-de-communication-MINIML}}
 
-\begin{figure}[!b]
+\begin{figure*}[!b]
       \centering
-      \includegraphics[scale=0.5]{Figures/CommunicationMiniML.png}
+      \includegraphics[scale=0.4]{Figures/CommunicationMiniML.png}
       \caption{Schéma de communication}
-\end{figure}
+\end{figure*}
+\pagebreak
 
-
-Nous vouslons diviser notre architecture Client-Server en deux partie, la partie MiniML et la partie résolution de contraintes. \\
+Nous voulons diviser notre architecture Client-Server en deux partie, la partie MiniML et la partie résolution de contraintes.
 Dans la partie MiniML, nous avons mis en place 5 services principaux en utilisant le protocole HTTP (voir Figure 8): \emph{'/MiniML/toMiniMLAST'}, \emph{'/MiniML/toLCBPV'}, \emph{'/MiniML/toAutobill'}, \emph{'/MiniML/toAutobillType'} et \emph{'/MiniML/toEquation'}. \\
 
 Pour le service \emph{'/MiniML/toMiniMLAST'}, le client envoit le code du MiniML au server via une rêquete POST. Le server le transforme vers l'AST de MiniML et le renvoit au client.\\
@@ -660,6 +660,8 @@ Pour le service \emph{'/MiniML/toAutobillType'}, le client envoit le code du Min
 L'objective de cette partie la résolution de contraintes est qu'on éxecute des équation en format code de MiniZinc généré par Autobill, et obtient les bornes de consommation de mémoire de programme. Pour éxecuter le code MiniZinc, on a trouvé deux moyens. Le premier est utiliser la librairie de MiniZinc généré par bytecode WebAssembly comme mentionné dans la section 2.1.3. Et l'autre est utilise la librairie child$\textunderscore$process. Le module child$\textunderscore$process est un module intégré à Node.js qui permet d'exécuter des processus enfants (child processes). Il fournit une interface permettant de lancer d'autres programmes ou scripts à partir de notre application Node.js. Cela nous permet d'effectuer l'exécution des programme MiniZinc en passant les lignes de commande.
 Dans la partie résolution de contraintes, nous avons un service \emph{'/minizinc/gecode'} qui éxecute le code MiniZinc (Voir figure 10). Le client envoie le code de MiniZinc au serveur via une requête POST. Le serveur écrit le code dans un fichier temporaire puis l'exécuter à l'aide de l'exécutable de ligne de commande minizinc avec le solveur Gecode (voir Figure.9), et renvoie le résultat au client.
 
+\pagebreak
+
 \begin{figure}[!b]
       \centering
       \begin{lstlisting}[language=javascript]
@@ -672,158 +674,18 @@ Dans la partie résolution de contraintes, nous avons un service \emph{'/minizin
             if (err) throw err;
         });
     }
-\end{lstlisting}
+      \end{lstlisting}
       \caption{Exécution de code Minizinc}
 \end{figure}
-
-
-
-\begin{figure}[!b]
+\hfill \break
+\begin{figure*}[!b]
       \centering
-      \includegraphics[scale=0.5]{Figures/CommunicationMiniZinc.png}
+      \includegraphics[scale=0.4]{Figures/CommunicationMiniZinc.png}
       \caption{Schéma de communication}
-\end{figure}
+\end{figure*}
 
-\iffalse
-      \hypertarget{outils-et-technologies-utilisuxe9s-1}{%
-            \subsubsection{Outils et technologies
-                  utilisés}\label{outils-et-technologies-utilisuxe9s-1}}
 
-      \begin{itemize}
-            \item
-                  \textbf{Node.js} \cite{Node_js} : Node.js
-                  permet une gestion asynchrone des opérations entrantes, ce qui permet
-                  d'exécuter plusieurs opérations simultanément sans bloquer le fil
-                  d'exécution principal. Par exemple, si deux requêtes sont envoyées au
-                  serveur en même temps, elles seront gérées en parallèle par le
-                  serveur. Ainsi, grâce à cette gestion asynchrone, Node.js permet
-                  d'optimiser l'utilisation des ressources système en réduisant les
-                  temps d'attente et en évitant les blocages inutiles, ce qui peut
-                  augmenter l'efficacité et les performances du programme. En outre,
-                  NodeJS est également connu pour son excellent support de la gestion
-                  des entrées/sorties et du traitement de données en temps
-                  réel.\newline  De plus, la grande quantité de packages disponible sur
-                  NPM (le gestionnaire de packages de Node.js) permet de gagner beaucoup
-                  de temps de développement et de faciliter notre tâche. Par example, le
-                  module Child processes
-                  \cite{Child_Processes} nous permet
-                  d'exécuter le code MiniZinc en passant les commandes directement. Cela
-                  nous permet d'éviter les restrictions du côté tout-client au niveau du
-                  solveur de contraintes notamment. Enfin, un des avantages de Node.js
-                  est qu'il nous permet d'utiliser le même langage de programmation que
-                  le client. On s'évite ainsi les écueils autour de l'interopérabilité
-                  et de la compatibilité entre deux instances codées dans des langages
-                  différents.
-            \item
-                  \textbf{Express.js} \cite{Express_js} :
-                  Express.js est une bibliothèque d'application web populaire basée sur
-                  la plateforme Node.js, utilisé pour construire des applications web et
-                  des API évolutives. Il fournit de nombreux middlewares, tels que
-                  morgan \cite{morgan} pour enregistrer les
-                  journaux de session HTTP et helmet
-                  \cite{helmet} pour garantir la sécurité.
-                  Avec Express.js, nous pouvons facilement ajouter des middlewares en
-                  utilisant directement \texttt{app.use()} sans avoir à les ajouter
-                  manuellement. De plus, Express.js dispose d'un puissant routeur qui
-                  permet aux développeurs de gérer facilement les routes et de
-                  construire des API REST de manière efficace. Par conséquent,
-                  l'utilisation d'Express.js rend la développement plus facile et plus
-                  efficace, et rend également le code plus concis. Donc il permet aux
-                  développeurs de créer facilement des applications web plus rapides et
-                  évolutives. Il dispose d'une plus grande communauté que les
-                  bibliothèques plus jeunes, avec de nombreuses ressources et solutions
-                  disponibles.
-      \end{itemize}
-
-      \newpage
-
-      \begin{itemize}
-            \item
-                  \textbf{REST API} \cite{PC3R} : L'API REST
-                  est un modèle de conception d'interface de programmation d'application
-                  Web (API) utilisé pour fournir un accès aux ressources sur le Web. Il
-                  est basé sur le protocole HTTP et utilise des requêtes et des réponses
-                  HTTP pour communiquer. \newline  La conception de l'API REST est très
-                  simple. Elle utilise des verbes HTTP (GET, POST, PUT, DELETE, etc.)
-                  pour représenter les opérations effectuées, ainsi que des formats de
-                  données standards (tels que JSON, XML) pour la transmission de
-                  données. L'état des réponses est représenté sous la forme de codes
-                  d'état HTTP. Par exemple, le code 200 représente le succès, le code
-                  404 représente la ressource introuvable, etc.\newline  Cela permet aux
-                  clients de rapidement déterminer le résultat de la réponse en fonction
-                  du code d'état, sans avoir besoin de parser des informations de
-                  réponse complexes. Par rapport à ``SOAP'' qui ne peut utiliser que XML
-                  pour transférer des informations, l'API REST simplifie et facilite
-                  l'échange de données entre les clients et les serveurs.
-            \item
-                  \textbf{Morgan} \cite{morgan} : Morgan est
-                  un middleware JavaScript permettant d'enregistrer les journaux de
-                  session HTTP. Elle peut produire des informations dans plusieurs
-                  endroits (la console, les fichiers, les en-têtes HTTP\ldots) pour nous
-                  aider à déboguer et à analyser le fonctionnement de leurs
-                  applications. De plus, Morgan peut être facilement ajouté aux
-                  applications Node.js en installant simplement les dépendances à l'aide
-                  de npm et en les introduisant dans l'application à l'aide d'Express.js
-                  \cite{Express_js}. Par rapport à d'autres
-                  outils similaires, Morgan est plus facile à utiliser, car il ne
-                  nécessite pas d'écriture de code supplémentaire. Ainsi, Morgan produit
-                  une plus grande variété des cibles de sortie.
-            \item
-                  \textbf{Helmet} \cite{helmet} : Helmet est
-                  un middleware pour les applications Node.js, conçu pour aider à
-                  protéger les applications Web contre certaines attaques Web courantes.
-                  De plus, l'utilisation de Helmet est très facile, en installant
-                  simplement les dépendances à l'aide de npm et en les introduisant dans
-                  l'application à l'aide d'Express.js
-                  \cite{Express_js}. Et Helmet est un
-                  middleware populaire pour Node.js, bénéficiant d'une maintenance
-                  actifs de la communauté, ce qui nous permet de bénéficier facilement
-                  d'aide et de support dans la communauté.
-      \end{itemize}
-
-      \hypertarget{tuxe2ches-ruxe9alisuxe9es}{%
-            \subsection{Tâches réalisées}\label{tuxe2ches-ruxe9alisuxe9es}}
-
-      \begin{itemize}
-            \tightlist
-            \item
-                  Intégration d'un IDE similaire aux \emph{Playground} de
-                  \href{https://OCaml.org/play}{OCaml} et
-                  \href{https://rescript-lang.org/try}{Rescript}
-            \item
-                  Implémentation d'un éditeur de code supportant la syntaxe de
-                  \textbf{MiniML}
-            \item
-                  Liaison entre le code Javascript et OCaml à l'aide de Js\_of\_OCaml
-            \item
-                  Implémentation de plusieurs modes de traitement du code
-                  \textbf{MiniML}:
-
-                  \begin{itemize}
-                        \tightlist
-                        \item
-                              Affichage de l'AST MiniML
-                        \item
-                              Affichage de l'AST de \textbf{Call-By-Push-Value}
-                        \item
-                              Affichage de l'équation résultant de l'analyse statique
-                        \item
-                              Vers Représentation Interne \textbf{Autobill}
-                  \end{itemize}
-            \item
-                  Remontée d'erreurs et affichage dynamique sur l'interface
-            \item
-                  Implémentation du solveur d'équations MiniZinc côté client
-            \item
-                  Mise en place d'un serveur distant manipulant les libraires OCaml du
-                  projet et le solveur MiniZinc
-            \item
-                  Exposition du serveur avec une API REST
-            \item
-                  Mise en relation du client et du serveur
-      \end{itemize}
-\fi
-\newpage
+\pagebreak
 
 \hypertarget{miniml}{%
       \section{MiniML}\label{miniml}}
@@ -838,6 +700,33 @@ compatible avec OCaml simplifiant les comparaisons avec d'autres outils utilisan
 
 Le développement de \textbf{MiniML} suivant les besoins de nos
 encadrants celui-ci est sans effets de bord.
+
+\hypertarget{Caracteristiques-de-miniml}{%
+      \subsection{Caractéristiques de MiniML}\label{Caracteristiques-de-miniml}}
+
+Une fois les besoins de nos encadrants définis, nous avons pu définir les caractéristiques de \textbf{MiniML}.
+Il s'agit d'un langage fonctionnel pur représentant uniquement la partie fonctionnelle d'OCaml.
+Pour ce faire, nous avons premièrement mis en place en ensemble minimal permettant un $\lambda$-calcul simple et efficace.
+\textbf{MiniML} permet donc comme toute implementation du $\lambda$-calcul simple :
+\begin{itemize}
+      \item L'utilisation de variables
+      \item L'application de fonctions
+      \item La définition de fonctions
+      \item La définition de fonctions récursives
+\end{itemize}
+Ensuite pour permettre une utilisation plus simple et plus proche de la famille ML, nous avons ajouté la notion de types tel que décrite dans le \textbf{Systeme F}\cite{SystemF}.\\
+\textbf{MiniML} devient donc un $\lambda$-calcul typé de la famille ML grâce à l'ajout en autres des fonctionnalités suivantes :
+\begin{itemize}
+      \item La définition de types algébriques avec les types somme et produit et la possibilité de les imbriquer
+      \item La définition de constructeurs de types algébriques
+      \item La définition et l'utilisation de types polymorphes \footnote{Par manque de temps du a quelques essais infructueux, nous n'avons pas pu implémenter les annotations de types rendent peut-être possible la création de problèmes de typage indécidables.}
+      \item Des types de base : \textbf{entier}, \textbf{booléen}, \textbf{singleton}
+            \footnote{On notera l'absence de certain type de base tel que les flottants ces derniers n'étant pas pris en charge a l'heure actuelle par \textbf{Autobill}.}
+\end{itemize}
+\hfill \break
+Une fois les caractéristiques de \textbf{MiniML} définies, nous avons pu commencer à travailler sur la spécification de ce dernier, en commençant par la grammaire.
+\hfill \break
+\pagebreak
 
 \hypertarget{grammaire}{%
       \subsection{Grammaire}\label{grammaire}}
@@ -854,7 +743,7 @@ encadrants celui-ci est sans effets de bord.
 
 Voici la grammaire BNF du language MiniML.\
 Pour des raisons de lisibilité, tous les éléments de sucre syntaxiques ne seront pas détaillés ici.\
-Les extensions non compatibles avec Ocaml mais compatibles avec \textbf{Autobill} sont en \textcolor{Orange}{Orange}.
+Les extensions non compatibles avec OCaml mais compatibles avec \textbf{Autobill} sont en \textcolor{Orange}{Orange}.
 
 \hypertarget{Elements Nommés}{%
       \subsubsection*{Elements Nommés}\label{Elements Nommés}}
@@ -961,10 +850,13 @@ Dans le cadre de ce projet, 3 constructions de LCBPV nous intéressent particuli
             Les \textbf{Thunks} sont des expressions non évaluées, ils sont utilisés pour représenter un calcul qui n'a pas encore été effectué.
             On peut donc les voir comme des lambdas sans arguments.
             Pour forcer l'évaluation d'un \textbf{Thunk} il suffit d'utiliser l'instruction  \textbf{force}.
+            Annexe : (\textit{Cf. Les thunks})
       \item
             Les \textbf{Closures} qui permettent de capturer un environnement et une expression et de les lier.
+            Annexe : (\textit{Cf. Les fermetures})
       \item
             Les \textbf{Methods} qui dans notre cas permet de définir des calculs à effectuer avec des arguments.
+            Annexe : (\textit{Cf. Les fonctions})
 \end{itemize}
 Pour plus d'informations sur LCBPV sa syntaxe, sa sémantique et ses constructions, vous pouvez vous référer à l'annexe de ce rapport.
 
@@ -984,7 +876,6 @@ Vous trouverez ci-dessous tous les cas d'intérêts de la traduction.
 \newcommand{\spaced}[1]{\; #1 \;}
 \newcommand{\Tab}{\quad \quad \quad \quad \quad \quad \;}
 
-\pagebreak
 \hypertarget{notation}{%
       \subsubsection*{Notation}\label{notation}}
 $ \translateNode{let \; v \; = \; e_1 \; in \; e_2}{Expr}  \rightarrow let \; v = \; \translateResult{e_1} \; in \; \translateResult{e_2}$
@@ -1056,7 +947,11 @@ On distingue deux noeuds du type \grammarRule{Def}:
       \text{(TYPDEF) } \quad & \translateNode{type \, \, v_1 \dots v_N \, = \, dc_1 \dots  dc_N}{Def}                           \\
       \rightarrow \;         & data \translateResult{v_1} (\translateResult{\dots v_N} : +) = \translateResult{dc_1 \dots dc_N} \\
 \end{align*}
-\subsubsection*{Définitions de Constructeurs}\label{defConstruct} \hfill \break
+Ici, on remarque l'utilisation de la notation $+$ pour indiquer que le type est un type de valeur.
+En effet, dans LCBPV il est possible de définir des types de calculs, mais tout type MiniML est un type de valeur pour LCBPV.
+Pour plus d'informations sur les types de calculs, vous pouvez vous référer à l'annexe (\textit{Cf. Les autres types de calculs, Définir des types de calculs}) de ce rapport.
+
+\subsubsection*{Définitions de Constructeurs}\label{defConstruct}
 
 On définit l'opération de traduction \(\translateNode{\_}{DefContructors}\) selon les cas de construction précisées par la règle de grammaire : \grammarRule{NewContructors}
 
@@ -1064,36 +959,12 @@ On distingue deux noeuds du type \grammarRule{NewContructors}:
 \begin{itemize}
       \tightlist
       \item
-            Les définitions de \textbf{Constructeurs Classiques} qui sont compatibles avec OcamL.
+            Les définitions de \textbf{Constructeurs Classiques} qui sont compatibles avec OCaml.
       \item
-            Les définitions de \textbf{Constructeurs Equationnels} qui sont une extension spécifique pour \textbf{Autobill} incompatible avec OcamL et dont la traduction n'est pas encore totalement définie.
+            Les définitions de \textbf{Constructeurs Equationnels} qui sont une extension spécifique pour \textbf{Autobill} incompatible avec OCaml et dont la traduction n'est pas encore totalement définie.
 \end{itemize}
 \begin{align*}
       \text{(MLCONSTRUCTDEF)} \quad & \translateNode{v \; of \; t}{DefContructors}   \rightarrow   v\translateResult{t} \\
-\end{align*}
-
-\subsubsection*{Types}\label{types-2}
-
-On définit l'opération de traduction \(\translateNode{\_}{Type}\) selon les cas de construction
-des types précisées par la règle de grammaire : \grammarRule{Type}
-
-On distingue 4 noeuds du type $Type$:
-\begin{itemize}
-      \tightlist
-      \item
-            Les \textbf{Variables de types}.
-      \item
-            Les \textbf{Applications de types}.
-      \item
-            Les \textbf{Lambda}.
-      \item
-            Les \textbf{Tuples}.
-\end{itemize}
-\begin{align*}
-      \text{(TVAR) }  & \translateNode{v}{Type} \rightarrow  v                                                                                          \\
-      \text{(TAPP) }  & \translateNode{t_1 t_2}{Type} \rightarrow  \translateResult{t_1} \, \translateResult{t_2}                                       \\
-      \text{(TCLOS) } & \translateNode{t_1 \text{->} t_2}{Type} \rightarrow  Exp (Fun\translateResult{t_1} \, \text{->} \, Thunk\translateResult{t_2} ) \\
-      \text{(TTUPLE)} & \translateNode{t_1 * t_2}{Type} \rightarrow  \translateResult{t_1} \,  \, \translateResult{t_2}
 \end{align*}
 
 \subsubsection*{Expressions}\label{exprs}
@@ -1165,6 +1036,33 @@ Au vu de la traduction des fonctions, on peut en déduire la traduction des appe
             On force le \textbf{Thunk} ainsi obtenu pour avoir l'évaluation immédiate du corps de la fonction.
 \end{enumerate}
 
+\subsubsection*{Types}\label{types-2}
+
+On définit l'opération de traduction \(\translateNode{\_}{Type}\) selon les cas de construction
+des types précisées par la règle de grammaire : \grammarRule{Type}
+
+On distingue 4 noeuds du type $Type$:
+\begin{itemize}
+      \tightlist
+      \item
+            Les \textbf{Variables de types}.
+      \item
+            Les \textbf{Applications de types}.
+      \item
+            Les \textbf{Lambda}.
+      \item
+            Les \textbf{Tuples}.
+\end{itemize}
+\begin{align*}
+      \text{(TVAR) }  & \translateNode{v}{Type} \rightarrow  v                                                                                          \\
+      \text{(TAPP) }  & \translateNode{t_1 t_2}{Type} \rightarrow  \translateResult{t_1} \, \translateResult{t_2}                                       \\
+      \text{(TCLOS) } & \translateNode{t_1 \text{->} t_2}{Type} \rightarrow  Exp (Fun\translateResult{t_1} \, \text{->} \, Thunk\translateResult{t_2} ) \\
+      \text{(TTUPLE)} & \translateNode{t_1 * t_2}{Type} \rightarrow  \translateResult{t_1} \,  \, \translateResult{t_2}
+\end{align*}
+
+Le cas de traduction le plus intéressants sont ceux des \textbf{Types Lambda}.
+Dans la même idée que les \textbf{Expr Lambda}, on dit que la traduction d'un type lambda est un \textbf{Type Closure} qui contient un calcul prenant en paramètre un type et renvoyant un \textbf{Thunk} sur le type du corps de la fonction.
+
 \subsubsection*{Motifs et Filtrage}\label{motifs-et-filtrage}
 
 On définit l'opération de traduction \(\translateNode{\_}{Case}\) selon les cas de construction
@@ -1201,40 +1099,64 @@ Permettre une meilleure intégration avec autobill qui est écrit dans le même 
 et la seconde raison est la double compatibilité avec les deux architectures cibles.
 Cette forte proximité avec le code d'autobill a rendu possible la traduction non pas de syntaxe concrète à syntaxe concrète comme décrite ci-dessus mais de syntaxe abstraite à syntaxe abstraite.
 Nous épargnant ainsi une nouvelle étape d'analyse syntaxique.
-Deux autres divergences avec la spécification est l'utilisation d'une fonction de traduction récursive terminale par souci d'optimisation et l'ajout de nombreux sucres syntaxiques pour faciliter l'écriture de programmes Mini Ml.
+Deux autres divergences avec la spécification est l'utilisation d'une fonction de traduction récursive terminale par souci d'optimisation et l'ajout de nombreux sucres syntaxiques pour faciliter l'écriture de programmes MiniML.
 
+\pagebreak
 
 \hypertarget{conclusion}{%
       \section{Conclusion}\label{conclusion}}
 \hypertarget{conclusion}{%
-  \subsection{Avancement du projet}\label{Avancement du Projet}}
+      \subsection{Avancement du projet}\label{Avancement du Projet}}
 
-L'objective de notre projet STL est construire un pipeline du MiniML à la résolution de contrainte ( MiniML $\rightarrow$ LCBPV $\rightarrow$ Autobill $\rightarrow$ Équation $\rightarrow$ Résolution). Dans la partie MiniML, nous avons utilisé MiniML pour rédiger le lexer et le parser pour Autobill, ainsi que pour finir la traduction de MiniML vers CBPV. Ce qui complète la partie MiniML $\rightarrow$ LCBPV $\rightarrow$ Autobill dans la pipeline, et produire l'entrée d'Autobill pour faire l'analyse à la suite. Parallèlement, nous avons développé une interface web en utilisant React et NodeJS, en mode client-seulement et de client-server. Le service "MiniML $\rightarrow$ LCBPV" du interface présente de manière satisfaisante les résultats des étapes précédentes. Cet interface utilise également Minizinc pour analyser l'équation de l'analyse statique, afin d'obtenir les bornes sur la consommation de mémoire du programme dans le service "Équation $\rightarrow$ Solution". Ce qui complète la partie Équation $\rightarrow$ Résolution de la pipeline. Nous avons utilisé quelque programmes pour comparer  les resultats obtenu par côte client et côte server, et nous avons eu le même resultat.\\
+L'objectif de notre projet STL était de construire une pipeline compléte du MiniML à la résolution de contrainte.
+C'est à dire tout le traitement du code utilisateur en passant par les etapes suivantes :
+\begin{center}
+\quad\quad$ \textit{IDE MiniML} \rightarrow \textit{LCBPV} \rightarrow Autobill \rightarrow Équation \rightarrow Résolution$.
+\end{center}
+La partie ($\textit{LCBPV} \rightarrow Autobill \rightarrow Équation$) etant couverte par notre encadrant H.Suzanne notre travail était principalement centré sur deux points du logiciel en l'occurence
+\begin{center}
+      $(\textit{IDE MiniML} \rightarrow \textit{LCBPV})$ et $(Équation \rightarrow Résolution)$.
+\end{center}
+La premiére partie comme vous avez pu le lire tout au long de ce rapport est entiérement spécifiée est implementée a travers la réalisation de l'interface web et du procéssus de lecture, traduction et analyse du code utilisateur mise en place dans les deux architectures du projet.
+Ayant désormais la capacité de produire une entrée pour autobill a travers des moyens simple d'utilisation, completer la partie $(Équation \rightarrow Résolution)$ et donc par conséquent traiter la sortie d'Autobill était notre second objectif,
+Dans cette optique, nous avons développé une extension de l'interface permettant de visualiser les résultats de l'équation resultant de l'analyse statique, afin d'obtenir les bornes sur la consommation de mémoire du programme dans le service "Équation $\rightarrow$ Solution".
+Ce qui complète la partie $(Équation \rightarrow Résolution)$ de la pipeline. Cette partie analyse d'equation est elle aussi implementée dans les deux architectures du projet.
 
-Cependant, la partie Autobill $\rightarrow$ Équation est toujours en progress. H.Suzanne travaille encore sur les détails de l'Autobill afin de obtenir l'équation parfaitement. Donc nous ne pouvons pas finalement construire la pipeline entière, pour obtenire le borne de mémoire à patir de la programme MiniML. Mais notre avancement de ce projet STL a pu répondre à la plupart des besoins de la section 1 du rapport.\\
-      
+Cependant, la partie ($Autobill \rightarrow Équation$) est toujours en cours de développement.
+En effet H.Suzanne travaille encore sur les détails d'Autobill afin d'obtenir une équation permettant d'augmenter la précision des bornes de mémoire.
+C'est donc avec regrets que nous ne pouvons finalement pas construire la pipeline entière, pour obtenir la borne de consommation mémoire à partir du programme MiniML.
+Mais notre avancement de ce projet STL a pu répondre à la plupart des besoins de la section 1 du rapport.
+
 La réalisation de cette interface a fait intervenir un large panel de
 sujets en lien avec la formation du Master d'informatique STL et mis à
 profit les connaissances acquises lors de ce semestre. En premier lieu,
 le cours d'analyse de programme statique
-\protect\hyperlink{ref-APS}{{[}24{]}} pour toute la partie MiniML et le
+\cite{APS} pour toute la partie MiniML et le
 processus de transformation vers CBPV. Puis, les cours de programmation
 concurrente répartie, réactive et réticulaire
-\protect\hyperlink{ref-PC3R}{{[}22{]}}, notamment pour la partie
+\cite{PC3R}, notamment pour la partie
 réticulaire et l'architecture d'applications Web modernes.\\
 
-\subsection{Difficulté rencontré}\label{Difficulté rencontré}}
+\subsection{Difficulté rencontré}\label{Difficulté-rencontré}
 
-Nous avons également rencontré quelques difficultés pour faire avancer le projet. Tout d'abord, nous n'avons pas été en mesure de construire un pipeline MiniML $\rightarrow$ LCBPV $\rightarrow$ Autobill $\rightarrow$ Équation $\rightarrow$ Résolution, avec le lien Autobill $\rightarrow$ Équation est toujours en progress. Et finalement nous ne pouvons pas comparer notre solution avec celle de J.Hoffmann et l'interface de RAML. Deuxièmement, notre projet avance en parallèle avec H.Suzanne et nous devons être totalement concentré dans le recherche, et nous accommoder mutuellement des progrès réalisés par les deux parties. Aussi nous avons plusieurs projets en même temps, et nous avons eu beaucoup de challenge de gestion de temps. \\
+Nous avons également rencontré quelques difficultés pour faire avancer le projet.
+Tout d'abord, nous n'avons pas été en mesure de construire le pipeline complet, avec le lien $Autobill \rightarrow Équation$ toujours en cours de construction et finalement nous ne pouvons donc pas comparer notre solution avec celle de J.Hoffmann et l'interface de RAML.
+Deuxièmement, notre projet avançant en parallèle avec H.Suzanne et nous devions être en echange constant avec ce dernier, et nous accommoder mutuellement des progrès réalisés par les deux parties.
+Une derniére difficulté et pas des moindre fut la gestion de plusieurs projets en simultané du a ce semestre de master 1 qui fut chargé en travail et en projets.
 
-\subsection{Ce qu'on a appris}\label{Ce qu'on a appris}}
-Cependant, ce projet nous a beaucoup apporté. Tout d'abord, notre capacité à écrire du code a été améliorée et nous avons acquis une meilleure compréhension des principes de compilation et de la composition des langages de programmation. Deuxièmement, nous avons lu un certain nombre d'articles dans lesquels nous avons appris la grande contribution de J.Hoffmann à l'étude de l'analyse automatique des ressources amorties et les principes de call-by-push-value. Notre capacité à gérer le temps et à travailler en mode multiple-threads, comme mentionné ci-dessus, a également été améliorée.\\
+\subsection{Ce qu'on a appris}\label{Ce qu'on a appris}
+Cependant, ce projet nous a beaucoup apporté.
+Tout d'abord, notre capacité à developper des projets en partant d'un cahier des charges a la fois précis et en mouvement en ressort grandement renforcer, de plus au contact de nos deux encadrants nous avons acquis une bien meilleure compréhension des principes de compilation et de spécification des langages de programmation.
+Deuxièmement, nous avons appris a composer, analyser et utiliser les connaissances d'un certain nombre d'articles pointus  dans lesquels nous avons appris la grande contribution de J.Hoffmann à l'étude de l'analyse automatique des ressources amorties et les principes de call-by-push-value.
+Ensuite, notre capacité à gérer le temps et à travailler en asynchrone sur plusieurs projets en ressort elle aussi grandement améliorée.
+Enfin, nous avons appris la grande importance de l'etape de spécification et de documentation dans un projet d'une telle ampleur, et la nécessité de bien comprendre les besoins de l'utilisateur final pour pouvoir lui fournir une solution adaptée a ses besoins.
 
-\subsection{Pour aller plus loin...}\label{Pour aller plus loin...}}
-Le projet est à un stade d'avancement satisfaisant. Autobill étant
+\subsection{Pour aller plus loin...}\label{Pour aller plus loin...}
+Le projet est aujourd'hui à un stade d'avancement satisfaisant. Autobill étant
 encore en phase expérimentale, celui-ci est alimenté continuellement de
-nouveautés et corrections que l'on doit intégrer. Dans le futur, quand nous avons avoir une pipeline entière, il serait intéressant à titre de démonstration de comparer notre solution avec celle de Jan Hoffmann et l'interface de RAML
-\protect\hyperlink{ref-RAML}{{[}3{]}} et deployer notre interface Web en ligne.
+nouveautés et corrections que l'on doit intégrer. 
+Dans le futur, quand une pipeline entière pourra être mise en place il sera intéressant à titre de démonstration de comparer la solution d' H.Suzanne avec celle de Jan Hoffmann et l'interface de RAML
+\cite{RAML} avec notre interface Web lors que celle-ci sera déployée.
 
 \newpage
 \bibliographystyle{ieeetr}

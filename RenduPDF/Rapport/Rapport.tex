@@ -493,13 +493,13 @@ Autobill exprime les contraintes mémoires qui s'appliquent à un programme dans
 MiniZinc est un langage permettant de décrire des problèmes de manière déclarative à l'aide de contraintes logiques. Il fournit des éléments de syntaxe et de notations très similaires à la programmation et aux mathématiques pour rédiger des modèles qui, lorsqu'ils seront passés à des compilateurs et des solveurs dédiés, vont répondre à des problématiques d'optimisation ou de satisfiabilité. Dans notre cas, on s'intéresse à l'optimisation : on veut déterminer les bornes mémoires minimum du programme passé à Autobill.
 Néanmoins, on rencontre un problème similaire qu'avec Autobill : la librairie est codée en C++, langage compilé, incompatible avec l'environnement Web. Là encore, l'option de WebAssembly est envisageable avec un compilateur comme Emscripten \cite{emscripten} qui supporte la traduction de code C/C++ vers bytecode WebAssembly. Ici, la librairie core de MiniZinc est beaucoup plus fournie et ne contient pas un point d'entrée direct explicite, comme avec le binaire d'Autobill. La compilation devient alors une tâche plus compliquée et la manipulation sûre de l'outil n'est pas non plus garantie par la suite. \\
 
-Le support via une librairie Javascript qui utilise elle-même le bytecode WebAssembly est possible. Elle offre une interface entre le développeur et le logiciel MiniZinc via un ensemble d'objets et méthodes qui facilitent les interactions avec l'outil. Comme montré dans la Figure \ref{fig8}, quelques lignes suffisent pour créer son modèle et lancer les tâches de résolution, tout cela nativement dans la machine de l'utilisateur. Cette passerelle permise avec cette API nous permet de faire tourner le moteur de résolution de contraintes directement sur le navigateur et d'afficher les bornes mémoires nécessaires au programme dans l'interface. \\ 
+Le support via une librairie Javascript qui utilise elle-même le bytecode WebAssembly est possible. Elle offre une interface entre le développeur et le logiciel MiniZinc via un ensemble d'objets et méthodes qui facilitent les interactions avec l'outil. Comme montré dans la Figure \ref{fig8}, quelques lignes suffisent pour créer son modèle et lancer les tâches de résolution, tout cela nativement dans la machine de l'utilisateur. Cette passerelle permise avec cette API nous permet de faire tourner le moteur de résolution de contraintes directement sur le navigateur et d'afficher les bornes mémoires nécessaires au programme dans l'interface. \\
 
 Celle-ci prend la forme d'une équation polynomiale qui décrit la complexité spatiale du programme d'entrée. Dans l'exemple de la Figure \ref{fig8}, un unique coefficient non-nul est est attaché à x, ce qui suggère une complexité spatiale linéaire pour le programme depuis lequel les contraintes ont été dérivées. On remarque alors la limite dans l'analyse d'Autobill qui ne prend pas encore en compte des complexités logarithmiques ou quasi-linéaires. Des pistes sont encore en cours de développement : il y a notamment le passage des équations sur les contraintes mémoires au format Coq, mais aussi l'ajout de plusieurs raffinements / paramétrages dans la \textit{pipeline} entre MiniML et CBPV (présentée plus bas dans ce rapport) qui permettraient des dérivations de complexités plus précises. \\
 
 \begin{figure}
       \centering
-          \begin{lstlisting}[language=javascript]
+      \begin{lstlisting}[language=javascript]
         const model = new Model()
         model.addFile("playground.mzn", code)
         const solve = await model.solve({
@@ -508,7 +508,7 @@ Celle-ci prend la forme d'une équation polynomiale qui décrit la complexité s
           },
         })
     \end{lstlisting}
-    \caption{Création et résolution d'un modèle MiniZinc en Javascript}
+      \caption{Création et résolution d'un modèle MiniZinc en Javascript}
       \includegraphics[scale=0.65]{Figures/Résolution.png}
       \caption{Affichage de la résolution sur l'interface\label{fig8}}
 \end{figure}
@@ -550,16 +550,16 @@ Pour cette architecture de client-serveur, on décide d’utiliser la méthode P
 
 Dans la partie MiniML, on utilise la méthode POST de HTTP, pour envoyer une requête qui contient le code écrit dans l'éditeur du code à serveur. Le serveur traite le code soit en utilisant le module généré par Js$\textunderscore$of$\textunderscore$Ocaml. Après le traitement du code, le serveur renvoie le résultat au client. Nous avons mis en place 5 services principaux en utilisant le protocole HTTP (voir Figure \ref{fig8}): '\emph{/MiniML/toMiniMLAST}', '\emph{/MiniML/toLCBPV}', \emph{'/MiniML/toAutobill'}, \emph{'/MiniML/toAutobillType'} et \emph{'/MiniML/toEquation'}. \\
 
-Pour le service \emph{'/MiniML/toMiniMLAST'}, le client envoie le code du MiniML au serveur via une requête POST. Le serveur le transforme vers l'AST de MiniML et le renvoie au client. Et pour le service \emph{'/MiniML/toLCBPV'},le client envoie le code du MiniML au serveur via une requête POST. Le serveur le transforme vers l'AST de LCBPV et le renvoie au client. Ces deux services génèrent l'AST de MiniML et de LCBPV. La côté client affiche les noeuds d'AST en côté après recevoir la réponse HTTP. L'objectif principal de ces deux services est de valider les résultats du lexer, du parser et de la traduction, en nous aidant à finir l'écriture des ces trois parties.\\
+Pour le service \emph{'/MiniML/toMiniMLAST'}, le client envoie le code du MiniML au serveur via une requête POST. Le serveur le transforme vers l'AST de MiniML et le renvoie au client. Et pour le service \emph{'/MiniML/toLCBPV'},le client envoie le code du MiniML au serveur via une requête POST. Le serveur le transforme vers l'AST de LCBPV et le renvoie au client. Ces deux services génèrent l'AST de MiniML et de LCBPV. Le côté client affiche l'AST sur le côté après avoir reçu la réponse HTTP. L'objectif principal de ces deux services est de valider les résultats du lexer, du parser et de la traduction, en nous aidant à finir l'écriture des ces trois parties.\\
 
-Pour le service \emph{'/MiniML/toAutobill'}, le client envoie le code du MiniML au serveur via une requête POST. Le serveur le transforme vers sa version internalisé en code machine et le renvoie au client. Et pour le service \emph{'/MiniML/toAutobillType'}, le client envoie le code du MiniML au serveur via une requête POST. Le serveur le transforme vers le code machine d'Autobill typé et le renvoie au client. La côté client affiche le code LCBPV généré par le serveur après le recevoir dans la réponse HTTP. Ce deux services générent le code de LCBPV traduire par MiniML, cela fournit les sources d'entrée d'Autobill et complète la partie MiniML $\rightarrow$ LCBPV $\rightarrow$ Autobill dans la pipeline.\\
+Pour le service \emph{'/MiniML/toAutobill'}, le client envoie le code du MiniML au serveur via une requête POST. Le serveur le transforme vers sa version internalisé en code machine et le renvoie au client. Et pour le service \emph{'/MiniML/toAutobillType'}, le client envoie le code du MiniML au serveur via une requête POST. Le serveur le transforme vers le code machine d'Autobill typé et le renvoie au client. La côté client affiche le code LCBPV généré par le serveur après reçu la réponse HTTP. Ce deux services générent le code de LCBPV traduire par MiniML, cela fournit les sources d'entrée d'Autobill et complète la partie MiniML $\rightarrow$ LCBPV $\rightarrow$ Autobill dans le pipeline.\\
 
 Pour le service \emph{'/MiniML/toEquation'}, le client envoie le code du MiniML au serveur via une requête POST. Le serveur le transforme vers l'équation résultant de l'analyse statique et le renvoie au client. Ce service permet de générer les équations de l'analyse statique, dans format de code MiniZinc, en utilisant le service correspondant dans Autobill. Ces équations seront utilisées pour obtenir les bornes de consommation de mémoire dans les services suivants, mentionnés dans la section 2.2.3. Ce service complète la partie MiniML $\rightarrow$ LCBPV $\rightarrow$ Autobill $\rightarrow$ Équation dans la pipeline. Mais ce service correspondant dans Autobill est encore en progrès, H.Suzanne est en train de l'améliorer pour obtenir le meilleur résultat. Donc finalement on ne peut pas encore obtenir les équations directement depuis le code MiniML.
 
 \subsubsection{La résolution des contraintes}\
- Pour la partie la résolution des contraintes, on utilise la méthode POST de HTTP, pour envoyer une requête qui contient le code écrit dans l'éditeur du code à serveur. Le serveur exécute le code et renvoie le résultat au client. Donc l'objectif de cette partie est l'exécution des équations en format MiniZinc généré par Autobill, et l'obtention des bornes de consommation de mémoire de programme. Pour exécuter le code MiniZinc, on a trouvé deux moyens. Le premier est d'utiliser la librairie de MiniZinc généré par bytecode WebAssembly comme mentionné dans la section 2.1.3. Et la deuxième manière utilise la librairie child$\textunderscore$process, qui nous permet d'effectuer l'exécution des programmes MiniZinc en passant les lignes de commande.\\
- 
- D'abord on écrit le code dans un fichier temporaire. Et on prépare une ligne de commande qui exécute un fichier MiniZinc en le passant à 'Gecode', un solveur externe de MiniZinc. Puis on utilise la méthode exec() qui permet d'exécuter notre commande dans un shell système et de récupérer la sortie dans un tampon. Elle prend en paramètre la commande à exécuter et une fonction de callback. La fonction de callback reçoit éventuellement une erreur, la sortie standard et la sortie d'erreur du processus. (voir Figure \ref{fig10}) Dans la partie résolution de contraintes, nous avons un service \emph{'/MiniZinc/gecode'} qui exécute le code MiniZinc (Voir Figure \ref{fig11}). Le client envoie le code de MiniZinc au serveur via une requête POST. Le serveur exécute le code, et renvoie le résultat au client. Le client affiche le résultat de contrainte après le recevoir dans la réponse. Ce service \emph{'/MiniZinc/gecode'} résoude les équation et obtenir les bornes memoire. Il compléte la dernière étape Équation $\rightarrow$ Résolution dans la pipeline. 
+Pour la partie la résolution des contraintes, on utilise la méthode POST de HTTP, pour envoyer une requête qui contient le code écrit dans l'éditeur du code à serveur. Le serveur exécute le code et renvoie le résultat au client. Donc l'objectif de cette partie est l'exécution des équations en format MiniZinc généré par Autobill, et l'obtention des bornes de consommation de mémoire de programme. Pour exécuter le code MiniZinc, on a trouvé deux moyens. Le premier est d'utiliser la librairie de MiniZinc généré par bytecode WebAssembly comme mentionné dans la section 2.1.3. Et la deuxième manière utilise la librairie child$\textunderscore$process, qui nous permet d'effectuer l'exécution des programmes MiniZinc en passant les lignes de commande.\\
+
+D'abord on écrit le code dans un fichier temporaire. Et on prépare une ligne de commande qui exécute un fichier MiniZinc en le passant à 'Gecode', un solveur externe de MiniZinc. Puis on utilise la méthode exec() qui permet d'exécuter notre commande dans un shell système et de récupérer la sortie dans un tampon. Elle prend en paramètre la commande à exécuter et une fonction de callback. La fonction de callback reçoit éventuellement une erreur, la sortie standard et la sortie d'erreur du processus. (voir Figure \ref{fig10}) Dans la partie résolution de contraintes, nous avons un service \emph{'/minizinc/gecode'} qui exécute le code MiniZinc (Voir Figure \ref{fig11}). Le client envoie le code de MiniZinc au serveur via une requête POST. Le serveur exécute le code, et renvoie le résultat au client.
 
 \begin{figure}
       \centering
@@ -613,14 +613,14 @@ Pour ce faire, nous avons premièrement mis en place en ensemble minimal permett
       \item La définition de fonctions
       \item La définition de fonctions récursives
 \end{itemize}
-Ensuite pour permettre une utilisation plus simple et plus proche de la famille ML, nous avons ajouté la notion de types tel que décrite dans le \textbf{Système F}\cite{SystemF}.\\
+Ensuite pour permettre une utilisation plus simple et plus proche de la famille ML, nous avons ajouté la notion de types tel que décrite dans le \textbf{Système F}\cite{SystemF}\cite{SystemF2}.\\
 \textbf{MiniML} devient donc un $\lambda$-calcul typé de la famille ML grâce à l'ajout en autres des fonctionnalités suivantes :
 \begin{itemize}
       \item La définition de types algébriques avec les types somme et produit et la possibilité de les imbriquer
       \item La définition de constructeurs de types algébriques
-    \item La définition et l'utilisation de types polymorphes \footnote{Par manque de temps dû à quelques essais infructueux, nous n'avons pas pu implémenter les annotations de types rendent peut-être possible la création de problèmes de typage indécidables.}
+      \item La définition et l'utilisation de types polymorphes \footnote{Par manque de temps dû à quelques essais infructueux, nous n'avons pas pu implémenter les annotations de types rendent peut-être possible la création de problèmes de typage indécidables.}
       \item Des types de base : \textbf{entier}, \textbf{booléen}, \textbf{singleton}
-        \footnote{On notera l'absence de certains types de base tel que les flottants. Ces derniers n'étant pas pris en charge à l'heure actuelle par \textbf{Autobill}.}
+            \footnote{On notera l'absence de certains types de base tel que les flottants. Ces derniers n'étant pas pris en charge à l'heure actuelle par \textbf{Autobill}.}
 \end{itemize}
 \hfill \break
 Une fois les caractéristiques de \textbf{MiniML} définies, nous avons pu commencer à travailler sur la spécification de ce dernier, en commençant par la grammaire.
@@ -647,6 +647,8 @@ Les extensions non compatibles avec OCaml mais compatibles avec \textbf{Autobill
 \hypertarget{Éléments Nommés}{%
       \subsubsection*{Éléments Nommés}\label{Éléments Nommés}}
 
+On appelle éléments nommés, les identificateurs \grammarRule{Id} pour les variables, motifs et types, les identificateurs de constructeurs \grammarRule{ConstructeurId} et les variables de types \grammarRule{Vartype}
+
 \begin{align*}
       \grammarRule{Id} ::= \quad             & \nPlus{[\isRangeToken{a}{z} \isRangeToken{A}{Z} \isRangeToken{0}{9} \isToken{\_}]} \\
       \grammarRule{ConstructeurId} ::= \quad & [\isRangeToken{A}{Z}] \grammarRule{Id}                                             \\
@@ -656,34 +658,79 @@ Les extensions non compatibles avec OCaml mais compatibles avec \textbf{Autobill
 \hypertarget{programmes}{%
       \subsubsection*{Programmes}\label{programmes}}
 
-
+On définit un programme \textbf{MiniML} comme une expression précédée de zéro ou plusieurs définitions néccessaires à son évaluation.
 \begin{align*}
       \grammarRule{Prog} ::= \quad & |\quad \grammarRule{Expr}                                  \\
                                    & |\quad \grammarRule{Def}  \isToken{;;}  \grammarRule{Prog}
 \end{align*}
 
 \hypertarget{definitions}{%
-      \subsubsection*{Definitions}\label{definitions}}
+      \subsubsection*{Définitions}\label{definitions}}
+
+On définit au sein de la règle de grammaire \grammarRule{Def} deux constructions :
+\begin{itemize}
+      \tightlist
+      \item
+            Les définitions de \textbf{Variables Globales},
+      \item
+            Les définitions de \textbf{Types}.
+\end{itemize}
 
 \begin{align*}
-      \grammarRule{Def} ::= \quad              & |\quad \isToken{let} \grammarRule{Id} \isToken{=} \grammarRule{Expr}                                                  \\
-                                               & |\quad \isToken{type} \nTime{\grammarRuleUnSpaced{Vartype}} \grammarRule{Id} \isToken{=} \grammarRule{NewContructors} \\
+      \grammarRule{Def} ::= \quad & |\quad \isToken{let} \grammarRule{Id} \isToken{=} \grammarRule{Expr}                                                  \\
+                                  & |\quad \isToken{type} \nTime{\grammarRuleUnSpaced{Vartype}} \grammarRule{Id} \isToken{=} \grammarRule{NewContructors} \\
+\end{align*}
+
+\subsubsection*{Définitions de Constructeurs}\label{defConstruct grammar}
+On définit au sein de la règle de grammaire \grammarRule{NewContructors} deux constructions :
+\begin{itemize}
+      \tightlist
+      \item
+            Les définitions de \textbf{Constructeurs Classiques} qui sont compatibles avec OCaml.
+      \item
+            Les définitions de \textbf{Constructeurs Equationnels} qui sont une extension spécifique pour \textbf{Autobill} incompatible avec OCaml permettant de définir des constructeurs de types algébriques avec des équations.
+\end{itemize}
+\begin{align*}
+      \grammarRule{NewContructors} ::=   \quad & |\quad  \grammarRule{ConstructeurId} \isToken{of} \grammarRule{Type}                                            \\
+                                               & |\quad  \grammarRule{NewContructors} \isToken{|} \grammarRule{NewContructors}                                   \\
+      \isExtentionML{Debut Extension}          & |\quad \grammarRule{ConstructeurId} \isToken{of} \grammarRule{Type}  \isToken{with}  \grammarRule{ParamAssigns} \\
       \\
-      \grammarRule{NewContructors} ::=   \quad & |\quad  \grammarRule{ConstructeurId} \isToken{of} \grammarRule{Type}                                                  \\
-                                               & |\quad  \grammarRule{NewContructors} \isToken{|} \grammarRule{NewContructors}                                         \\
-      \isExtentionML{Debut Extension}          & |\quad \grammarRule{ConstructeurId} \isToken{of} \grammarRule{Type}  \isToken{with}  \grammarRule{ParamAssigns}       \\
-      \\
-      \grammarRule{ParamAssigns} ::= \quad     & |\quad \grammarRule{VarType} \isToken{=} \grammarRule{ParmExpr}                                                       \\
-                                               & |\quad \grammarRule{ParamAssigns} \isToken{,} \grammarRule{ParamAssigns}                                              \\
+      \grammarRule{ParamAssigns} ::= \quad     & |\quad \grammarRule{VarType} \isToken{=} \grammarRule{ParmExpr}                                                 \\
+                                               & |\quad \grammarRule{ParamAssigns} \isToken{,} \grammarRule{ParamAssigns}                                        \\
       \grammarRule{ParmExpr} ::= \quad
-                                               & |\quad \isToken{1}                                                                                                    \\
-                                               & |\quad \grammarRule{VarType}                                                                                          \\
-                                               & |\quad \grammarRule{ParmExpr} \isToken{+} \grammarRule{ParmExpr}                                                      \\
-      \isExtentionML{Fin Extension}            & |\quad \grammarRule{ParmExpr} \isToken{*} \grammarRule{ParmExpr}                                                      \\
+                                               & |\quad \isToken{1}                                                                                              \\
+                                               & |\quad \grammarRule{VarType}                                                                                    \\
+                                               & |\quad \grammarRule{ParmExpr} \isToken{+} \grammarRule{ParmExpr}                                                \\
+      \isExtentionML{Fin Extension}            & |\quad \grammarRule{ParmExpr} \isToken{*} \grammarRule{ParmExpr}                                                \\
 \end{align*}
 
 \hypertarget{expressions}{%
       \subsubsection*{Expressions}\label{expressions}}
+
+On définit au sein de la règle de grammaire \grammarRule{Expr} 10 constructions :
+
+\begin{itemize}
+      \tightlist
+      \item
+            Les \textbf{Littéraux}.
+      \item
+            Les \textbf{Utilisations de Variables}.
+      \item
+            Les \textbf{Appels d'opérateurs} unaire et binaire.
+      \item
+            Les \textbf{Appels de fonctions}.
+      \item
+            Les \textbf{Tuples}.
+      \item
+            Les \textbf{Lambda}.
+      \item
+            Les \textbf{Fonctions Récursives}.
+      \item
+            Les \textbf{Constructions}.
+      \item
+            Les \textbf{Correspondance de motifs}.
+\end{itemize}
+
 \begin{align*}
       \grammarRule{Litteral}  \quad ::=  \quad       & |\quad \nPlus{[\isRangeToken{0}{9}]}                                                                                                                                                  \\
                                                      & |\quad [\isToken{true}|\isToken{false}]                                                                                                                                               \\
@@ -695,7 +742,6 @@ Les extensions non compatibles avec OCaml mais compatibles avec \textbf{Autobill
                                                      & |\quad  \grammarRule{Expr} \grammarRule{BinaryOperator}    \grammarRule{Expr}                                                                                                         \\
                                                      & |\quad \grammarRule{Expr}  \grammarRule{Expr}                                                                                                                                         \\
                                                      & |\quad \grammarRule{Expr} \isToken{,}  \grammarRule{Expr}                                                                                                                             \\
-                                                     & |\quad \isToken{let} \grammarRule{Id} \isToken{=} \grammarRule{Expr} \isToken{in} \grammarRule{Expr}                                                                                  \\
                                                      & |\quad \isToken{fun} \grammarRule{Id} \isToken{->}  \grammarRule{Expr}                                                                                                                \\
                                                      & |\quad \isToken{fun} \isToken{rec} \grammarRule{Id} \grammarRule{Id} \isToken{->}  \grammarRule{Expr}                                                                                 \\
                                                      & |\quad \grammarRule{ConstructeurId}  \grammarRule{Expr}                                                                                                                               \\
@@ -708,6 +754,21 @@ Les extensions non compatibles avec OCaml mais compatibles avec \textbf{Autobill
 
 \hypertarget{filtrage-et-motifs}{%
       \subsubsection*{Filtrage et Motifs}\label{filtrage-et-motifs}}
+
+On définit au sein de la règle de grammaire \grammarRule{MatchCase} 4 constructions de patterns :
+
+\begin{itemize}
+      \tightlist
+      \item
+            Les patterns sur \textbf{Littéraux}.
+      \item
+            Les patterns sur \textbf{Variables}.
+      \item
+            Les patterns sur \textbf{Tuple}.
+      \item
+            Les patterns sur \textbf{Constructeurs}.
+\end{itemize}
+
 \begin{align*}
       \grammarRule{MatchCase}  \quad ::=  \quad & |\quad  \grammarRule{Pattern} \isToken{->}  \grammarRule{Expr}     \\
                                                 & |\quad \grammarRule{MatchCase} \isToken{|} \grammarRule{MatchCase} \\
@@ -722,6 +783,21 @@ Les extensions non compatibles avec OCaml mais compatibles avec \textbf{Autobill
 \hypertarget{types-1}{%
       \subsubsection*{Types}\label{types-1}}
 
+On définit au sein de la règle de grammaire \grammarRule{Type} 5 constructions :
+\begin{itemize}
+      \tightlist
+      \item
+            Les \textbf{Types polymorphique}.
+      \item
+            Les \textbf{Utilisation de variables de types}.
+      \item
+            Les \textbf{Applications de types}.
+      \item
+            Les \textbf{Lambda}.
+      \item
+            Les \textbf{Tuples}.
+\end{itemize}
+
 \begin{align*}
       \grammarRule{Type}    \quad ::=  \quad & |\quad \grammarRule{Vartype}                              \\
                                              & |\quad \grammarRule{Id}                                   \\
@@ -730,6 +806,19 @@ Les extensions non compatibles avec OCaml mais compatibles avec \textbf{Autobill
                                              & |\quad \grammarRule{Type} \isToken{*}  \grammarRule{Type} \\
 \end{align*}
 
+Afin de rendre cette régle de grammaire moins abstraite, nous vous fournissons quelques exemples de types valides dans la figure \ref{figType}.
+
+\begin{figure*}[!b]
+      \centering
+      \begin{minted}{ocaml}
+      'a list     (* L'application du type list sur 'a *)
+      'a -> 'b    (* La fonction qui prend un 'a et retourne un 'b *)
+      int * int   (* Le couple entre deux entiers *)
+      tuple3      (* L'utilisation du type variable tuple3 *)
+\end{minted}
+      \caption{Exemples de types valide\label{figType}}
+\end{figure*}
+\pagebreak
 \hypertarget{call-by-push-value}{%
       \subsection{Call-By-Push-Value}\label{call-by-push-value}}
 
@@ -738,6 +827,8 @@ utilisé par \textbf{Autobill} permet à l'aide d'une seule sémantique de
 traiter deux types de stratégies d'évaluation différentes, \textbf{Call
       By Value} utilisée par \textbf{OCaml} et \textbf{Call By Name} utilisée
 par \textbf{Haskell} pour mettre en place l'évaluation \emph{Lazy}.
+
+\hfill \break
 
 En CBPV, les valeurs et les calculs sont deux notions bien distinctes, les calculs peuvent produire et donc être réduit, on dit qu'ils "font"
 tandis que les valeurs sont des contenants et ne peuvent pas être réduit on dit qu'ils "sont".
@@ -757,6 +848,13 @@ Dans le cadre de ce projet, trois constructions de LCBPV nous intéressent parti
             Les \textbf{Methods} qui dans notre cas permettent de définir des calculs à effectuer avec des arguments.
             Annexe : (\textit{Cf. Les fonctions})
 \end{itemize}
+
+On remarqura que les \textbf{Thunks} et les \textbf{Closures} sont deux constructions de valeurs qui contiennents des calculs, la différence fondamentale entre les deux est la suivante : \\
+Les \textbf{Thunks} ne prennent pas d'arguments on peut donc les voir comme des calculs prêt à l'exécution.
+Tandis que les \textbf{Closures} sont des calculs qui sont en attente d'arguements.
+
+\hfill \break
+Toute la subtilité de la sémantique de \textbf{Call-By-Push-Value} réside dans la manière dont on va utiliser les trois constructions précédemment décrite pour définir les instants précis où un calcul doit être effectué en séparant sa préparation de son exécution.
 Pour plus d'informations sur LCBPV, sa syntaxe, sa sémantique et ses constructions, vous pouvez vous référer à l'annexe de ce rapport.
 
 \hypertarget{sémantique-de-traduction}{%
@@ -775,13 +873,16 @@ Vous trouverez ci-dessous tous les cas d'intérêts de la traduction.
 \newcommand{\spaced}[1]{\; #1 \;}
 \newcommand{\Tab}{\quad \quad \quad \quad \quad \quad \;}
 
+\hypertarget{schema de compilation}{%
+      \subsubsection{Schémas de compilation}\label{schema de compilation}}
+
 \hypertarget{notation}{%
       \subsubsection*{Notation}\label{notation}}
 $ \translateNode{let \; v \; = \; e_1 \; in \; e_2}{Expr}  \rightarrow let \; v = \; \translateResult{e_1} \; in \; \translateResult{e_2}$
 \begin{itemize}
       \tightlist
       \item
-            $\translateNode{\_}{Expr}  \rightarrow $ est la traduction d'un noeud expr du langage MiniML vers le langage LCBPV
+            $\translateNode{\_}{Expr}  \rightarrow $ est la traduction d'une co expr du langage MiniML vers le langage LCBPV
             \begin{itemize}
                   \tightlist
                   \item
@@ -790,8 +891,7 @@ $ \translateNode{let \; v \; = \; e_1 \; in \; e_2}{Expr}  \rightarrow let \; v 
                         À l'extérieur des $\translateResult{}$, nous trouvons les éléments propre au langage LCBPV.
             \end{itemize}
       \item
-            $X_n$ est le n-ième sous-noeud de l'arbre de syntaxe abstrait. \newline
-            Selon les cas $X$ peut être :
+            On note les sous-constructions de MiniML avec la notation suivante :
             \begin{itemize}
                   \tightlist
                   \item
@@ -815,14 +915,15 @@ $ \translateNode{let \; v \; = \; e_1 \; in \; e_2}{Expr}  \rightarrow let \; v 
                         $l$ pour les littéraux
             \end{itemize}
       \item
-            $X_1 \dots X_n$ est la liste des sous-noeuds de type $X$ allant de $1$ à $n$
+            $X_1 \dots X_n$ est la liste des sous-constructions de type $X$ allant de $1$ à $n$
 \end{itemize}
 
 
 \hypertarget{programmes-1}{%
       \subsubsection*{Programmes}\label{programmes-1}}
 
-Un programme MiniML est une suite de taille arbitraire de définitions suivie d'une expression.
+Pour la traduction des programmes, c'est assez simple, nous allons simplement traduire les définitions et l'expression finale du programme.
+Et utiliser le mot clef \textbf{return} pour retourner le résultat de l'expression finale.
 
 \begin{align*}
       \translateNode{d_1 \dots d_n \, e}{Prog} \rightarrow \translateResult{d_1 \dots d_n}\; return \; \translateResult{e}
@@ -833,65 +934,33 @@ Un programme MiniML est une suite de taille arbitraire de définitions suivie d'
 On définit l'opération de traduction \(\translateNode{\_}{Def}\) selon les cas de construction
 des définitions précisées par la règle de grammaire : \grammarRule{Def}
 
-On distingue deux noeuds du type \grammarRule{Def}:
-\begin{itemize}
-      \tightlist
-      \item
-            Les définitions de \textbf{Variables Globales},
-      \item
-            Les définitions de \textbf{Types}.
-\end{itemize}
 \begin{align*}
       \text{(VARDEF)}  \quad & \translateNode{let \, v \, = \, e}{Def} \rightarrow   let \, v \, = \; \translateResult{e}       \\
       \text{(TYPDEF) } \quad & \translateNode{type \, \, v_1 \dots v_N \, = \, dc_1 \dots  dc_N}{Def}                           \\
       \rightarrow \;         & data \translateResult{v_1} (\translateResult{\dots v_N} : +) = \translateResult{dc_1 \dots dc_N} \\
 \end{align*}
-Ici, on remarque l'utilisation de la notation $+$ pour indiquer que le type est un type de valeur.
-En effet, dans LCBPV il est possible de définir des types de calculs, mais tout type MiniML est un type de valeur pour LCBPV.
+
+Lors de la traduction d'une definition de type on remarque l'utilisation de la notation $: +$ pour indiquer que le type défini est un type de valeur.
+En effet, dans LCBPV il est possible de définir des types de calculs, mais tout type MiniML est un type de valeur pour LCBPV.\\
 Pour plus d'informations sur les types de calculs, vous pouvez vous référer à l'annexe (\textit{Cf. Les autres types de calculs, Définir des types de calculs}) de ce rapport.
 
 \subsubsection*{Définitions de Constructeurs}\label{defConstruct}
 
 On définit l'opération de traduction \(\translateNode{\_}{DefContructors}\) selon les cas de construction précisées par la règle de grammaire : \grammarRule{NewContructors}
 
-On distingue deux noeuds du type \grammarRule{NewContructors}:
-\begin{itemize}
-      \tightlist
-      \item
-            Les définitions de \textbf{Constructeurs Classiques} qui sont compatibles avec OCaml.
-      \item
-            Les définitions de \textbf{Constructeurs Equationnels} qui sont une extension spécifique pour \textbf{Autobill} incompatible avec OCaml et dont la traduction n'est pas encore totalement définie.
-\end{itemize}
+Pour la traduction des définitions de constructeurs, nous allons simplement traduire le type englobé par le constructeur l'operation est la suivante :
 \begin{align*}
       \text{(MLCONSTRUCTDEF)} \quad & \translateNode{v \; of \; t}{DefContructors}   \rightarrow   v\translateResult{t} \\
 \end{align*}
 
+On notera l'absence de traduction pour les définitions de constructeurs équationnel car leur support en LCBPV n'est pas encore entièrement spécifiée et implementée.
+Nous avons donc choisi de ne pas les prendre en compte dans ce rapport et laissons leur traduction en tant que travaux futurs.
+
 \subsubsection*{Expressions}\label{exprs}
 
-On définit l'opération de traduction \(\translateNode{\_}{Expr}\) selon les cas de construction
+On définit l'opération de traduction \(\translateNode{\_}{Expr}\) selon les cas\footnote{On ne prend pas en compte les \textbf{Littéraux} et les \textbf{Variables} dans ce descriptif car leurs traductions sont directes.} de construction
 des expressions précisées par la règle de grammaire : \grammarRule{Expr}
 
-On distingue 8 noeuds d'intérêts du type \grammarRule{Expr}:
-\begin{itemize}
-      \tightlist
-      \item
-            Les \textbf{Tuples}.
-      \item
-            Les \textbf{Appels de fonctions}.
-      \item
-            Les \textbf{Fixation}.
-      \item
-            Les \textbf{Lambda}.
-      \item
-            Les \textbf{Fonctions Récursives}.
-      \item
-            Les \textbf{Constructions}.
-      \item
-            Les \textbf{Correspondance de motifs}.
-      \item
-            Les \textbf{Appels d'opérateurs}.
-\end{itemize}
-\textbf{Note:} On ne prend pas en compte les \textbf{Littéraux} et les \textbf{Variables} dans ce descriptif car leurs traductions sont directes.
 \begin{align*}
       \text{(BINARY)} \quad    & \translateNode{e_1 \, op \, e_2}{Expr} \rightarrow \translateResult{e_1} \, \, op \, \, \translateResult{e_2}                                                                  \\
       \text{(UNARY)} \quad     & \translateNode{op \, e}{Expr} \rightarrow op \, \, \translateResult{e}                                                                                                         \\
@@ -902,11 +971,7 @@ On distingue 8 noeuds d'intérêts du type \grammarRule{Expr}:
                                & \Tab open \; exp \; v_1  = \translateResult{e_1}                                                                                                                               \\
                                & \Tab force \; thunk(v_2) = (v_1).call\translateResult{e_2}                                                                                                                     \\
                                & \Tab return \; v_2                                                                                                                                                             \\
-                               & \}                                                                                                                                                                             \\
-      \text{(BIND)} \quad      & \translateNode{let \; v \; = \; e_1 \; in \; e_2}{Expr}  \rightarrow  \{                                                                                                       \\
-                               & \Tab let \; v = \translateResult{e_1}                                                                                                                                          \\
-                               & \Tab return \;\translateResult{e_2}                                                                                                                                            \\
-                               & \}                                                                                                                                                                             \\
+                               & \}                                                                                                                                                                             \\                                                                                                                                                                             \\
       \text{(CONSTRUCT)} \quad & \translateNode{v \, e}{Expr} \rightarrow v\translateResult{e}                                                                                                                  \\
       \text{(MATCH)} \quad     & \translateNode{match \, e \, with \, p_1 \dots p_N }{Expr}\rightarrow  match \, \translateResult{e} \, with \, \translateResult{p_1} \dots \translateResult{p_N} \; end        \\
 \end{align*}
@@ -935,24 +1000,12 @@ Au vu de la traduction des fonctions, on peut en déduire la traduction des appe
             On force le \textbf{Thunk} ainsi obtenu pour avoir l'évaluation immédiate du corps de la fonction.
 \end{enumerate}
 
+\pagebreak
+
 \subsubsection*{Types}\label{types-2}
 
 On définit l'opération de traduction \(\translateNode{\_}{Type}\) selon les cas de construction
 des types précisés par la règle de grammaire : \grammarRule{Type}
-
-
-On distingue 4 noeuds du type $Type$:
-\begin{itemize}
-      \tightlist
-      \item
-            Les \textbf{Variables de types}.
-      \item
-            Les \textbf{Applications de types}.
-      \item
-            Les \textbf{Lambda}.
-      \item
-            Les \textbf{Tuples}.
-\end{itemize}
 \begin{align*}
       \text{(TVAR) }  & \translateNode{v}{Type} \rightarrow  v                                                                                          \\
       \text{(TAPP) }  & \translateNode{t_1 t_2}{Type} \rightarrow  \translateResult{t_1} \, \translateResult{t_2}                                       \\
@@ -968,18 +1021,6 @@ Dans la même idée que les \textbf{Expr Lambda}, on dit que la traduction d'un 
 On définit l'opération de traduction \(\translateNode{\_}{Case}\) selon les cas de construction
 des expressions précisées par la règle de grammaire : \grammarRule{MatchCase}
 
-On distingue 4 noeuds d'intérêt du type \grammarRule{MatchCase}:
-\begin{itemize}
-      \tightlist
-      \item
-            Les patterns sur \textbf{Littéraux}.
-      \item
-            Les patterns sur \textbf{Variables}.
-      \item
-            Les patterns sur \textbf{Tuple}.
-      \item
-            Les patterns sur \textbf{Constructeurs}.
-\end{itemize}
 
 \begin{align*}
       \text{(PATTERN LIT)} \quad    & \translateNode{l \; \text{->} \; e}{MatchCase} \rightarrow \translateResult{l} \; \text{->} \; \translateResult{e}                \\
@@ -991,11 +1032,14 @@ On distingue 4 noeuds d'intérêt du type \grammarRule{MatchCase}:
 On notera que la traduction des patterns ne prend pas en compte les patterns profonds, c'est-à-dire les patterns imbriqués dans d'autres patterns.
 En effet, les patterns profonds ne sont pas encore supportés par le langage cible.
 
-\pagebreak
+\newpage
 
 \hypertarget{Exemple-de-Traduction}{%
       \subsubsection{Exemple de traduction}\label{Exemple-de-traduction}}
-Voic un exemple complet de traduction d'un programme \textbf{MiniML} vers \textbf{LCBPV}.
+Voic un exemple partiel de traduction d'un programme \textbf{MiniML} vers \textbf{LCBPV}.
+Dans un soucis de lisibilité, nous avons ne pas repris la totalité des opérations de traduction seulement les plus intéressantes.
+
+\hfill \break
 \begin{figure*}[!b]
       \centering
       \begin{minted}{ocaml}
@@ -1014,6 +1058,64 @@ Voic un exemple complet de traduction d'un programme \textbf{MiniML} vers \textb
       \end{minted}
       \caption{Exemple de Code Source MiniML}
 \end{figure*}
+
+
+\begin{enumerate}
+      \item On commence par traduire les définitions de types.
+            \begin{minted}{ocaml} 
+                  type type 'a list
+            \end{minted}
+            Deviens :
+            \begin{minted}{scheme} 
+                  data List (A : +) 
+            \end{minted}
+      \item Ensuite nous traduisons chacun des types construits.
+            \begin{minted}{ocaml} 
+                  | Cons of 'a *  ('a list)
+            \end{minted}
+            Deviens donc :
+            \begin{minted}{scheme} 
+                  | Cons(A, List(A))
+            \end{minted}
+      \item On traduit les définitions de variables.
+            \begin{minted}{ocaml} 
+                  let addHead a =
+                        (match ls with
+                        | [] -> []
+                        | (hd :: tail) -> ((hd + a) :: tail))
+            \end{minted}
+            Deviens donc:
+            \begin{minted}{scheme} 
+                  let addHead = 
+                        exp(get
+                              | call(a) -> 
+                                    thunk(// BODY)
+                              end)
+            \end{minted}
+            Comme décrit dans la section \ref{exprs}, le corps de la fonction est traduit en une \textbf{Closure} qui va capturer la liste \textbf{ls} et un calcul simulant le corps de la fonction.
+
+      \item Une fois nos définitions traduites on peut procédé à la traduction de l'expression finale
+            \begin{minted}{ocaml} 
+                  (addHead 3 ls)    
+            \end{minted}
+            Deviens donc:
+            \begin{minted}{scheme} 
+                  return {
+                        open exp(mLTempVar2)= {
+                                                open exp(mLTempVar4)= simpleFunc;
+                                                force thunk(mLTempVar5) = (mLTempVar4).call(3);
+                                                return mLTempVar5
+                                                };
+                        force thunk(mLTempVar3) = (mLTempVar2).call(simpleLs);
+                        return mLTempVar3
+                        };
+            \end{minted}
+            Comme décrit dans la section \ref{exprs}, l'expression finale qui est une application de fonction est traduite en une ouverture de \textbf{Closure} qui va restituer l'environment original de la fonction
+            et puis une application du calcul sur les arguments de la fonction ayant pour la préparation de ce dernier.
+            Et enfin la restitution du résultat de l'évaluation du calcul.
+\end{enumerate}
+
+\hfill \break
 
 \begin{figure*}[!b]
       \centering
@@ -1044,11 +1146,12 @@ Voic un exemple complet de traduction d'un programme \textbf{MiniML} vers \textb
       \caption{Résultat de la traduction}
 \end{figure*}
 
+
 \hypertarget{Implémentation}{%
       \subsection{Implémentation}\label{Implementation}}
 Dans le cadre de ce projet, MiniML dispose d'une implémentation écrite en OCaml, langage que nous avons utilisé pour deux raisons principales.
 D'une part, permettre une meilleure intégration avec Autobill qui est écrit dans le même language ce qui a permis d'unifier la gestion d'erreurs.
-La seconde raison est la double compatibilité avec les deux architectures cibles,
+D'autre part permettre la double compatibilité avec les deux architectures cibles,
 cette forte proximité avec le code d'Autobill a rendu possible la traduction non pas de syntaxe concrète à syntaxe concrète comme décrite ci-dessus mais de syntaxe abstraite à syntaxe abstraite.
 Nous épargnant ainsi une nouvelle étape d'analyse syntaxique.
 Deux autres divergences avec la spécification est l'utilisation d'une fonction de traduction récursive terminale par souci d'optimisation et l'ajout de nombreux sucres syntaxiques pour faciliter l'écriture de programmes MiniML.
@@ -1090,7 +1193,7 @@ concurrente répartie, réactive et réticulaire
 \cite{PC3R}, notamment pour la partie
 réticulaire et l'architecture d'applications Web modernes.\\
 
-\subsection{Difficulté rencontré}\label{Difficulté-rencontré}
+\subsection{Difficultés rencontrés}\label{Difficulté-rencontré}
 
 Nous avons également rencontré quelques difficultés pour faire avancer le projet.
 Tout d'abord, nous n'avons pas été en mesure de construire le pipeline complet, avec le lien $Autobill \rightarrow Équation$ toujours en cours de construction et finalement nous ne pouvons donc pas comparer notre solution avec celle de J.Hoffmann et l'interface de RAML.
@@ -1107,7 +1210,7 @@ Enfin, nous avons appris la grande importance de l'étape de spécification et d
 \subsection{Pour aller plus loin...}\label{Pour aller plus loin...}
 Le projet est aujourd'hui à un stade d'avancement satisfaisant. Autobill étant
 encore en phase expérimentale, celui-ci est alimenté continuellement de
-nouveautés et corrections que l'on doit intégrer. 
+nouveautés et corrections que l'on doit intégrer.
 Dans le futur, quand une pipeline entière pourra être mise en place il sera intéressant à titre de démonstration de comparer la solution d' H.Suzanne avec celle de Jan Hoffmann et l'interface de RAML
 \cite{RAML} avec notre interface Web lorsque celle-ci sera déployée.
 \textbf{}

@@ -19,7 +19,6 @@ const serverAvailability = () => {
   res.add("MiniML -> Autobill Typé")
   res.add("MiniML -> Equation")
   res.add("Equation -> Soluce")
-  res.add("Equation -> Soluce (with Chuffed)")
   return res
 }
 function App() {
@@ -150,18 +149,6 @@ function App() {
             evaluation.resultat = solve.solution.output.default
           }
           break
-          case "Equation -> Soluce (with Chuffed)":
-            if (server) {
-              const data = await fetch("http://localhost:3002/minizinc/chuffed", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json; charset = UTF-8",
-                },
-                body: JSON.stringify({ code: code }),
-              })
-              evaluation = await data.json()
-            }
-            break
         case "MiniML -> MiniML_AST":
           if (server) {
             const data = await fetch("http://localhost:3002/MiniML/toMiniMLAST", {
@@ -318,9 +305,6 @@ function App() {
                 </option>
                 <option value={"Equation -> Soluce"}>
                   {"Equation -> Soluce"}
-                </option>
-                <option value={"Equation -> Soluce (with Chuffed)"}>
-                  {"Equation -> Soluce (with Chuffed)"}
                 </option>
               </select>
             </div>

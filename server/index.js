@@ -117,93 +117,10 @@ app.post('/MiniML/toAutobill', async (req, res) => {
     res.status(400).send(JSON.stringify({ error: err.message }));
   }
 
-  /*const evalCode = (code) => {
-    let topLevelResult = {
-      types : "",
-      resultat: "",
-      erreurs: ""
-    }
-    import("../front/ocaml/main.js").then((ml) => {
-      // Call the exported function
-      
-      console.log(evaluation);
-    }).catch((error) => {
-      console.error(error);
-    });
-    //evaluation = ml.parse(code)
-    console.log(evaluation)
-    //setPrint(evaluation.resultat)
-    // setTypes(evaluation.types)
-    // setPrint(evaluation.resultat == "" ? evaluation.erreurs : evaluation.resultat)
-    
-  }*/
-
-  /*
-  await fs.writeFile(tempFile, code, (err) => {
-    if (err) throw err;
-    console.log('The file has been saved!');
-  });
-
-  
-  const jsCode = await new Promise((resolve, reject) => {
-    const ocaml = spawn('ocamlfind', ['ocamlc', '-package', 'js_of_ocaml', '-o', 'temp.js', 'temp.ml']);
-    ocaml.on('close', (code) => {
-      if (code === 0) {
-        fs.readFile('./temp.js', 'utf8', (err, data) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(data);
-          }
-        });
-      } else {
-        reject(`ocamlc exited with code ${code}`);
-      }
-    });
-  })
-    .catch((err) => {
-      console.error(err);
-    });
-  
-  */
-  
 });
 
 app.post('/minizinc/gecode', (req, res) => {
   const code = req.body.code;
-  /*
-  MiniZinc.init({
-    // Executable name
-    minizinc: 'minizinc',
-    // Search paths (can omit to use PATH)
-    minizincPaths: ['usr/bin']
-  });
-
-  const model = new MiniZinc.Model();
-  model.addString(code);
-
-  
-  const solve = model.solve({
-    options: {
-      solver: 'gecode',
-      timeout: 10000,
-      statistics: true
-    }
-  });
-
-
-  solve.on('solution', solution => console.log(solution.output.json));
-  solve.on('statistics', stats => console.log(stats.statistics));
-  solve.then(result => {
-    console.log(result.solution.output.json);
-    console.log(result.statistics);
-  });
-
-  console.log(code);
-
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
-  res.send(result.solution.output.json)
-  */
 
   // Write the MiniZinc code to a temporary file
   const fs = require('fs');
